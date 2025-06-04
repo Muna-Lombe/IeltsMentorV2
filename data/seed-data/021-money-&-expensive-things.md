@@ -1,0 +1,14 @@
+#### 1. What kind of expensive things do people like to buy?
+It seems like people are happy to **splurge on** nice cars. Maybe German **imports** like Porsche or Mercedes that you see driving around big cities. Not only are they very **stylish**, they're often very comfortable too. Designer brands also act as a kind of **status symbol**, which means people like to show off their **authentic** handbags or shoes to their friends and family. Another thing might be appliances for their homes. Some fridges, ovens and even washing machines can be extremely expensive but usually because they are very **efficient** and reliable. So those are some expensive things that **come to mind**.
+
+---
+#### 2. What's the difference between women and men in buying things?
+**Very generally speaking**, I suppose **it can be said** that men tend to spend their money on things which are more **practical**. That can include smartwatches, **power tools** or computers because they can save them time and effort at work or at home. In regards to women, however, I guess the **stereotype** is that women prefer to buy things related to their appearance, such as clothes, accessories, jewellery, and so on. I suppose for women there's a bit more **societal pressure** on them to always look perfect. So those are some very general differences that come to mind.
+
+---
+#### 3. What are the advantages and disadvantages about being rich?
+I suppose **it goes without saying** that rich people can enjoy pretty **luxurious** lifestyle. They can **surround themselves** with expensive products like sports cars, **mansions** and **state-of-the-art** technology, and enjoy the best of everything. However, it can be a little bit risky to be **openly wealthy**, because rich people can **make themselves targets** for thieves or criminals who want to steal their **belongings** or access their bank accounts. As well as that, if you were so rich you never had to work, I think that would be a bit boring after a while.
+
+---
+#### 4. Why are some sports expensive? Are they for everyone?
+It's typically the equipment that starts to **add up**. For scuba-diving there's the oxygen tank, the masks, wetsuits, fins and other things, none of which are cheap and take **trained professionals** to maintain and user properly. **Similarly**, hose-riding is a very expensive hobby because you need a stable for the horse, as well as food and **stable-hands** and vets to take care of the animal. Perhaps for **the wealthy** it's **just a drop in the ocean** for them, but for most **ordinary folks** it can be **prohibitively expensive**.

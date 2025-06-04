@@ -1,0 +1,30 @@
+[
+  {
+    "id": "reading_set_1",
+    "passage": "Time management is the process of planning and exercising conscious control of time spent on specific activities, especially to increase effectiveness, efficiency, and productivity. It involves a juggling act of various demands of study, social life, employment, family, and personal interests and commitments with the finiteness of time. Using time effectively gives the person \"choice\" on spending or managing activities at their own time and expediency. Time management may be aided by a range of skills, tools, and techniques used to manage time when accomplishing specific tasks, projects, and goals complying with a due date. Initially, time management referred to just business or work activities, but eventually, the term broadened to include personal activities as well. A time management system is a designed combination of processes, tools, techniques, and methods. Time management is usually a necessity in any project development as it determines the project completion time and scope.",
+    "questions": [
+      {
+        "question_id": "rs1_q1",
+        "text": "What is the primary goal of time management mentioned in the passage?",
+        "options": [
+          "To reduce social life commitments",
+          "To increase effectiveness, efficiency, and productivity",
+          "To manage only business activities",
+          "To work longer hours"
+        ],
+        "correct_option_index": 1
+      },
+      {
+        "question_id": "rs1_q2",
+        "text": "According to the passage, what does using time effectively give a person?",
+        "options": [
+          "More tasks to complete",
+          "The choice on how to spend or manage activities",
+          "A broader range of personal interests",
+          "A necessity for project development"
+        ],
+        "correct_option_index": 1
+      }
+    ]
+  }
+] 

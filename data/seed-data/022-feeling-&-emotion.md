@@ -1,0 +1,13 @@
+#### 1. Is it difficult for some people to express their feelings?
+I think it **varies from person to person**. There are some people who **wear their hearts on their sleeves**, **most likely** because they were raised in a more emotional and open **household**. At the same time, there are people who are very **reserved** about their feelings. **Typically** it's men who **struggle** with expressing their emotions, it may be because they have been taught that men shouldn't express themselves openly as it's **a sign of weakness** or an **overreaction**. I think women tend to **open up** a little more freely than men because there's less **stigma** attracted to it.
+
+---
+#### 2. Who do you think talk more? children or grown-ups?
+Definitely children, School **cafeterias** and playgrounds are incredibly **noisy** places because children love talking. They talk to their friends about absolutely everything, they also **bombard** their teachers and parents with **a constant stream** of questions, so kids love to talk. In contrast, I think adults tend to talk less, but say more, as they're able to communicate more **precisely** and **relay** exactly what they mean more effectively.
+
+---
+#### 3. What's the differences between males and females in terms of expressing their feelings?
+**As I mentioned before**, I think women are much better and much more **articulate** about describing their feelings. I suppose they are not as embarrassed to do it, because it's more **acceptable** for females to **show emotion** among friends or family. So as a result, they practice doing it more often and develop the right vocabulary to share their emotions accurately. Men, on the other hand, tend to **bottle up** their feelings or **suppress** them completely, because they might have been told that emotions interfere with their work and it makes them look weak. So I think those are some **key differences**.
+
+#### 4. Why do you think people these days are not that open compared to those in the past?
+Honestly, I think **the opposite is true**. I think people share many more **intimate details** of their lives through social media than ever before. They post a **status update** when they are frustrated or upset about something. They also **upload** pictures of themselves in **a good mood** or if they achieved something. So I think the younger generations are some of the most **open** there have ever been. The past was seemingly quite **stoic** and serious, because emotions were seen as a kind of **distraction** from work. So I think people are more open and now and that's also a healthier thing.

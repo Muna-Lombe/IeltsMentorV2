@@ -1,0 +1,39 @@
+{
+    "greetings": {
+        "hello": "Hola, {name}!"
+    },
+    "user": {
+        "welcome_new": "¡Bienvenido, {name}! Nos alegra tenerte aquí. Tu idioma preferido se ha configurado a Español.",
+        "welcome_back": "¡Bienvenido de nuevo, {name}! Tu idioma preferido es Español."
+    },
+    "practice": {
+        "select_section_prompt": "Por favor, elige una sección para practicar:",
+        "button_speaking": "Oral (Speaking)",
+        "button_writing": "Escrito (Writing)",
+        "button_reading": "Lectura (Reading)",
+        "button_listening": "Auditiva (Listening)",
+        "no_reading_material": "Lo sentimos, no hay materiales de lectura disponibles en este momento. Por favor, inténtalo de nuevo más tarde.",
+        "reading_session_complete": "¡Práctica de lectura completada!\nTu puntuación: {score} ({percentage}%)."
+    },
+    "ai_commands": {
+        "explain_usage": "Por favor, indica qué quieres que te explique. Uso: /explain <tu consulta>",
+        "processing_explanation": "Generando explicación, por favor espera...",
+        "explanation_failed": "Lo siento, no pude generar una explicación para eso. Por favor, inténtalo de nuevo o reformula tu consulta.",
+        "define_usage": "Por favor, indica una sola palabra para definir. Uso: /define <palabra>",
+        "processing_definition": "Buscando definición, por favor espera...",
+        "definition_failed": "Lo siento, no pude encontrar una definición para '{word}'. Por favor, asegúrate de que sea una palabra válida e inténtalo de nuevo."
+    },
+    "errors": {
+        "translation_not_found": "Traducción no encontrada para la clave: {key}",
+        "general_error": "Ocurrió un error inesperado. Por favor, inténtalo de nuevo.",
+        "registration_error": "Lo sentimos, hubo un error durante el registro. Por favor, inténtalo de nuevo.",
+        "start_command_error": "Ocurrió un error inesperado al iniciar. Por favor, intenta iniciar de nuevo.",
+        "user_not_found_error": "Error: No se encontró tu perfil de usuario. Por favor, usa /start para comenzar.",
+        "session_creation_failed": "No se pudo iniciar la sesión de práctica. Por favor, inténtalo de nuevo.",
+        "invalid_action_error": "Esa fue una acción inválida. Por favor, inténtalo de nuevo.",
+        "session_expired_error": "Tu sesión parece haber expirado o no está sincronizada. Por favor, intenta iniciar la práctica de nuevo.",
+        "session_not_found_error": "No se encontró la sesión de práctica. Por favor, reinicia la práctica.",
+        "processing_answer_error": "Hubo un error al procesar tu respuesta. Por favor, inténtalo de nuevo o reinicia la práctica.",
+        "general_ai_error": "Lo siento, hubo un problema con el servicio de IA. Por favor, inténtalo de nuevo más tarde."
+    }
+} 

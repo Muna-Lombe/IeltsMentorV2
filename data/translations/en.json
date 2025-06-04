@@ -1,0 +1,39 @@
+{
+    "greetings": {
+        "hello": "Hello, {name}!"
+    },
+    "user": {
+        "welcome_new": "Welcome, {name}! Happy to have you here. Your preferred language is set to English.",
+        "welcome_back": "Welcome back, {name}! Your preferred language is English."
+    },
+    "practice": {
+        "select_section_prompt": "Please choose a section to practice:",
+        "button_speaking": "Speaking",
+        "button_writing": "Writing",
+        "button_reading": "Reading",
+        "button_listening": "Listening",
+        "no_reading_material": "Sorry, no reading materials are available at this moment. Please try again later.",
+        "reading_session_complete": "Reading practice complete!\nYour score: {score} ({percentage}%)."
+    },
+    "ai_commands": {
+        "explain_usage": "Please provide something to explain. Usage: /explain <your query>",
+        "processing_explanation": "Generating explanation, please wait...",
+        "explanation_failed": "Sorry, I couldn't generate an explanation for that. Please try again or rephrase your query.",
+        "define_usage": "Please provide a single word to define. Usage: /define <word>",
+        "processing_definition": "Looking up definition, please wait...",
+        "definition_failed": "Sorry, I couldn't find a definition for '{word}'. Please ensure it's a valid word and try again."
+    },
+    "errors": {
+        "translation_not_found": "Translation not found for key: {key}",
+        "general_error": "An unexpected error occurred. Please try again.",
+        "registration_error": "Sorry, there was an error during registration. Please try again.",
+        "start_command_error": "An unexpected error occurred while starting. Please try starting again.",
+        "user_not_found_error": "Error: Your user profile was not found. Please use /start to begin.",
+        "session_creation_failed": "Could not start the practice session. Please try again.",
+        "invalid_action_error": "That was an invalid action. Please try again.",
+        "session_expired_error": "Your session seems to have expired or is out of sync. Please try starting the practice again.",
+        "session_not_found_error": "The practice session was not found. Please restart the practice.",
+        "processing_answer_error": "There was an error processing your answer. Please try again or restart the practice.",
+        "general_ai_error": "Sorry, there was an issue with the AI service. Please try again later."
+    }
+} 

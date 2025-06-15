@@ -1,12 +1,20 @@
 {
     "greetings": {
-        "hello": "Hola, {name}!"
+        "welcome": "¡Bienvenido al Bot Mentor IELTS! Estoy aquí para ayudarte a prepararte para tu examen IELTS.",
+        "welcome_back": "¡Bienvenido de nuevo, {name}! ¿Cómo puedo ayudarte hoy?"
     },
     "user": {
         "welcome_new": "¡Bienvenido, {name}! Nos alegra tenerte aquí. Tu idioma preferido se ha configurado a Español.",
         "welcome_back": "¡Bienvenido de nuevo, {name}! Tu idioma preferido es Español."
     },
     "practice": {
+        "select_section": "Por favor, selecciona una sección para practicar:",
+        "section_speaking": "Speaking",
+        "section_writing": "Writing",
+        "section_reading": "Reading",
+        "section_listening": "Listening",
+        "session_start": "Iniciando sesión de práctica de {section}...",
+        "session_complete": "¡Sesión de práctica completada! Tu puntuación: {score}/{total}",
         "select_section_prompt": "Por favor, elige una sección para practicar:",
         "button_speaking": "Oral (Speaking)",
         "button_writing": "Escrito (Writing)",
@@ -35,5 +43,16 @@
         "session_not_found_error": "No se encontró la sesión de práctica. Por favor, reinicia la práctica.",
         "processing_answer_error": "Hubo un error al procesar tu respuesta. Por favor, inténtalo de nuevo o reinicia la práctica.",
         "general_ai_error": "Lo siento, hubo un problema con el servicio de IA. Por favor, inténtalo de nuevo más tarde."
+    },
+    "error": {
+        "general": "Ha ocurrido un error. Por favor, inténtalo de nuevo.",
+        "permission_denied": "No tienes permiso para realizar esta acción.",
+        "invalid_input": "Entrada inválida. Por favor, verifica tu entrada e inténtalo de nuevo."
+    },
+    "help": {
+        "start": "Usa /start para comenzar a usar el bot",
+        "practice": "Usa /practice para iniciar una sesión de práctica",
+        "explain": "Usa /explain [tema] para obtener explicaciones",
+        "define": "Usa /define [palabra] para obtener definiciones"
     }
 } 

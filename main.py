@@ -4,6 +4,8 @@ from flask import Flask, request, jsonify
 from dotenv import load_dotenv
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, CallbackQueryHandler
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 
 # Load environment variables from .env file
 load_dotenv()
@@ -11,6 +13,7 @@ load_dotenv()
 # Environment variables
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 FLASK_SECRET_KEY = os.getenv("FLASK_SECRET_KEY")
+DATABASE_URL = os.getenv("DATABASE_URL")
 # WEBHOOK_URL = os.getenv("WEBHOOK_URL") # We might need this later for setting the webhook
 
 # Configure logging
@@ -28,6 +31,16 @@ logging.getLogger().addHandler(file_handler) # Add to root logger to catch all l
 # Initialize Flask app
 app = Flask(__name__)
 app.secret_key = FLASK_SECRET_KEY
+app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Initialize extensions
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
+
+# Import models to ensure they are registered with SQLAlchemy
+from models.user import User
+from models.practice_session import PracticeSession
 
 # Import handlers
 from handlers.core_handlers import start_command

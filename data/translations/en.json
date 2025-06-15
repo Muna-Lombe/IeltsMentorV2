@@ -1,12 +1,20 @@
 {
     "greetings": {
-        "hello": "Hello, {name}!"
+        "welcome": "Welcome to IELTS Mentor Bot! I'm here to help you prepare for your IELTS exam.",
+        "welcome_back": "Welcome back, {name}! How can I help you today?"
     },
     "user": {
         "welcome_new": "Welcome, {name}! Happy to have you here. Your preferred language is set to English.",
         "welcome_back": "Welcome back, {name}! Your preferred language is English."
     },
     "practice": {
+        "select_section": "Please select a section to practice:",
+        "section_speaking": "Speaking",
+        "section_writing": "Writing",
+        "section_reading": "Reading",
+        "section_listening": "Listening",
+        "session_start": "Starting {section} practice session...",
+        "session_complete": "Practice session complete! Your score: {score}/{total}",
         "select_section_prompt": "Please choose a section to practice:",
         "button_speaking": "Speaking",
         "button_writing": "Writing",
@@ -35,5 +43,11 @@
         "session_not_found_error": "The practice session was not found. Please restart the practice.",
         "processing_answer_error": "There was an error processing your answer. Please try again or restart the practice.",
         "general_ai_error": "Sorry, there was an issue with the AI service. Please try again later."
+    },
+    "help": {
+        "start": "Use /start to begin using the bot",
+        "practice": "Use /practice to start a practice session",
+        "explain": "Use /explain [topic] to get explanations",
+        "define": "Use /define [word] to get definitions"
     }
 } 

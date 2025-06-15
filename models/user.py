@@ -1,13 +1,11 @@
+from main import db  # Import the db instance from your main app
 from sqlalchemy import Column, Integer, String, Boolean, Float, BigInteger
 from sqlalchemy.dialects.postgresql import JSONB # For JSONB type
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 import time
+from typing import Dict, Any, Optional
 
-# Define the base for declarative models
-Base = declarative_base()
-
-class User(Base):
+class User(db.Model):
     __tablename__ = 'users'
 
     id = Column(Integer, primary_key=True, index=True)
@@ -35,4 +33,91 @@ class User(Base):
     practice_sessions = relationship("PracticeSession", back_populates="user", cascade="all, delete-orphan")
 
     def __repr__(self):
-        return f"<User(id={self.id}, user_id={self.user_id}, username='{self.username}')>" 
+        return f"<User(id={self.id}, user_id={self.user_id}, username='{self.username}')>"
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert user object to dictionary."""
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'first_name': self.first_name,
+            'last_name': self.last_name,
+            'username': self.username,
+            'joined_at': self.joined_at,
+            'is_admin': self.is_admin,
+            'is_botmaster': self.is_botmaster,
+            'preferred_language': self.preferred_language,
+            'stats': self.stats,
+            'placement_test_score': self.placement_test_score,
+            'skill_level': self.skill_level
+        }
+
+    def update_stats(self, section: str, stats_update: Dict[str, Any]) -> None:
+        """
+        Update user statistics for a specific section.
+        
+        Args:
+            section: The section to update (reading, writing, listening, speaking)
+            stats_update: Dictionary of statistics to update
+        """
+        if not self.stats:
+            self.stats = {}
+        if section not in self.stats:
+            self.stats[section] = {}
+        
+        # Update the section stats
+        self.stats[section].update(stats_update)
+
+    def get_section_stats(self, section: str) -> Dict[str, Any]:
+        """
+        Get statistics for a specific section.
+        
+        Args:
+            section: The section to get stats for
+            
+        Returns:
+            Dictionary of section statistics
+        """
+        if not self.stats or section not in self.stats:
+            return {}
+        return self.stats[section]
+
+    def is_teacher(self) -> bool:
+        """Check if user is a teacher."""
+        return self.is_admin
+
+    def is_botmaster(self) -> bool:
+        """Check if user is a botmaster."""
+        return self.is_botmaster
+
+    def get_full_name(self) -> str:
+        """Get user's full name."""
+        parts = []
+        if self.first_name:
+            parts.append(self.first_name)
+        if self.last_name:
+            parts.append(self.last_name)
+        return ' '.join(parts) if parts else 'Unknown'
+
+    def update_skill_level(self, new_level: str) -> None:
+        """
+        Update user's skill level.
+        
+        Args:
+            new_level: New skill level (e.g., 'Beginner', 'Intermediate', 'Advanced')
+        """
+        self.skill_level = new_level
+
+    def get_practice_sessions(self, section: Optional[str] = None) -> list:
+        """
+        Get user's practice sessions, optionally filtered by section.
+        
+        Args:
+            section: Optional section to filter by
+            
+        Returns:
+            List of practice sessions
+        """
+        if section:
+            return [session for session in self.practice_sessions if session.section == section]
+        return self.practice_sessions 

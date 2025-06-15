@@ -1,3 +1,4 @@
+from main import db  # Import the db instance from your main app
 from sqlalchemy import Column, Integer, String, Float, JSON, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func # For default datetime
@@ -5,7 +6,7 @@ from sqlalchemy.sql import func # For default datetime
 # Import Base from the user model file or a central base file
 from .user import Base # Assuming Base is defined in models/user.py
 
-class PracticeSession(Base):
+class PracticeSession(db.Model):
     __tablename__ = 'practice_sessions'
 
     id = Column(Integer, primary_key=True, index=True)

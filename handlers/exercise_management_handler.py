@@ -226,6 +226,6 @@ create_exercise_conv_handler = ConversationHandler(
         GET_CONTENT: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_content)],
     },
     fallbacks=[CommandHandler("cancel", cancel_exercise_creation)],
-    per_message=False,
-    per_user=True
+    per_user=True,
+    per_chat=True
 ) 

@@ -55,7 +55,7 @@ class User(db.Model):
     created_exercises = relationship("TeacherExercise", back_populates="creator", foreign_keys='TeacherExercise.creator_id')
 
     def __repr__(self):
-        return f"<User(id={self.id}, user_id={self.user_id}, username='{self.username}')>"
+        return f"<User(id={self.id}, user_id={self.user_id}, username='{self.username}')>" 
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert user object to dictionary."""

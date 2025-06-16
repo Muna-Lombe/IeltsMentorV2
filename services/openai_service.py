@@ -54,12 +54,12 @@ class OpenAIService:
     def generate_speaking_feedback(self, transcript: str, part_number: int, question: str) -> dict:
         """
         Generates structured feedback for an IELTS speaking response.
-
+        
         Args:
             transcript: The transcribed text of the user's response.
             part_number: The part of the IELTS speaking test (1, 2, or 3).
             question: The question the user was answering.
-
+        
         Returns:
             A dictionary containing structured feedback.
         """

@@ -49,7 +49,7 @@ class TranslationSystem:
         if not message_template:
             logger.error(f"Message not found for {category}.{key} in any language")
             return f"[Missing translation: {category}.{key}]"
-
+        
         try:
             return message_template.format(**kwargs)
         except KeyError as e:

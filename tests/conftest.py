@@ -113,7 +113,7 @@ def mock_context():
 @pytest.fixture
 def mock_openai_service():
     """Mock the OpenAIService."""
-    with patch('services.openai_service.OpenAIService') as mock:
+    with patch('handlers.ai_commands_handler.OpenAIService') as mock:
         instance = mock.return_value
         instance.generate_explanation.return_value = "This is a mock explanation."
         instance.generate_definition.return_value = "This is a mock definition."

@@ -22,7 +22,7 @@ async def explain_command(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     # e.g., /explain grammar present perfect
     ai_context = context.args[0]
     query = " ".join(context.args[1:])
-
+    
     # Let the user know the bot is working
     thinking_message = await update.message.reply_text(
         TranslationSystem.get_message('ai', 'thinking', lang_code)

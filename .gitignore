@@ -61,4 +61,5 @@ dist-ssr
 .extract_ideas_from
 
 # envs
-.venv
+venv/*
+.venv/*

@@ -57,7 +57,7 @@ async def practice_section_callback(update: Update, context: ContextTypes.DEFAUL
     db.session.flush()
 
     logger.info(f"User {user_id} started a new '{section}' practice session (ID: {session.id}).")
-
+        
     # For now, we'll just use a generic "work in progress" message for all sections.
     message = trans.get_message(
         "practice", "session_wip", lang_code, section=section.capitalize()

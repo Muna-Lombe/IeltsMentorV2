@@ -33,6 +33,7 @@
     },
     "errors": {
         "translation_not_found": "Translation not found for key: {key}",
+        "general": "Sorry, something went wrong. Please try again in a moment.",
         "general_error": "An unexpected error occurred. Please try again.",
         "registration_error": "Sorry, there was an error during registration. Please try again.",
         "start_command_error": "An unexpected error occurred while starting. Please try starting again.",

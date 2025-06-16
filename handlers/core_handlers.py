@@ -66,12 +66,13 @@ async def stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
             correct = section_stats.get('correct', 0)
             total = section_stats.get('total', 0)
             if total > 0: # Only show sections with activity
+                percentage = (correct / total) * 100
                 stats_parts.append(
-                    f"_{section.capitalize()}_: *{correct}*/*{total}*"
+                    f"_{section.capitalize()}_: *{correct}*/*{total}* ({percentage:.1f}%)"
                 )
         
         if stats_parts:
-            stats_message = header + "\n".join(stats_parts)
+            stats_message = header + "\n" + "\n".join(stats_parts)
         else:
             stats_message = trans.get_message('stats', 'no_stats', lang_code)
         

@@ -1,9 +1,28 @@
-from main import db  # Import the db instance from your main app
-from sqlalchemy import Column, Integer, String, Boolean, Float, BigInteger
+from extensions import db  # Import the db instance from extensions
+from sqlalchemy import Column, Integer, String, Boolean, Float, BigInteger, TypeDecorator, JSON
 from sqlalchemy.dialects.postgresql import JSONB # For JSONB type
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, attributes
 import time
 from typing import Dict, Any, Optional
+import json
+from sqlalchemy.ext.compiler import compiles
+from sqlalchemy.types import JSON
+from sqlalchemy import types
+
+class JSONBType(TypeDecorator):
+    """
+    Use JSONB for PostgreSQL and JSON for other databases.
+    This allows using a unified model definition for both production (PostgreSQL)
+    and testing (e.g., SQLite) environments.
+    """
+    impl = JSON
+    cache_ok = True
+
+    def load_dialect_impl(self, dialect):
+        if dialect.name == 'postgresql':
+            return dialect.type_descriptor(JSONB())
+        else:
+            return dialect.type_descriptor(JSON())
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -19,7 +38,7 @@ class User(db.Model):
     preferred_language = Column(String(10), nullable=True)
 
     # New fields for Phase 2 statistics
-    stats = Column(JSONB, nullable=True, default=lambda: {
+    stats = Column(JSONBType, nullable=True, default=lambda: {
         'reading': {'correct': 0, 'total': 0, 'mcq_attempted': 0, 'mcq_correct': 0},
         'writing': {'tasks_submitted': 0, 'avg_score': 0},
         'listening': {'correct': 0, 'total': 0},
@@ -31,6 +50,9 @@ class User(db.Model):
 
     # Relationship to PracticeSession model
     practice_sessions = relationship("PracticeSession", back_populates="user", cascade="all, delete-orphan")
+    teacher_profile = relationship("Teacher", back_populates="user", uselist=False, cascade="all, delete-orphan")
+    groups_taught = relationship("Group", back_populates="teacher", foreign_keys='Group.teacher_id')
+    created_exercises = relationship("TeacherExercise", back_populates="creator", foreign_keys='TeacherExercise.creator_id')
 
     def __repr__(self):
         return f"<User(id={self.id}, user_id={self.user_id}, username='{self.username}')>"
@@ -66,7 +88,12 @@ class User(db.Model):
             self.stats[section] = {}
         
         # Update the section stats
-        self.stats[section].update(stats_update)
+        current_section_stats = self.stats[section].copy()
+        current_section_stats.update(stats_update)
+        self.stats[section] = current_section_stats
+        
+        # Flag the 'stats' attribute as modified to ensure it's saved
+        attributes.flag_modified(self, "stats")
 
     def get_section_stats(self, section: str) -> Dict[str, Any]:
         """

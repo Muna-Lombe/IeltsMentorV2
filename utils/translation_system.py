@@ -1,130 +1,71 @@
 import json
-import os
-from typing import Dict, Any, Optional
 import logging
+import os
+from typing import Dict, Any
 
 logger = logging.getLogger(__name__)
 
 class TranslationSystem:
-    _translations: Dict[str, Dict[str, str]] = {}
-    _default_language = 'en'
-    _supported_languages = ['en', 'es']  # Add more languages as needed
+    _translations: Dict[str, Dict[str, Any]] = {}
+    _fallback_language = "en"
+    _supported_languages = ["en", "es"]
 
     @classmethod
-    def initialize(cls) -> None:
-        """Initialize the translation system by loading all translation files."""
-        try:
-            # Load translations from JSON files in the data/translations directory
-            translations_dir = os.path.join('data', 'translations')
-            if not os.path.exists(translations_dir):
-                os.makedirs(translations_dir)
-                logger.info(f"Created translations directory at {translations_dir}")
-
-            for lang in cls._supported_languages:
-                file_path = os.path.join(translations_dir, f'{lang}.json')
-                if os.path.exists(file_path):
-                    with open(file_path, 'r', encoding='utf-8') as f:
-                        cls._translations[lang] = json.load(f)
-                    logger.info(f"Loaded translations for {lang}")
-                else:
-                    logger.warning(f"Translation file not found for {lang}: {file_path}")
-                    # Create empty translation file if it doesn't exist
-                    cls._translations[lang] = {}
-                    with open(file_path, 'w', encoding='utf-8') as f:
-                        json.dump({}, f, indent=2, ensure_ascii=False)
-                    logger.info(f"Created empty translation file for {lang}")
-
-        except Exception as e:
-            logger.error(f"Error initializing translation system: {e}")
-            raise
+    def load_translations(cls):
+        """Loads all translation files."""
+        for lang in cls._supported_languages:
+            cls._load_translation_file(lang)
 
     @classmethod
-    def get_message(cls, category: str, key: str, language: str = 'en', **kwargs) -> str:
-        """
-        Get a translated message with optional variable substitution.
-        
-        Args:
-            category: The category of the message (e.g., 'practice', 'error')
-            key: The specific message key
-            language: The target language code
-            **kwargs: Variables to substitute in the message
-            
-        Returns:
-            The translated message with variables substituted
-        """
-        if not cls._translations:
-            cls.initialize()
-
-        # Ensure language is supported, fall back to default if not
-        if language not in cls._supported_languages:
-            logger.warning(f"Unsupported language {language}, falling back to {cls._default_language}")
-            language = cls._default_language
-
-        try:
-            # Get the message from translations
-            message = cls._translations[language].get(category, {}).get(key)
-            
-            # If message not found in requested language, try default language
-            if not message and language != cls._default_language:
-                message = cls._translations[cls._default_language].get(category, {}).get(key)
-                logger.warning(f"Message not found for {category}.{key} in {language}, using {cls._default_language}")
-
-            # If still not found, return a fallback message
-            if not message:
-                logger.error(f"Message not found for {category}.{key} in any language")
-                return f"[Missing translation: {category}.{key}]"
-
-            # Substitute variables in the message
+    def _load_translation_file(cls, lang_code: str) -> None:
+        """Loads a single translation file."""
+        if lang_code not in cls._translations:
             try:
-                return message.format(**kwargs)
-            except KeyError as e:
-                logger.error(f"Missing variable in translation {category}.{key}: {e}")
-                return message
+                # Build an absolute path to the locales directory
+                base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+                file_path = os.path.join(base_dir, 'locales', f'{lang_code}.json')
+                
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    cls._translations[lang_code] = json.load(f)
+                    logger.info(f"Loaded translations for {lang_code}")
+            except FileNotFoundError:
+                logger.error(f"Translation file not found at {file_path}")
+                cls._translations[lang_code] = {}
+            except json.JSONDecodeError:
+                logger.error(f"Error decoding JSON for {lang_code}")
+                cls._translations[lang_code] = {}
 
-        except Exception as e:
-            logger.error(f"Error getting translation for {category}.{key}: {e}")
-            return f"[Translation error: {category}.{key}]"
+    @classmethod
+    def get_message(cls, category: str, key: str, lang_code: str, **kwargs) -> str:
+        """Retrieves a translated message string."""
+        if not cls._translations:
+            cls.load_translations()
+
+        message_template = cls._translations.get(lang_code, {}).get(category, {}).get(key)
+
+        if not message_template and lang_code != cls._fallback_language:
+            message_template = cls._translations.get(cls._fallback_language, {}).get(category, {}).get(key)
+        
+        if not message_template:
+            logger.error(f"Message not found for {category}.{key} in any language")
+            return f"[Missing translation: {category}.{key}]"
+
+        try:
+            return message_template.format(**kwargs)
+        except KeyError as e:
+            logger.error(f"Missing format key {e} for message '{category}.{key}'")
+            return message_template
 
     @classmethod
     def detect_language(cls, user_data: Dict[str, Any]) -> str:
-        """
-        Detect user's preferred language from Telegram user data.
-        
-        Args:
-            user_data: Dictionary containing user information from Telegram
-            
-        Returns:
-            The detected language code or default language if not supported
-        """
-        try:
-            # Try to get language from user's Telegram settings
-            language_code = user_data.get('language_code', '').lower()
-            
-            # Check if the detected language is supported
-            if language_code in cls._supported_languages:
-                return language_code
-                
-            # If language code is not supported, return default
-            logger.info(f"Unsupported language code {language_code}, using default {cls._default_language}")
-            return cls._default_language
-
-        except Exception as e:
-            logger.error(f"Error detecting language: {e}")
-            return cls._default_language
+        """Detects user's language, falling back to the default."""
+        lang_code = user_data.get('language_code', '').split('-')[0]
+        return lang_code if lang_code in cls._supported_languages else cls._fallback_language
 
     @classmethod
     def get_error_message(cls, error_type: str, language: str = 'en') -> str:
-        """
-        Get a standardized error message.
-        
-        Args:
-            error_type: The type of error (e.g., 'permission_denied', 'invalid_input')
-            language: The target language code
-            
-        Returns:
-            The translated error message
-        """
-        return cls.get_message('error', error_type, language)
+        """Gets a standardized error message."""
+        return cls.get_message('errors', error_type, language)
 
 # Global instance (or manage through dependency injection in Flask app)
 # For simplicity here, a global instance that can be imported.

@@ -2,76 +2,74 @@ import logging
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from utils.decorators import safe_handler
-from utils.translation_system import get_message
+from utils.translation_system import TranslationSystem
 from services.openai_service import OpenAIService
+from .decorators import error_handler
 
 logger = logging.getLogger(__name__)
 
-@safe_handler(error_category="errors", error_key="general_ai_error") # Using a general AI error key
+@error_handler
 async def explain_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handles the /explain command to provide AI-powered explanations."""
     user = update.effective_user
-    lang_code = user.language_code if user else "en"
+    lang_code = TranslationSystem.detect_language(user.to_dict())
 
-    if not context.args:
-        message = get_message("ai_commands", "explain_usage", lang_code, 
-                                default="Please provide something to explain. Usage: /explain <your query>")
+    if not context.args or len(context.args) < 2:
+        message = TranslationSystem.get_message("ai", "explain_usage", lang_code)
         await update.message.reply_text(message)
         return
 
-    query_to_explain = " ".join(context.args)
-    
-    # Notify user that we are working on it
-    processing_message = get_message("ai_commands", "processing_explanation", lang_code, default="Generating explanation, please wait...")
-    await update.message.reply_text(processing_message)
+    # e.g., /explain grammar present perfect
+    ai_context = context.args[0]
+    query = " ".join(context.args[1:])
 
+    # Let the user know the bot is working
+    thinking_message = await update.message.reply_text(
+        TranslationSystem.get_message('ai', 'thinking', lang_code)
+    )
+
+    ai_service = OpenAIService()
     try:
-        ai_service = OpenAIService()
-        explanation = ai_service.generate_explanation(query=query_to_explain, language=lang_code)
-
-        if explanation:
-            # The explanation from AI is directly sent.
-            # If we wanted to wrap it, e.g. "Here is the explanation for ...:", we would use get_message here.
-            await update.message.reply_text(explanation)
-        else:
-            error_message = get_message("ai_commands", "explanation_failed", lang_code, default="Sorry, I couldn't generate an explanation for that. Please try again.")
-            await update.message.reply_text(error_message)
+        explanation = ai_service.generate_explanation(
+            query=query, context=ai_context, language=lang_code
+        )
+        final_message = f"{TranslationSystem.get_message('ai', 'explanation_header', lang_code, query=query)}\n\n{explanation}"
+        await thinking_message.edit_text(final_message)
     except Exception as e:
-        logger.error(f"Error in /explain command for query '{query_to_explain}': {e}")
-        # The @safe_handler will catch this and send its generic message, or we can send a specific one here too.
-        # For now, let the safe_handler manage it.
-        raise # Re-raise for the safe_handler to catch and send a translated error message
+        logger.error(f"Error calling OpenAI service for /explain: {e}", exc_info=True)
+        error_message = TranslationSystem.get_error_message("general", lang_code)
+        await thinking_message.edit_text(error_message)
 
-@safe_handler(error_category="errors", error_key="general_ai_error")
+
+@error_handler
 async def define_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handles the /define command to provide AI-powered definitions."""
     user = update.effective_user
-    lang_code = user.language_code if user else "en"
+    lang_code = TranslationSystem.detect_language(user.to_dict())
 
     if not context.args or len(context.args) > 1:
-        message = get_message("ai_commands", "define_usage", lang_code, default="Please provide a single word to define. Usage: /define <word>")
+        message = TranslationSystem.get_message("ai", "define_usage", lang_code)
         await update.message.reply_text(message)
         return
 
     word_to_define = context.args[0]
 
-    # Notify user that we are working on it
-    processing_message = get_message("ai_commands", "processing_definition", lang_code, default="Looking up definition, please wait...")
-    await update.message.reply_text(processing_message)
+    # Let the user know the bot is working
+    thinking_message = await update.message.reply_text(
+        TranslationSystem.get_message('ai', 'thinking', lang_code)
+    )
 
+    ai_service = OpenAIService()
     try:
-        ai_service = OpenAIService()
-        definition = ai_service.generate_definition(word=word_to_define, language=lang_code)
-
-        if definition:
-            await update.message.reply_text(definition)
-        else:
-            error_message = get_message("ai_commands", "definition_failed", lang_code, default=f"Sorry, I couldn't find a definition for '{word_to_define}'. Please ensure it's a valid word.")
-            await update.message.reply_text(error_message)
+        definition = ai_service.generate_definition(
+            word=word_to_define, language=lang_code
+        )
+        final_message = f"{TranslationSystem.get_message('ai', 'definition_header', lang_code, word=word_to_define)}\n\n{definition}"
+        await thinking_message.edit_text(final_message)
     except Exception as e:
-        logger.error(f"Error in /define command for word '{word_to_define}': {e}")
-        raise # Re-raise for the safe_handler
+        logger.error(f"Error calling OpenAI service for /define: {e}", exc_info=True)
+        error_message = TranslationSystem.get_error_message("general", lang_code)
+        await thinking_message.edit_text(error_message)
 
 # Suggested translation keys for en.json / es.json:
 # "ai_commands": {

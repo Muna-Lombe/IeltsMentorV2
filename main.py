@@ -1,136 +1,77 @@
 import os
 import logging
 from flask import Flask, request, jsonify
-from dotenv import load_dotenv
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, CallbackQueryHandler
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
 
-# Load environment variables from .env file
-load_dotenv()
-
-# Environment variables
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-FLASK_SECRET_KEY = os.getenv("FLASK_SECRET_KEY")
-DATABASE_URL = os.getenv("DATABASE_URL")
-# WEBHOOK_URL = os.getenv("WEBHOOK_URL") # We might need this later for setting the webhook
+from extensions import db, migrate
+from config import config
+from handlers import core_handlers, practice_handler, ai_commands_handler, teacher_handler, exercise_management_handler
 
 # Configure logging
 logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
 
-# Set up file logging
-log_file_path = "ielts_bot.log"
-file_handler = logging.FileHandler(log_file_path)
-file_handler.setFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
-logging.getLogger().addHandler(file_handler) # Add to root logger to catch all logs
+# Initialize the Telegram Bot Application
+telegram_bot_token = os.getenv('TELEGRAM_BOT_TOKEN')
+if not telegram_bot_token:
+    raise ValueError("TELEGRAM_BOT_TOKEN environment variable not set!")
 
-# Initialize Flask app
-app = Flask(__name__)
-app.secret_key = FLASK_SECRET_KEY
-app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+application = Application.builder().token(telegram_bot_token).build()
 
-# Initialize extensions
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)
+# Register handlers
+application.add_handler(CommandHandler("start", core_handlers.start))
+application.add_handler(CommandHandler("stats", core_handlers.stats_command))
+application.add_handler(CommandHandler("practice", practice_handler.practice_command))
+application.add_handler(CommandHandler("explain", ai_commands_handler.explain_command))
+application.add_handler(CommandHandler("define", ai_commands_handler.define_command))
+application.add_handler(teacher_handler.create_group_conv_handler)
+application.add_handler(CommandHandler("my_exercises", exercise_management_handler.my_exercises_command))
+application.add_handler(exercise_management_handler.create_exercise_conv_handler)
 
-# Import models to ensure they are registered with SQLAlchemy
-from models.user import User
-from models.practice_session import PracticeSession
+# Register callback query handlers
+application.add_handler(CallbackQueryHandler(practice_handler.practice_section_callback, pattern=f"^{practice_handler.PRACTICE_CALLBACK_LISTENING}|{practice_handler.PRACTICE_CALLBACK_READING}|{practice_handler.PRACTICE_CALLBACK_SPEAKING}|{practice_handler.PRACTICE_CALLBACK_WRITING}"))
 
-# Import handlers
-from handlers.core_handlers import start_command
-from handlers.practice_handler import practice_command, practice_section_callback, \
-    PRACTICE_CALLBACK_SPEAKING, PRACTICE_CALLBACK_WRITING, \
-    PRACTICE_CALLBACK_READING, PRACTICE_CALLBACK_LISTENING, \
-    handle_reading_mcq_answer, CALLBACK_DATA_ANSWER_READING_PREFIX
-from handlers.ai_commands_handler import explain_command, define_command # Import new AI command handlers
+# Fallback for unknown commands
+application.add_handler(MessageHandler(filters.COMMAND, core_handlers.unknown_command))
 
-# Initialize Telegram Bot Application
-if not TELEGRAM_BOT_TOKEN:
-    logger.error("TELEGRAM_BOT_TOKEN not found in environment variables.")
-    ptb_application = None # Or handle error as appropriate
-else:
-    ptb_application = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
-
-    # Register handlers
-    ptb_application.add_handler(CommandHandler("start", start_command))
-    ptb_application.add_handler(CommandHandler("practice", practice_command)) # Add /practice handler
+def create_app(config_name='development'):
+    """Create and configure an instance of the Flask application."""
+    app = Flask(__name__)
     
-    # Add callback query handler for practice sections
-    # Regex to match any of the defined practice callback data
-    practice_callback_pattern = f"^({PRACTICE_CALLBACK_SPEAKING}|{PRACTICE_CALLBACK_WRITING}|{PRACTICE_CALLBACK_READING}|{PRACTICE_CALLBACK_LISTENING})$"
-    ptb_application.add_handler(CallbackQueryHandler(practice_section_callback, pattern=practice_callback_pattern))
+    # Load config from config.py
+    app.config.from_object(config[config_name])
 
-    # Add callback query handler for reading MCQ answers
-    ptb_application.add_handler(CallbackQueryHandler(handle_reading_mcq_answer, pattern=f"^{CALLBACK_DATA_ANSWER_READING_PREFIX}"))
+    # Initialize extensions with the app
+    db.init_app(app)
+    migrate.init_app(app, db)
 
-    # Register AI command handlers
-    ptb_application.add_handler(CommandHandler("explain", explain_command))
-    ptb_application.add_handler(CommandHandler("define", define_command))
+    # Import models and register routes within the app context
+    with app.app_context():
+        from models.user import User
+        from models.practice_session import PracticeSession
 
-    # Add other handlers here as they are developed
+        @app.route("/")
+        def index():
+            return "Hello, IELTS Prep Bot is alive! Flask is running."
 
-# Basic Flask route
-@app.route("/")
-def index():
-    return "Hello, IELTS Prep Bot is alive! Flask is running."
+        @app.route("/webhook", methods=["POST"])
+        async def webhook():
+            """Webhook endpoint to receive updates from Telegram."""
+            if request.is_json:
+                update_data = request.get_json()
+                update = Update.de_json(update_data, application.bot)
+                await application.process_update(update)
+                return jsonify(status="ok")
+            else:
+                return jsonify(status="bad request", error="Request must be JSON"), 400
+            
+    return app
 
-# Webhook endpoint for Telegram
-@app.route("/webhook", methods=["POST"])
-async def webhook():
-    if ptb_application:
-        update_json = request.get_json(force=True)
-        update = Update.de_json(update_json, ptb_application.bot)
-        await ptb_application.process_update(update)
-        return jsonify(status="ok"), 200
-    else:
-        logger.error("Telegram application not initialized, cannot process webhook.")
-        return jsonify(status="error", message="Telegram bot not configured"), 500
+# The flask command will now call create_app
+app = create_app()
 
-async def main_bot_logic():
-    if ptb_application:
-        # Register handlers (ensure this is done if not above)
-        # if not ptb_application.handlers: # Check if handlers are already added
-        #     ptb_application.add_handler(CommandHandler("start", start_command))
-        #     ptb_application.add_handler(CommandHandler("practice", practice_command))
-        #     ptb_application.add_handler(CallbackQueryHandler(practice_section_callback, pattern=practice_callback_pattern))
-        #     ptb_application.add_handler(CallbackQueryHandler(handle_reading_mcq_answer, pattern=f"^{CALLBACK_DATA_ANSWER_READING_PREFIX}"))
-        #     ptb_application.add_handler(CommandHandler("explain", explain_command))
-        #     ptb_application.add_handler(CommandHandler("define", define_command))
-
-        # In a webhook setup, we don't usually run ptb_application.run_polling()
-        # Instead, Telegram sends updates to our /webhook endpoint.
-        # If you need to set the webhook URL for Telegram:
-        # await ptb_application.bot.set_webhook(url=f"{WEBHOOK_URL}/webhook")
-        # logger.info(f"Webhook set to {WEBHOOK_URL}/webhook")
-        
-        # For development without a public URL/SSL, you might use polling temporarily.
-        # But for production with Flask, webhook is preferred.
-        # Example: Start polling (remove or comment out for webhook deployment)
-        # logger.info("Starting bot in polling mode for development...")
-        # ptb_application.run_polling()
-        pass # Webhook handles updates
-    else:
-        logger.error("Telegram bot application could not be started.")
-
-if __name__ == "__main__":
-    # Note: For production, use a WSGI server like Gunicorn, not Flask's dev server.
-    # e.g., gunicorn --bind 0.0.0.0:5000 main:app
-    
-    # The bot logic (like setting webhook or starting polling) might be called here
-    # or handled by a separate startup script for the bot component.
-    # For now, we just ensure the Flask app can run.
-    
-    # If not using a WSGI server and want to run Flask dev server directly:
-    # import asyncio
-    # if ptb_application:
-    #     asyncio.run(main_bot_logic()) # To set webhook or start polling if needed
-    # app.run(debug=True, host="0.0.0.0", port=5000) # Port 5000 is from project_guide.md docker CMD
-    logger.info("Flask app ready. Run with a WSGI server like Gunicorn for production.")
-    logger.info("Example: gunicorn --bind 0.0.0.0:8000 main:app --worker-class uvicorn.workers.UvicornWorker")
-    logger.info("Ensure TELEGRAM_BOT_TOKEN is set and (for webhooks) your app is accessible via a public URL.") 
+# ... (rest of your Telegram bot setup) ...

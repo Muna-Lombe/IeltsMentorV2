@@ -1,0 +1,51 @@
+{
+  "welcome": {
+    "new_user": "¡Bienvenido al Bot Mentor de IELTS, {first_name}! Tu camino hacia el éxito en el IELTS comienza ahora. Tu idioma preferido se ha establecido en español.",
+    "returning_user": "¡Bienvenido de nuevo, {first_name}! Sigamos preparándonos para el IELTS."
+  },
+  "practice": {
+    "select_section": "Por favor, selecciona una sección para practicar:",
+    "start_session": "Iniciando una sesión de práctica de {section}...",
+    "session_wip": "Las sesiones de práctica para {section} todavía están en desarrollo. ¡Vuelve más tarde!"
+  },
+  "ai": {
+    "explain_prompt": "¿Qué tema de IELTS o punto gramatical te gustaría que te explicara?",
+    "define_prompt": "¿Qué palabra te gustaría que definiera?",
+    "explanation_header": "🔍 Aquí tienes una explicación para *{query}*:",
+    "definition_header": "📖 Aquí tienes la definición de *{word}*:",
+    "thinking": "🤔 Pensando... Por favor, espera un momento."
+  },
+  "stats": {
+    "header": "📊 Aquí están tus estadísticas actuales:\n\n",
+    "reading_summary": "📖 Lectura: {correct}/{total} respuestas correctas.\n",
+    "no_stats": "Aún no tienes estadísticas. ¡Prueba una sesión de /practice para empezar!"
+  },
+  "teacher": {
+    "create_group_start": "Para crear un grupo, por favor responde con el nombre del grupo.",
+    "create_group_ask_description": "¡Excelente! Ahora, por favor proporciona una breve descripción para el grupo.",
+    "create_group_success": "✅ ¡El grupo '{group_name}' ha sido creado con éxito!",
+    "create_group_cancel": "La creación del grupo ha sido cancelada.",
+    "create_group_invalid_name": "Nombre inválido. Por favor, proporciona un nombre de al menos 3 caracteres.",
+    "my_exercises_wip": "El comando /mis_ejercicios está en construcción. ¡Pronto podrás ver y gestionar tus ejercicios aquí!",
+    "my_exercises_list_title": "Aquí están tus ejercicios creados:",
+    "my_exercises_none": "Aún no has creado ningún ejercicio. Usa /crear_ejercicio para empezar.",
+    "exercise_status_published": "Publicado",
+    "exercise_status_draft": "Borrador"
+  },
+  "teacher_exercise": {
+    "create_start": "Vamos a crear un nuevo ejercicio. Primero, ¿cuál es el título del ejercicio?",
+    "ask_for_description": "Entendido. Ahora, por favor, proporciona una breve descripción para este ejercicio.",
+    "ask_for_type": "Excelente. Ahora, por favor, selecciona el tipo de ejercicio.",
+    "ask_for_difficulty": "Muy bien. Ahora, ¿cuál es el nivel de dificultad para este ejercicio?",
+    "ask_for_content": "Perfecto. Por favor, proporciona el contenido del ejercicio como un objeto JSON. Por ejemplo:\\n\\n`{{\\\"questions\\\": [{{\\\"text\\\": \\\"Tu pregunta aquí...\\\"}}]}}`",
+    "create_success": "✅ ¡Ejercicio creado con éxito! Puedes verlo usando /mis_ejercicios.",
+    "create_cancel": "La creación del ejercicio ha sido cancelada.",
+    "invalid_content": "El formato del contenido no es válido. Por favor, proporciona un objeto JSON válido con una lista de 'questions', como en el ejemplo."
+  },
+  "errors": {
+    "general_error": "Lo siento, algo salió mal. Por favor, inténtalo de nuevo más tarde.",
+    "unknown_command": "Lo siento, no entendí ese comando. Escribe /ayuda para ver la lista de comandos disponibles.",
+    "user_not_found": "No se pudo encontrar tu perfil de usuario. Por favor, usa /start para registrarte.",
+    "permission_denied_teacher": "Este comando solo está disponible para profesores aprobados."
+  }
+} 

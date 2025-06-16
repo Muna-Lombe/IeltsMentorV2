@@ -1,87 +1,91 @@
 import logging
 from telegram import Update
 from telegram.ext import ContextTypes
-
-from utils.database_manager import DatabaseManager
+from models import User
+from extensions import db
 from utils.translation_system import TranslationSystem
-from utils.error_handler import safe_handler, ValidationError, BotError
+from .decorators import error_handler
 
+# Initialize translation system and logger
+trans = TranslationSystem()
 logger = logging.getLogger(__name__)
 
-@safe_handler()
-async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+@error_handler
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handles the /start command. Registers new users and welcomes them."""
     effective_user = update.effective_user
-    if not effective_user:
-        logger.warning("/start command received without an effective_user")
-        return
+    lang_code = TranslationSystem.detect_language(effective_user.to_dict())
 
-    user_id = effective_user.id
-    first_name = effective_user.first_name
-    last_name = effective_user.last_name
-    username = effective_user.username
+    user = db.session.query(User).filter_by(user_id=effective_user.id).first()
+
+    if not user:
+        # Create a new user if they don't exist
+        user = User(
+            user_id=effective_user.id,
+            first_name=effective_user.first_name,
+            last_name=effective_user.last_name,
+            username=effective_user.username,
+            preferred_language=lang_code
+        )
+        db.session.add(user)
+        db.session.flush()  # Use flush to assign an ID within the transaction
+        message = trans.get_message(
+            'welcome',
+            'new_user',
+            lang_code,
+            first_name=effective_user.first_name
+        )
+    else:
+        # Update language preference if it has changed
+        if user.preferred_language != lang_code:
+            user.preferred_language = lang_code
+        message = trans.get_message(
+            'welcome',
+            'returning_user',
+            lang_code,
+            first_name=effective_user.first_name
+        )
     
-    # Detect user's language
-    user_data = effective_user.to_dict()
-    language_code = TranslationSystem.detect_language(user_data)
+    db.session.flush()
+    await update.message.reply_text(text=message)
 
-    db_manager = DatabaseManager()
 
-    try:
-        existing_user = db_manager.get_user_by_telegram_id(user_id)
+@error_handler
+async def stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Displays the user's practice statistics."""
+    user_id = update.effective_user.id
+    lang_code = TranslationSystem.detect_language(update.effective_user.to_dict())
 
-        if existing_user:
-            # Update user information if needed
-            updated = False
-            if existing_user.username != username:
-                existing_user.username = username
-                updated = True
-            if existing_user.first_name != first_name:
-                existing_user.first_name = first_name
-                updated = True
-            if existing_user.last_name != last_name:
-                existing_user.last_name = last_name
-                updated = True
-            if existing_user.preferred_language != language_code:
-                existing_user.preferred_language = language_code
-                updated = True
-            
-            if updated:
-                session = db_manager.get_session()
-                try:
-                    session.add(existing_user)
-                    session.commit()
-                    logger.info(f"User {user_id} details updated.")
-                except Exception as e:
-                    session.rollback()
-                    raise BotError(f"Failed to update user details: {str(e)}")
-                finally:
-                    session.close()
+    user = db.session.query(User).filter_by(user_id=user_id).first()
 
-            welcome_message = TranslationSystem.get_message(
-                "greetings", "welcome_back", language_code, name=first_name
-            )
-            logger.info(f"Existing user {user_id} ({username}) started the bot with lang: {language_code}.")
-        else:
-            # Register new user
-            new_user = db_manager.add_user(
-                user_id=user_id,
-                first_name=first_name,
-                last_name=last_name,
-                username=username,
-                preferred_language=language_code
-            )
-            
-            if not new_user:
-                raise BotError("Failed to register new user")
-                
-            welcome_message = TranslationSystem.get_message(
-                "greetings", "welcome", language_code
-            )
-            logger.info(f"New user {user_id} ({username}) registered with language: {language_code}.")
-
-        await update.message.reply_text(welcome_message)
+    if user and user.stats:
+        # Build the statistics message
+        header = trans.get_message('stats', 'header', lang_code)
+        stats_parts = []
+        for section, section_stats in user.stats.items():
+            correct = section_stats.get('correct', 0)
+            total = section_stats.get('total', 0)
+            if total > 0: # Only show sections with activity
+                stats_parts.append(
+                    f"_{section.capitalize()}_: *{correct}*/*{total}*"
+                )
         
-    except Exception as e:
-        logger.error(f"Error in start_command: {str(e)}", exc_info=True)
-        raise  # Let safe_handler handle the error message
+        if stats_parts:
+            stats_message = header + "\n".join(stats_parts)
+        else:
+            stats_message = trans.get_message('stats', 'no_stats', lang_code)
+        
+        await update.message.reply_text(text=stats_message)
+    else:
+        # User has no stats record at all
+        stats_message = trans.get_message('stats', 'no_stats', lang_code)
+        await update.message.reply_text(text=stats_message)
+
+
+@error_handler
+async def unknown_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Handles unknown commands."""
+    user = update.effective_user
+    lang_code = TranslationSystem.detect_language(user.to_dict())
+    message = TranslationSystem.get_message("errors", "unknown_command", lang_code)
+    await update.message.reply_text(text=message)

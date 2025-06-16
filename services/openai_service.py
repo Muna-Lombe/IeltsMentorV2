@@ -1,105 +1,83 @@
 import os
 import logging
 import json # For potential JSON parsing if AI returns it
-from openai import OpenAI # Import the OpenAI library
+from openai import OpenAI, OpenAIError # Import the OpenAI library and OpenAIError
 from dotenv import load_dotenv
 
 logger = logging.getLogger(__name__)
 
 class OpenAIService:
-    def __init__(self):
-        load_dotenv() # Load environment variables from .env
-        api_key = os.getenv("OPENAI_API_KEY")
-        if not api_key:
+    def __init__(self, api_key=None):
+        self.api_key = api_key or os.getenv("OPENAI_API_KEY")
+        if not self.api_key:
             logger.error("OPENAI_API_KEY not found in environment variables.")
-            raise ValueError("OPENAI_API_KEY is not set. Please set it in your .env file.")
-        
-        try:
-            self.client = OpenAI(api_key=api_key)
-            logger.info("OpenAI client initialized successfully.")
-        except Exception as e:
-            logger.error(f"Failed to initialize OpenAI client: {e}")
-            # Depending on how critical this is, you might want to raise the error
-            # or allow the service to be created but in a non-functional state.
-            self.client = None # Ensure client is None if initialization fails
-            raise # Re-raise the exception to signal a critical failure
+            raise ValueError("OPENAI_API_KEY not found in environment variables.")
+        self.client = OpenAI(api_key=self.api_key)
 
-    def generate_explanation(self, query: str, context: str = None, language: str = "en") -> str | None:
+    def generate_explanation(self, query: str, context: str, language: str = 'en') -> str:
         """
-        Generates an AI-powered explanation for a given query, optionally with context.
-        (Rule 5, project_rules.md - GPT-4o, JSON responses if applicable, context management)
+        Generates an AI-powered explanation for an IELTS concept.
         
         Args:
-            query (str): The concept or question to explain.
-            context (str, optional): Additional context for the explanation.
-            language (str, optional): The desired language for the explanation.
-        
-        Returns:
-            str | None: The AI-generated explanation, or None if an error occurs.
-        """
-        if not self.client:
-            logger.error("OpenAI client not initialized. Cannot generate explanation.")
-            return None
-        
-        logger.info(f"Generating explanation for query: '{query}' in language: {language} using gpt-4o")
-        system_prompt = f"You are an expert IELTS tutor. Explain the following concept clearly and concisely in {language}. If the query seems to ask for structured data (like a list or steps), try to format your response as a JSON object with a clear top-level key (e.g., \"explanation_steps\"). Otherwise, provide a natural language text explanation."
-        user_content = f"Concept to explain: \"{query}\""
-        if context:
-            user_content += f"\nAdditional context: \"{context}\""
-
-        try:
-            response = self.client.chat.completions.create(
-                model="gpt-4o", # As per Rule 5, project_rules.md
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_content}
-                ]
-                # Consider adding temperature, max_tokens if needed
-            )
-            explanation = response.choices[0].message.content
-            logger.debug(f"OpenAI explanation raw response: {explanation}")
-            return explanation.strip()
-        except Exception as e:
-            logger.error(f"OpenAI API call failed for explanation query '{query}': {e}")
-            return None
-
-    def generate_definition(self, word: str, language: str = "en") -> str | None:
-        """
-        Generates a definition for a given word, including usage examples.
-        
-        Args:
-            word (str): The word to define.
-            language (str, optional): The desired language for the definition.
+            query: The specific concept to explain (e.g., "present perfect").
+            context: The broader context (e.g., "grammar").
+            language: The target language for the explanation.
             
         Returns:
-            str | None: The AI-generated definition, or None if an error occurs.
+            A string containing the explanation.
         """
-        if not self.client:
-            logger.error("OpenAI client not initialized. Cannot generate definition.")
-            return None
-
-        logger.info(f"Generating definition for word: '{word}' in language: {language} using gpt-4o")
-        system_prompt = f"You are an IELTS vocabulary assistant. For the given word, provide a comprehensive definition in {language}. Include:
-1. Part of speech.
-2. Clear definition(s).
-3. An example sentence relevant to IELTS contexts if possible.
-4. Common synonyms, if any."
-        user_content = f"Word to define: \"{word}\""
-
         try:
+            prompt = (
+                f"You are an expert IELTS tutor. Explain the concept of '{query}' "
+                f"in the context of '{context}' for an IELTS student. "
+                f"Provide clear examples. The explanation should be in {language}."
+            )
+            
+            response = self.client.chat.completions.create(
+                model="gpt-4o",  # As per project rules
+                messages=[
+                    {"role": "system", "content": "You are a helpful IELTS preparation assistant."},
+                    {"role": "user", "content": prompt}
+                ],
+                max_tokens=500,
+                temperature=0.7,
+            )
+            return response.choices[0].message.content.strip()
+        except OpenAIError as e:
+            logger.error(f"OpenAI API error during explanation generation: {e}")
+            raise  # Re-raise to be caught by safe_handler
+
+    def generate_definition(self, word: str, language: str = 'en') -> str:
+        """
+        Generates a definition for a word, including examples.
+        
+        Args:
+            word: The word to define.
+            language: The target language for the definition.
+            
+        Returns:
+            A string containing the definition, part of speech, and examples.
+        """
+        try:
+            prompt = (
+                f"You are an expert IELTS tutor. Provide a clear definition for the word '{word}'. "
+                f"Include its part of speech, and at least two example sentences relevant to the IELTS exam. "
+                f"The response should be in {language}."
+            )
+            
             response = self.client.chat.completions.create(
                 model="gpt-4o",
                 messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_content}
-                ]
+                    {"role": "system", "content": "You are a helpful IELTS preparation assistant."},
+                    {"role": "user", "content": prompt}
+                ],
+                max_tokens=300,
+                temperature=0.5,
             )
-            definition_text = response.choices[0].message.content
-            logger.debug(f"OpenAI definition raw response for '{word}': {definition_text}")
-            return definition_text.strip()
-        except Exception as e:
-            logger.error(f"OpenAI API call failed for definition of '{word}': {e}")
-            return None
+            return response.choices[0].message.content.strip()
+        except OpenAIError as e:
+            logger.error(f"OpenAI API error during definition generation: {e}")
+            raise
 
 # Example usage (for testing this file directly)
 if __name__ == '__main__':

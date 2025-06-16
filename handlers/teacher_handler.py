@@ -77,4 +77,6 @@ create_group_conv_handler = ConversationHandler(
         GET_GROUP_DESCRIPTION: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_group_description)],
     },
     fallbacks=[CommandHandler('cancel', cancel_group_creation)],
+    per_message=False,
+    per_user=True,
 ) 

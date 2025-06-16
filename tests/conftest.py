@@ -1,7 +1,13 @@
+import sys
+import os
+
+# Add project root to the Python path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 import pytest
 from unittest.mock import MagicMock, AsyncMock, patch
 
-from main import create_app
+from app import create_app
 from extensions import db
 from models.user import User
 from utils.translation_system import TranslationSystem

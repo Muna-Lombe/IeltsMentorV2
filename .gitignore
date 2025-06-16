@@ -60,3 +60,5 @@ dist-ssr
 # examples directories
 .extract_ideas_from
 
+# envs
+.venv

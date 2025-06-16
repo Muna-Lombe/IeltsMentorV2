@@ -28,7 +28,7 @@
     "create_group_invalid_name": "Nombre inválido. Por favor, proporciona un nombre de al menos 3 caracteres.",
     "my_exercises_wip": "El comando /mis_ejercicios está en construcción. ¡Pronto podrás ver y gestionar tus ejercicios aquí!",
     "my_exercises_list_title": "Aquí están tus ejercicios creados:",
-    "my_exercises_none": "Aún no has creado ningún ejercicio. Usa /crear_ejercicio para empezar.",
+    "my_exercises_none": "Aún no has creado ningún ejercicio. Usa /create_exercise para empezar.",
     "exercise_status_published": "Publicado",
     "exercise_status_draft": "Borrador"
   },
@@ -40,7 +40,28 @@
     "ask_for_content": "Perfecto. Por favor, proporciona el contenido del ejercicio como un objeto JSON. Por ejemplo:\\n\\n`{{\\\"questions\\\": [{{\\\"text\\\": \\\"Tu pregunta aquí...\\\"}}]}}`",
     "create_success": "✅ ¡Ejercicio creado con éxito! Puedes verlo usando /mis_ejercicios.",
     "create_cancel": "La creación del ejercicio ha sido cancelada.",
-    "invalid_content": "El formato del contenido no es válido. Por favor, proporciona un objeto JSON válido con una lista de 'questions', como en el ejemplo."
+    "invalid_content": "El formato del contenido no es válido. Por favor, proporciona un objeto JSON válido con una lista de 'questions', como en el ejemplo.",
+    "speaking_practice_intro": "¡Bienvenido a la Práctica de Expresión Oral! Por favor, elige una parte para comenzar.",
+    "part_1_button": "Parte 1: Introducción",
+    "part_2_button": "Parte 2: Tarjeta de Pista",
+    "part_3_button": "Parte 3: Discusión",
+    "please_send_voice_response": "Por favor, envíame tu respuesta como un mensaje de voz.",
+    "please_send_voice_message_prompt": "Este paso requiere un mensaje de voz. Por favor, envía tu respuesta como una grabación de voz.",
+    "processing_voice_message": "Gracias. Procesando tu mensaje de voz ahora...",
+    "error_processing_voice": "Lo siento, ha habido un error al procesar tu mensaje de voz. Por favor, inténtalo de nuevo más tarde.",
+    "speaking_practice_completed": "La práctica de expresión oral para esta pregunta ha finalizado. Puedes empezar una nueva práctica cuando quieras.",
+    "feedback_summary_title": "Resumen de Comentarios",
+    "estimated_band_label": "Banda Estimada",
+    "strengths_label": "Puntos Fuertes",
+    "improvements_label": "Áreas de Mejora",
+    "vocabulary_label": "Vocabulario",
+    "grammar_label": "Gramática",
+    "fluency_label": "Fluidez y Coherencia",
+    "pronunciation_label": "Pronunciación",
+    "next_tip_label": "Próximo Consejo",
+    "error_formatting_feedback": "Lo siento, ha habido un error al formatear tus comentarios.",
+    "practice_canceled": "Práctica cancelada.",
+    "feature_not_implemented": "Esta función aún no está implementada. Por favor, selecciona otra opción."
   },
   "errors": {
     "general_error": "Lo siento, algo salió mal. Por favor, inténtalo de nuevo más tarde.",
@@ -48,4 +69,4 @@
     "user_not_found": "No se pudo encontrar tu perfil de usuario. Por favor, usa /start para registrarte.",
     "permission_denied_teacher": "Este comando solo está disponible para profesores aprobados."
   }
-} 
+}

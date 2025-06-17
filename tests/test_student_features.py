@@ -11,7 +11,8 @@ async def test_practice_command_shows_selection_menu(sample_user, mock_update, m
     """
     Tests that the /practice command replies with an inline keyboard for section selection.
     """
-    # Ensure the mock_update is configured for a message
+    # Ensure the mock_update uses the correct user ID and is configured for a message
+    mock_update.effective_user.id = sample_user.user_id
     mock_update.callback_query = None
     mock_update.message.reply_text = AsyncMock()
 
@@ -43,7 +44,8 @@ async def test_stats_command_displays_user_stats(sample_user, mock_update, mock_
     """
     Tests that the /stats command correctly displays the user's statistics.
     """
-    # Setup mock update
+    # Setup mock update with the correct user ID
+    mock_update.effective_user.id = sample_user.user_id
     mock_update.callback_query = None
     mock_update.message.reply_text = AsyncMock()
 

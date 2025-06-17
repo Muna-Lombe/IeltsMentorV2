@@ -105,8 +105,8 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
     fn(*args, **kw)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-session = <sqlalchemy.orm.session.Session object at 0x79d225105e10>
-transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x79d2255a59f0>
+session = <sqlalchemy.orm.session.Session object at 0x7afae6128290>
+transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x7afae65eb250>
 
     @event.listens_for(db_session, "after_transaction_end")
     def end_savepoint(session, transaction):
@@ -117,13 +117,13 @@ E       UnboundLocalError: cannot access local variable 'nested' where it is not
 
 tests/conftest.py:58: UnboundLocalError
 ---------------------------- Captured stderr setup -----------------------------
-2025-06-17 00:53:43,658 - utils.translation_system - INFO - Loaded translations for en
-2025-06-17 00:53:43,659 - utils.translation_system - INFO - Loaded translations for es
+2025-06-17 09:11:10,337 - utils.translation_system - INFO - Loaded translations for en
+2025-06-17 09:11:10,338 - utils.translation_system - INFO - Loaded translations for es
 ------------------------------ Captured log setup ------------------------------
 INFO     utils.translation_system:translation_system.py:30 Loaded translations for en
 INFO     utils.translation_system:translation_system.py:30 Loaded translations for es
 ----------------------------- Captured stderr call -----------------------------
-2025-06-17 00:53:43,677 - handlers.decorators - ERROR - Error in handler start: Working outside of application context.
+2025-06-17 09:11:10,359 - handlers.decorators - ERROR - Error in handler start: Working outside of application context.
 
 This typically means that you attempted to use functionality that needed
 the current application. To solve this, set up an application context
@@ -188,7 +188,7 @@ the current application. To solve this, set up an application context
 with app.app_context(). See the documentation for more information.
 __________________ ERROR at setup of test_start_existing_user __________________
 
-self = <sqlalchemy.orm.session.Session object at 0x79d224d742d0>, objects = None
+self = <sqlalchemy.orm.session.Session object at 0x7afae5dc3cd0>, objects = None
 
     def _flush(self, objects: Optional[Sequence[object]] = None) -> None:
         dirty = self._dirty_states
@@ -321,8 +321,8 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
     fn(*args, **kw)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-session = <sqlalchemy.orm.session.Session object at 0x79d224d742d0>
-transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x79d225968870>
+session = <sqlalchemy.orm.session.Session object at 0x7afae5dc3cd0>
+transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x7afae61e1270>
 
     @event.listens_for(db_session, "after_transaction_end")
     def end_savepoint(session, transaction):
@@ -335,7 +335,7 @@ tests/conftest.py:58: UnboundLocalError
 
 During handling of the above exception, another exception occurred:
 
-session = <sqlalchemy.orm.session.Session object at 0x79d224d742d0>
+session = <sqlalchemy.orm.session.Session object at 0x7afae5dc3cd0>
 
     @pytest.fixture(scope='function')
     def sample_user(session):
@@ -377,7 +377,7 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
     self._raise_for_prerequisite_state(fn.__name__, current_state)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-self = <sqlalchemy.orm.session.SessionTransaction object at 0x79d225968870>
+self = <sqlalchemy.orm.session.SessionTransaction object at 0x7afae61e1270>
 operation_name = 'rollback', state = <SessionTransactionState.CLOSED: 5>
 
     def _raise_for_prerequisite_state(
@@ -449,8 +449,8 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
     fn(*args, **kw)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-session = <sqlalchemy.orm.session.Session object at 0x79d224d742d0>
-transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x79d22591a580>
+session = <sqlalchemy.orm.session.Session object at 0x7afae5dc3cd0>
+transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x7afae65d38e0>
 
     @event.listens_for(db_session, "after_transaction_end")
     def end_savepoint(session, transaction):
@@ -462,7 +462,7 @@ E       UnboundLocalError: cannot access local variable 'nested' where it is not
 tests/conftest.py:58: UnboundLocalError
 _______________ ERROR at setup of test_stats_command_with_stats ________________
 
-self = <sqlalchemy.orm.session.Session object at 0x79d2258ea890>, objects = None
+self = <sqlalchemy.orm.session.Session object at 0x7afae65826d0>, objects = None
 
     def _flush(self, objects: Optional[Sequence[object]] = None) -> None:
         dirty = self._dirty_states
@@ -595,8 +595,8 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
     fn(*args, **kw)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-session = <sqlalchemy.orm.session.Session object at 0x79d2258ea890>
-transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x79d224d99c70>
+session = <sqlalchemy.orm.session.Session object at 0x7afae65826d0>
+transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x7afae59ea940>
 
     @event.listens_for(db_session, "after_transaction_end")
     def end_savepoint(session, transaction):
@@ -609,7 +609,7 @@ tests/conftest.py:58: UnboundLocalError
 
 During handling of the above exception, another exception occurred:
 
-session = <sqlalchemy.orm.session.Session object at 0x79d2258ea890>
+session = <sqlalchemy.orm.session.Session object at 0x7afae65826d0>
 
     @pytest.fixture(scope='function')
     def sample_user(session):
@@ -651,7 +651,7 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
     self._raise_for_prerequisite_state(fn.__name__, current_state)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-self = <sqlalchemy.orm.session.SessionTransaction object at 0x79d224d99c70>
+self = <sqlalchemy.orm.session.SessionTransaction object at 0x7afae59ea940>
 operation_name = 'rollback', state = <SessionTransactionState.CLOSED: 5>
 
     def _raise_for_prerequisite_state(
@@ -723,8 +723,8 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
     fn(*args, **kw)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-session = <sqlalchemy.orm.session.Session object at 0x79d2258ea890>
-transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x79d224d997c0>
+session = <sqlalchemy.orm.session.Session object at 0x7afae65826d0>
+transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x7afae59e9040>
 
     @event.listens_for(db_session, "after_transaction_end")
     def end_savepoint(session, transaction):
@@ -779,8 +779,8 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
     fn(*args, **kw)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-session = <sqlalchemy.orm.session.Session object at 0x79d22387ced0>
-transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x79d2251f28a0>
+session = <sqlalchemy.orm.session.Session object at 0x7afae61e9c50>
+transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x7afae5d7dd60>
 
     @event.listens_for(db_session, "after_transaction_end")
     def end_savepoint(session, transaction):
@@ -792,7 +792,7 @@ E       UnboundLocalError: cannot access local variable 'nested' where it is not
 tests/conftest.py:58: UnboundLocalError
 _______________ ERROR at setup of test_practice_section_callback _______________
 
-self = <sqlalchemy.orm.session.Session object at 0x79d225163e90>, objects = None
+self = <sqlalchemy.orm.session.Session object at 0x7afae65f0a90>, objects = None
 
     def _flush(self, objects: Optional[Sequence[object]] = None) -> None:
         dirty = self._dirty_states
@@ -925,8 +925,8 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
     fn(*args, **kw)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-session = <sqlalchemy.orm.session.Session object at 0x79d225163e90>
-transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x79d2255065d0>
+session = <sqlalchemy.orm.session.Session object at 0x7afae65f0a90>
+transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x7afae61a4ff0>
 
     @event.listens_for(db_session, "after_transaction_end")
     def end_savepoint(session, transaction):
@@ -939,7 +939,7 @@ tests/conftest.py:58: UnboundLocalError
 
 During handling of the above exception, another exception occurred:
 
-session = <sqlalchemy.orm.session.Session object at 0x79d225163e90>
+session = <sqlalchemy.orm.session.Session object at 0x7afae65f0a90>
 
     @pytest.fixture(scope='function')
     def sample_user(session):
@@ -981,7 +981,7 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
     self._raise_for_prerequisite_state(fn.__name__, current_state)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-self = <sqlalchemy.orm.session.SessionTransaction object at 0x79d2255065d0>
+self = <sqlalchemy.orm.session.SessionTransaction object at 0x7afae61a4ff0>
 operation_name = 'rollback', state = <SessionTransactionState.CLOSED: 5>
 
     def _raise_for_prerequisite_state(
@@ -1053,8 +1053,8 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
     fn(*args, **kw)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-session = <sqlalchemy.orm.session.Session object at 0x79d225163e90>
-transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x79d225505310>
+session = <sqlalchemy.orm.session.Session object at 0x7afae65f0a90>
+transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x7afae61a4190>
 
     @event.listens_for(db_session, "after_transaction_end")
     def end_savepoint(session, transaction):
@@ -1103,7 +1103,7 @@ E       fixture 'non_approved_teacher_user' not found
 /home/muna/code/Muna-Lombe/tutorials/PythOn/telegram/bots/IeltsMentorV2/tests/test_handlers.py:161
 _________ ERROR at setup of test_create_group_command_as_regular_user __________
 
-self = <sqlalchemy.orm.session.Session object at 0x79d2255bc650>, objects = None
+self = <sqlalchemy.orm.session.Session object at 0x7afae43466d0>, objects = None
 
     def _flush(self, objects: Optional[Sequence[object]] = None) -> None:
         dirty = self._dirty_states
@@ -1236,8 +1236,8 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
     fn(*args, **kw)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-session = <sqlalchemy.orm.session.Session object at 0x79d2255bc650>
-transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x79d22596a080>
+session = <sqlalchemy.orm.session.Session object at 0x7afae43466d0>
+transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x7afae6127f20>
 
     @event.listens_for(db_session, "after_transaction_end")
     def end_savepoint(session, transaction):
@@ -1250,7 +1250,7 @@ tests/conftest.py:58: UnboundLocalError
 
 During handling of the above exception, another exception occurred:
 
-session = <sqlalchemy.orm.session.Session object at 0x79d2255bc650>
+session = <sqlalchemy.orm.session.Session object at 0x7afae43466d0>
 
     @pytest.fixture(scope='function')
     def regular_user(session):
@@ -1290,7 +1290,7 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
     self._raise_for_prerequisite_state(fn.__name__, current_state)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-self = <sqlalchemy.orm.session.SessionTransaction object at 0x79d22596a080>
+self = <sqlalchemy.orm.session.SessionTransaction object at 0x7afae6127f20>
 operation_name = 'rollback', state = <SessionTransactionState.CLOSED: 5>
 
     def _raise_for_prerequisite_state(
@@ -1362,8 +1362,8 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
     fn(*args, **kw)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-session = <sqlalchemy.orm.session.Session object at 0x79d2255bc650>
-transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x79d22596bfc0>
+session = <sqlalchemy.orm.session.Session object at 0x7afae43466d0>
+transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x7afae6125540>
 
     @event.listens_for(db_session, "after_transaction_end")
     def end_savepoint(session, transaction):
@@ -1705,8 +1705,8 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
     fn(*args, **kw)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-session = <sqlalchemy.orm.session.Session object at 0x79d224d7c6d0>
-transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x79d223dda120>
+session = <sqlalchemy.orm.session.Session object at 0x7afae59a1110>
+transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x7afae5d62710>
 
     @event.listens_for(db_session, "after_transaction_end")
     def end_savepoint(session, transaction):
@@ -1718,7 +1718,7 @@ E       UnboundLocalError: cannot access local variable 'nested' where it is not
 tests/conftest.py:58: UnboundLocalError
 _____________________ ERROR at setup of test_update_stats ______________________
 
-self = <sqlalchemy.orm.session.Session object at 0x79d2258eacd0>, objects = None
+self = <sqlalchemy.orm.session.Session object at 0x7afae65f33d0>, objects = None
 
     def _flush(self, objects: Optional[Sequence[object]] = None) -> None:
         dirty = self._dirty_states
@@ -1851,8 +1851,8 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
     fn(*args, **kw)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-session = <sqlalchemy.orm.session.Session object at 0x79d2258eacd0>
-transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x79d225158910>
+session = <sqlalchemy.orm.session.Session object at 0x7afae65f33d0>
+transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x7afae61e0780>
 
     @event.listens_for(db_session, "after_transaction_end")
     def end_savepoint(session, transaction):
@@ -1865,7 +1865,7 @@ tests/conftest.py:58: UnboundLocalError
 
 During handling of the above exception, another exception occurred:
 
-session = <sqlalchemy.orm.session.Session object at 0x79d2258eacd0>
+session = <sqlalchemy.orm.session.Session object at 0x7afae65f33d0>
 
     @pytest.fixture(scope='function')
     def sample_user(session):
@@ -1907,7 +1907,7 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
     self._raise_for_prerequisite_state(fn.__name__, current_state)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-self = <sqlalchemy.orm.session.SessionTransaction object at 0x79d225158910>
+self = <sqlalchemy.orm.session.SessionTransaction object at 0x7afae61e0780>
 operation_name = 'rollback', state = <SessionTransactionState.CLOSED: 5>
 
     def _raise_for_prerequisite_state(
@@ -1979,8 +1979,8 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
     fn(*args, **kw)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-session = <sqlalchemy.orm.session.Session object at 0x79d2258eacd0>
-transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x79d2251583c0>
+session = <sqlalchemy.orm.session.Session object at 0x7afae65f33d0>
+transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x7afae61e2f80>
 
     @event.listens_for(db_session, "after_transaction_end")
     def end_savepoint(session, transaction):
@@ -1992,7 +1992,7 @@ E       UnboundLocalError: cannot access local variable 'nested' where it is not
 tests/conftest.py:58: UnboundLocalError
 ___________ ERROR at setup of test_reading_practice_starts_correctly ___________
 
-self = <sqlalchemy.orm.session.Session object at 0x79d225148a90>, objects = None
+self = <sqlalchemy.orm.session.Session object at 0x7afae615c610>, objects = None
 
     def _flush(self, objects: Optional[Sequence[object]] = None) -> None:
         dirty = self._dirty_states
@@ -2125,8 +2125,8 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
     fn(*args, **kw)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-session = <sqlalchemy.orm.session.Session object at 0x79d225148a90>
-transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x79d2251580f0>
+session = <sqlalchemy.orm.session.Session object at 0x7afae615c610>
+transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x7afae5935c70>
 
     @event.listens_for(db_session, "after_transaction_end")
     def end_savepoint(session, transaction):
@@ -2139,7 +2139,7 @@ tests/conftest.py:58: UnboundLocalError
 
 During handling of the above exception, another exception occurred:
 
-session = <sqlalchemy.orm.session.Session object at 0x79d225148a90>
+session = <sqlalchemy.orm.session.Session object at 0x7afae615c610>
 
     @pytest.fixture(scope='function')
     def sample_user(session):
@@ -2181,7 +2181,7 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
     self._raise_for_prerequisite_state(fn.__name__, current_state)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-self = <sqlalchemy.orm.session.SessionTransaction object at 0x79d2251580f0>
+self = <sqlalchemy.orm.session.SessionTransaction object at 0x7afae5935c70>
 operation_name = 'rollback', state = <SessionTransactionState.CLOSED: 5>
 
     def _raise_for_prerequisite_state(
@@ -2253,8 +2253,8 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
     fn(*args, **kw)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-session = <sqlalchemy.orm.session.Session object at 0x79d225148a90>
-transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x79d2255a4a00>
+session = <sqlalchemy.orm.session.Session object at 0x7afae615c610>
+transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x7afae5934870>
 
     @event.listens_for(db_session, "after_transaction_end")
     def end_savepoint(session, transaction):
@@ -2266,7 +2266,7 @@ E       UnboundLocalError: cannot access local variable 'nested' where it is not
 tests/conftest.py:58: UnboundLocalError
 _____________ ERROR at setup of test_handle_reading_answer_correct _____________
 
-self = <sqlalchemy.orm.session.Session object at 0x79d225562950>, objects = None
+self = <sqlalchemy.orm.session.Session object at 0x7afae5941510>, objects = None
 
     def _flush(self, objects: Optional[Sequence[object]] = None) -> None:
         dirty = self._dirty_states
@@ -2399,8 +2399,8 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
     fn(*args, **kw)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-session = <sqlalchemy.orm.session.Session object at 0x79d225562950>
-transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x79d225506ee0>
+session = <sqlalchemy.orm.session.Session object at 0x7afae5941510>
+transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x7afae5d63b10>
 
     @event.listens_for(db_session, "after_transaction_end")
     def end_savepoint(session, transaction):
@@ -2413,7 +2413,7 @@ tests/conftest.py:58: UnboundLocalError
 
 During handling of the above exception, another exception occurred:
 
-session = <sqlalchemy.orm.session.Session object at 0x79d225562950>
+session = <sqlalchemy.orm.session.Session object at 0x7afae5941510>
 
     @pytest.fixture(scope='function')
     def sample_user(session):
@@ -2455,7 +2455,7 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
     self._raise_for_prerequisite_state(fn.__name__, current_state)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-self = <sqlalchemy.orm.session.SessionTransaction object at 0x79d225506ee0>
+self = <sqlalchemy.orm.session.SessionTransaction object at 0x7afae5d63b10>
 operation_name = 'rollback', state = <SessionTransactionState.CLOSED: 5>
 
     def _raise_for_prerequisite_state(
@@ -2527,8 +2527,8 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
     fn(*args, **kw)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-session = <sqlalchemy.orm.session.Session object at 0x79d225562950>
-transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x79d225504780>
+session = <sqlalchemy.orm.session.Session object at 0x7afae5941510>
+transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x7afae5d60d20>
 
     @event.listens_for(db_session, "after_transaction_end")
     def end_savepoint(session, transaction):
@@ -2540,7 +2540,7 @@ E       UnboundLocalError: cannot access local variable 'nested' where it is not
 tests/conftest.py:58: UnboundLocalError
 ____________ ERROR at setup of test_handle_reading_answer_incorrect ____________
 
-self = <sqlalchemy.orm.session.Session object at 0x79d22517e2d0>, objects = None
+self = <sqlalchemy.orm.session.Session object at 0x7afae5d5e310>, objects = None
 
     def _flush(self, objects: Optional[Sequence[object]] = None) -> None:
         dirty = self._dirty_states
@@ -2673,8 +2673,8 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
     fn(*args, **kw)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-session = <sqlalchemy.orm.session.Session object at 0x79d22517e2d0>
-transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x79d2251f2170>
+session = <sqlalchemy.orm.session.Session object at 0x7afae5d5e310>
+transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x7afae614c8c0>
 
     @event.listens_for(db_session, "after_transaction_end")
     def end_savepoint(session, transaction):
@@ -2687,7 +2687,7 @@ tests/conftest.py:58: UnboundLocalError
 
 During handling of the above exception, another exception occurred:
 
-session = <sqlalchemy.orm.session.Session object at 0x79d22517e2d0>
+session = <sqlalchemy.orm.session.Session object at 0x7afae5d5e310>
 
     @pytest.fixture(scope='function')
     def sample_user(session):
@@ -2729,7 +2729,7 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
     self._raise_for_prerequisite_state(fn.__name__, current_state)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-self = <sqlalchemy.orm.session.SessionTransaction object at 0x79d2251f2170>
+self = <sqlalchemy.orm.session.SessionTransaction object at 0x7afae614c8c0>
 operation_name = 'rollback', state = <SessionTransactionState.CLOSED: 5>
 
     def _raise_for_prerequisite_state(
@@ -2801,8 +2801,8 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
     fn(*args, **kw)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-session = <sqlalchemy.orm.session.Session object at 0x79d22517e2d0>
-transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x79d2251f17c0>
+session = <sqlalchemy.orm.session.Session object at 0x7afae5d5e310>
+transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x7afae614d220>
 
     @event.listens_for(db_session, "after_transaction_end")
     def end_savepoint(session, transaction):
@@ -2814,7 +2814,7 @@ E       UnboundLocalError: cannot access local variable 'nested' where it is not
 tests/conftest.py:58: UnboundLocalError
 _________ ERROR at setup of test_practice_command_shows_selection_menu _________
 
-self = <sqlalchemy.orm.session.Session object at 0x79d223d24e10>, objects = None
+self = <sqlalchemy.orm.session.Session object at 0x7afae5dd0650>, objects = None
 
     def _flush(self, objects: Optional[Sequence[object]] = None) -> None:
         dirty = self._dirty_states
@@ -2947,8 +2947,8 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
     fn(*args, **kw)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-session = <sqlalchemy.orm.session.Session object at 0x79d223d24e10>
-transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x79d223dd8fa0>
+session = <sqlalchemy.orm.session.Session object at 0x7afae5dd0650>
+transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x7afae61e36b0>
 
     @event.listens_for(db_session, "after_transaction_end")
     def end_savepoint(session, transaction):
@@ -2961,7 +2961,7 @@ tests/conftest.py:58: UnboundLocalError
 
 During handling of the above exception, another exception occurred:
 
-session = <sqlalchemy.orm.session.Session object at 0x79d223d24e10>
+session = <sqlalchemy.orm.session.Session object at 0x7afae5dd0650>
 
     @pytest.fixture(scope='function')
     def sample_user(session):
@@ -3003,7 +3003,7 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
     self._raise_for_prerequisite_state(fn.__name__, current_state)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-self = <sqlalchemy.orm.session.SessionTransaction object at 0x79d223dd8fa0>
+self = <sqlalchemy.orm.session.SessionTransaction object at 0x7afae61e36b0>
 operation_name = 'rollback', state = <SessionTransactionState.CLOSED: 5>
 
     def _raise_for_prerequisite_state(
@@ -3075,8 +3075,8 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
     fn(*args, **kw)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-session = <sqlalchemy.orm.session.Session object at 0x79d223d24e10>
-transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x79d223dd8230>
+session = <sqlalchemy.orm.session.Session object at 0x7afae5dd0650>
+transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x7afae61e1e00>
 
     @event.listens_for(db_session, "after_transaction_end")
     def end_savepoint(session, transaction):
@@ -3088,7 +3088,7 @@ E       UnboundLocalError: cannot access local variable 'nested' where it is not
 tests/conftest.py:58: UnboundLocalError
 ___________ ERROR at setup of test_stats_command_displays_user_stats ___________
 
-self = <sqlalchemy.orm.session.Session object at 0x79d2255f1590>, objects = None
+self = <sqlalchemy.orm.session.Session object at 0x7afae594d490>, objects = None
 
     def _flush(self, objects: Optional[Sequence[object]] = None) -> None:
         dirty = self._dirty_states
@@ -3221,8 +3221,8 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
     fn(*args, **kw)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-session = <sqlalchemy.orm.session.Session object at 0x79d2255f1590>
-transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x79d22515adf0>
+session = <sqlalchemy.orm.session.Session object at 0x7afae594d490>
+transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x7afae5d7ceb0>
 
     @event.listens_for(db_session, "after_transaction_end")
     def end_savepoint(session, transaction):
@@ -3235,7 +3235,7 @@ tests/conftest.py:58: UnboundLocalError
 
 During handling of the above exception, another exception occurred:
 
-session = <sqlalchemy.orm.session.Session object at 0x79d2255f1590>
+session = <sqlalchemy.orm.session.Session object at 0x7afae594d490>
 
     @pytest.fixture(scope='function')
     def sample_user(session):
@@ -3277,7 +3277,7 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
     self._raise_for_prerequisite_state(fn.__name__, current_state)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-self = <sqlalchemy.orm.session.SessionTransaction object at 0x79d22515adf0>
+self = <sqlalchemy.orm.session.SessionTransaction object at 0x7afae5d7ceb0>
 operation_name = 'rollback', state = <SessionTransactionState.CLOSED: 5>
 
     def _raise_for_prerequisite_state(
@@ -3349,8 +3349,8 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
     fn(*args, **kw)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-session = <sqlalchemy.orm.session.Session object at 0x79d2255f1590>
-transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x79d22515b160>
+session = <sqlalchemy.orm.session.Session object at 0x7afae594d490>
+transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x7afae5d7cfa0>
 
     @event.listens_for(db_session, "after_transaction_end")
     def end_savepoint(session, transaction):
@@ -3362,7 +3362,7 @@ E       UnboundLocalError: cannot access local variable 'nested' where it is not
 tests/conftest.py:58: UnboundLocalError
 ______________ ERROR at setup of test_stats_command_for_new_user _______________
 
-self = <sqlalchemy.orm.session.Session object at 0x79d2241262d0>, objects = None
+self = <sqlalchemy.orm.session.Session object at 0x7afae4359d10>, objects = None
 
     def _flush(self, objects: Optional[Sequence[object]] = None) -> None:
         dirty = self._dirty_states
@@ -3495,8 +3495,8 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
     fn(*args, **kw)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-session = <sqlalchemy.orm.session.Session object at 0x79d2241262d0>
-transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x79d224d64dc0>
+session = <sqlalchemy.orm.session.Session object at 0x7afae4359d10>
+transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x7afae5d59f90>
 
     @event.listens_for(db_session, "after_transaction_end")
     def end_savepoint(session, transaction):
@@ -3509,7 +3509,7 @@ tests/conftest.py:58: UnboundLocalError
 
 During handling of the above exception, another exception occurred:
 
-session = <sqlalchemy.orm.session.Session object at 0x79d2241262d0>
+session = <sqlalchemy.orm.session.Session object at 0x7afae4359d10>
 
     @pytest.fixture(scope='function')
     def regular_user(session):
@@ -3549,7 +3549,7 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
     self._raise_for_prerequisite_state(fn.__name__, current_state)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-self = <sqlalchemy.orm.session.SessionTransaction object at 0x79d224d64dc0>
+self = <sqlalchemy.orm.session.SessionTransaction object at 0x7afae5d59f90>
 operation_name = 'rollback', state = <SessionTransactionState.CLOSED: 5>
 
     def _raise_for_prerequisite_state(
@@ -3621,8 +3621,8 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
     fn(*args, **kw)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-session = <sqlalchemy.orm.session.Session object at 0x79d2241262d0>
-transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x79d224d65e00>
+session = <sqlalchemy.orm.session.Session object at 0x7afae4359d10>
+transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x7afae6126ad0>
 
     @event.listens_for(db_session, "after_transaction_end")
     def end_savepoint(session, transaction):
@@ -3635,9 +3635,9 @@ tests/conftest.py:58: UnboundLocalError
 =================================== FAILURES ===================================
 _____________________________ test_start_new_user ______________________________
 
-session = <sqlalchemy.orm.session.Session object at 0x79d225105e10>
-mock_update = <MagicMock spec='Update' id='133943476988688'>
-mock_context = <MagicMock id='133943472113616'>
+session = <sqlalchemy.orm.session.Session object at 0x7afae6128290>
+mock_update = <MagicMock spec='Update' id='135218020559696'>
+mock_context = <MagicMock id='135218025050960'>
 
     @pytest.mark.asyncio
     async def test_start_new_user(session, mock_update, mock_context):
@@ -3649,13 +3649,13 @@ E       assert None is not None
 
 tests/test_handlers.py:48: AssertionError
 ---------------------------- Captured stderr setup -----------------------------
-2025-06-17 00:53:43,658 - utils.translation_system - INFO - Loaded translations for en
-2025-06-17 00:53:43,659 - utils.translation_system - INFO - Loaded translations for es
+2025-06-17 09:11:10,337 - utils.translation_system - INFO - Loaded translations for en
+2025-06-17 09:11:10,338 - utils.translation_system - INFO - Loaded translations for es
 ------------------------------ Captured log setup ------------------------------
 INFO     utils.translation_system:translation_system.py:30 Loaded translations for en
 INFO     utils.translation_system:translation_system.py:30 Loaded translations for es
 ----------------------------- Captured stderr call -----------------------------
-2025-06-17 00:53:43,677 - handlers.decorators - ERROR - Error in handler start: Working outside of application context.
+2025-06-17 09:11:10,359 - handlers.decorators - ERROR - Error in handler start: Working outside of application context.
 
 This typically means that you attempted to use functionality that needed
 the current application. To solve this, set up an application context
@@ -3720,7 +3720,7 @@ the current application. To solve this, set up an application context
 with app.app_context(). See the documentation for more information.
 _________________________ test_stats_command_no_stats __________________________
 
-self = <sqlalchemy.orm.session.Session object at 0x79d22387ced0>, objects = None
+self = <sqlalchemy.orm.session.Session object at 0x7afae61e9c50>, objects = None
 
     def _flush(self, objects: Optional[Sequence[object]] = None) -> None:
         dirty = self._dirty_states
@@ -3853,8 +3853,8 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
     fn(*args, **kw)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-session = <sqlalchemy.orm.session.Session object at 0x79d22387ced0>
-transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x79d2251f2b20>
+session = <sqlalchemy.orm.session.Session object at 0x7afae61e9c50>
+transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x7afae5d7df90>
 
     @event.listens_for(db_session, "after_transaction_end")
     def end_savepoint(session, transaction):
@@ -3867,9 +3867,9 @@ tests/conftest.py:58: UnboundLocalError
 
 During handling of the above exception, another exception occurred:
 
-session = <sqlalchemy.orm.session.Session object at 0x79d22387ced0>
-mock_update = <MagicMock spec='Update' id='133943446197008'>
-mock_context = <MagicMock id='133943451081744'>
+session = <sqlalchemy.orm.session.Session object at 0x7afae61e9c50>
+mock_update = <MagicMock spec='Update' id='135218025330960'>
+mock_context = <MagicMock id='135218025441552'>
 
     @pytest.mark.asyncio
     async def test_stats_command_no_stats(session, mock_update, mock_context):
@@ -3911,7 +3911,7 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
     self._raise_for_prerequisite_state(fn.__name__, current_state)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-self = <sqlalchemy.orm.session.SessionTransaction object at 0x79d2251f2b20>
+self = <sqlalchemy.orm.session.SessionTransaction object at 0x7afae5d7df90>
 operation_name = 'rollback', state = <SessionTransactionState.CLOSED: 5>
 
     def _raise_for_prerequisite_state(
@@ -3940,9 +3940,9 @@ E           sqlalchemy.exc.ResourceClosedError: This transaction is closed
 /home/muna/miniconda3/lib/python3.11/site-packages/sqlalchemy/orm/session.py:988: ResourceClosedError
 _____________________________ test_explain_command _____________________________
 
-mock_openai_service_class = <MagicMock name='OpenAIService' id='133943451968848'>
-mock_update = <MagicMock spec='Update' id='133943472679888'>
-mock_context = <MagicMock id='133943446207632'>
+mock_openai_service_class = <MagicMock name='OpenAIService' id='135218025409168'>
+mock_update = <MagicMock spec='Update' id='135218020561872'>
+mock_context = <MagicMock id='135217989047440'>
 
     @pytest.mark.asyncio
     @patch("handlers.ai_commands_handler.OpenAIService")
@@ -3962,16 +3962,16 @@ E       KeyError: 'text'
 
 tests/test_handlers.py:123: KeyError
 ----------------------------- Captured stderr call -----------------------------
-2025-06-17 00:53:44,856 - utils.translation_system - ERROR - Message not found for ai.thinking in any language
-2025-06-17 00:53:44,857 - utils.translation_system - ERROR - Message not found for ai.explanation_header in any language
+2025-06-17 09:11:11,583 - utils.translation_system - ERROR - Message not found for ai.thinking in any language
+2025-06-17 09:11:11,584 - utils.translation_system - ERROR - Message not found for ai.explanation_header in any language
 ------------------------------ Captured log call -------------------------------
 ERROR    utils.translation_system:translation_system.py:50 Message not found for ai.thinking in any language
 ERROR    utils.translation_system:translation_system.py:50 Message not found for ai.explanation_header in any language
 _____________________________ test_define_command ______________________________
 
-mock_openai_service_class = <MagicMock name='OpenAIService' id='133943468213328'>
-mock_update = <MagicMock spec='Update' id='133943472119760'>
-mock_context = <MagicMock id='133943472015952'>
+mock_openai_service_class = <MagicMock name='OpenAIService' id='135218020307856'>
+mock_update = <MagicMock spec='Update' id='135218016294288'>
+mock_context = <MagicMock id='135218020529040'>
 
     @pytest.mark.asyncio
     @patch("handlers.ai_commands_handler.OpenAIService")
@@ -3990,15 +3990,15 @@ E       KeyError: 'text'
 
 tests/test_handlers.py:136: KeyError
 ----------------------------- Captured stderr call -----------------------------
-2025-06-17 00:53:44,868 - utils.translation_system - ERROR - Message not found for ai.thinking in any language
-2025-06-17 00:53:44,869 - utils.translation_system - ERROR - Message not found for ai.definition_header in any language
+2025-06-17 09:11:11,599 - utils.translation_system - ERROR - Message not found for ai.thinking in any language
+2025-06-17 09:11:11,600 - utils.translation_system - ERROR - Message not found for ai.definition_header in any language
 ------------------------------ Captured log call -------------------------------
 ERROR    utils.translation_system:translation_system.py:50 Message not found for ai.thinking in any language
 ERROR    utils.translation_system:translation_system.py:50 Message not found for ai.definition_header in any language
 __________________ test_create_group_command_as_unknown_user ___________________
 
-mock_update = <MagicMock spec='Update' id='133943455268944'>
-mock_context = <MagicMock id='133943472500624'>
+mock_update = <MagicMock spec='Update' id='135218012468624'>
+mock_context = <MagicMock id='135218011995984'>
 
     @pytest.mark.asyncio
     async def test_create_group_command_as_unknown_user(mock_update, mock_context):
@@ -4013,7 +4013,7 @@ E       AssertionError: assert 'Could not find your user profile' in 'Sorry, som
 
 tests/test_handlers.py:191: AssertionError
 ----------------------------- Captured stderr call -----------------------------
-2025-06-17 00:53:45,151 - handlers.decorators - ERROR - Error in handler create_group_start: Working outside of application context.
+2025-06-17 09:11:11,912 - handlers.decorators - ERROR - Error in handler create_group_start: Working outside of application context.
 
 This typically means that you attempted to use functionality that needed
 the current application. To solve this, set up an application context
@@ -4078,7 +4078,7 @@ the current application. To solve this, set up an application context
 with app.app_context(). See the documentation for more information.
 ______________________________ test_user_creation ______________________________
 
-self = <sqlalchemy.orm.session.Session object at 0x79d224d7c6d0>, objects = None
+self = <sqlalchemy.orm.session.Session object at 0x7afae59a1110>, objects = None
 
     def _flush(self, objects: Optional[Sequence[object]] = None) -> None:
         dirty = self._dirty_states
@@ -4211,8 +4211,8 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
     fn(*args, **kw)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-session = <sqlalchemy.orm.session.Session object at 0x79d224d7c6d0>
-transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x79d223dd8820>
+session = <sqlalchemy.orm.session.Session object at 0x7afae59a1110>
+transaction = <sqlalchemy.orm.session.SessionTransaction object at 0x7afae5d623a0>
 
     @event.listens_for(db_session, "after_transaction_end")
     def end_savepoint(session, transaction):
@@ -4225,7 +4225,7 @@ tests/conftest.py:58: UnboundLocalError
 
 During handling of the above exception, another exception occurred:
 
-session = <sqlalchemy.orm.session.Session object at 0x79d224d7c6d0>
+session = <sqlalchemy.orm.session.Session object at 0x7afae59a1110>
 
     def test_user_creation(session):
         """Test basic user creation and default values."""
@@ -4271,7 +4271,7 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
     self._raise_for_prerequisite_state(fn.__name__, current_state)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-self = <sqlalchemy.orm.session.SessionTransaction object at 0x79d223dd8820>
+self = <sqlalchemy.orm.session.SessionTransaction object at 0x7afae5d623a0>
 operation_name = 'rollback', state = <SessionTransactionState.CLOSED: 5>
 
     def _raise_for_prerequisite_state(
@@ -4300,7 +4300,7 @@ E           sqlalchemy.exc.ResourceClosedError: This transaction is closed
 /home/muna/miniconda3/lib/python3.11/site-packages/sqlalchemy/orm/session.py:988: ResourceClosedError
 ____________________ test_explain_command_with_valid_query _____________________
 
-self = <MagicMock name='OpenAIService.generate_explanation' id='133943467908944'>
+self = <MagicMock name='OpenAIService.generate_explanation' id='135218016516752'>
 args = ()
 kwargs = {'context': 'grammar', 'language': 'en', 'query': 'present perfect'}
 msg = "Expected 'generate_explanation' to be called once. Called 0 times."
@@ -4320,9 +4320,9 @@ E           AssertionError: Expected 'generate_explanation' to be called once. C
 
 During handling of the above exception, another exception occurred:
 
-mock_update = <MagicMock spec='Update' id='133943480233936'>
-mock_context = <MagicMock id='133943468379024'>
-mock_openai_service = <MagicMock name='OpenAIService' id='133943467908560'>
+mock_update = <MagicMock spec='Update' id='135218020259984'>
+mock_context = <MagicMock id='135217990957712'>
+mock_openai_service = <MagicMock name='OpenAIService' id='135218012099088'>
 
     @pytest.mark.asyncio
     async def test_explain_command_with_valid_query(mock_update, mock_context, mock_openai_service):
@@ -4340,16 +4340,16 @@ mock_openai_service = <MagicMock name='OpenAIService' id='133943467908560'>
         )
 E       AssertionError: Expected 'generate_explanation' to be called once. Called 0 times.
 
-tests/test_student_features.py:92: AssertionError
+tests/test_student_features.py:94: AssertionError
 ----------------------------- Captured stderr call -----------------------------
-2025-06-17 00:53:47,198 - utils.translation_system - ERROR - Message not found for ai.thinking in any language
-2025-06-17 00:53:47,199 - utils.translation_system - ERROR - Message not found for ai.explanation_header in any language
+2025-06-17 09:11:14,487 - utils.translation_system - ERROR - Message not found for ai.thinking in any language
+2025-06-17 09:11:14,488 - utils.translation_system - ERROR - Message not found for ai.explanation_header in any language
 ------------------------------ Captured log call -------------------------------
 ERROR    utils.translation_system:translation_system.py:50 Message not found for ai.thinking in any language
 ERROR    utils.translation_system:translation_system.py:50 Message not found for ai.explanation_header in any language
 _____________________ test_define_command_with_valid_word ______________________
 
-self = <MagicMock name='OpenAIService.generate_definition' id='133943468605776'>
+self = <MagicMock name='OpenAIService.generate_definition' id='135218012235024'>
 args = (), kwargs = {'language': 'en', 'word': 'elaborate'}
 msg = "Expected 'generate_definition' to be called once. Called 0 times."
 
@@ -4368,9 +4368,9 @@ E           AssertionError: Expected 'generate_definition' to be called once. Ca
 
 During handling of the above exception, another exception occurred:
 
-mock_update = <MagicMock spec='Update' id='133943476256464'>
-mock_context = <MagicMock id='133943468227664'>
-mock_openai_service = <MagicMock name='OpenAIService' id='133943476576464'>
+mock_update = <MagicMock spec='Update' id='135218012456080'>
+mock_context = <MagicMock id='135218016411792'>
+mock_openai_service = <MagicMock name='OpenAIService' id='135217989682384'>
 
     @pytest.mark.asyncio
     async def test_define_command_with_valid_word(mock_update, mock_context, mock_openai_service):
@@ -4388,10 +4388,10 @@ mock_openai_service = <MagicMock name='OpenAIService' id='133943476576464'>
         )
 E       AssertionError: Expected 'generate_definition' to be called once. Called 0 times.
 
-tests/test_student_features.py:112: AssertionError
+tests/test_student_features.py:114: AssertionError
 ----------------------------- Captured stderr call -----------------------------
-2025-06-17 00:53:47,248 - utils.translation_system - ERROR - Message not found for ai.thinking in any language
-2025-06-17 00:53:47,249 - utils.translation_system - ERROR - Message not found for ai.definition_header in any language
+2025-06-17 09:11:14,547 - utils.translation_system - ERROR - Message not found for ai.thinking in any language
+2025-06-17 09:11:14,548 - utils.translation_system - ERROR - Message not found for ai.definition_header in any language
 ------------------------------ Captured log call -------------------------------
 ERROR    utils.translation_system:translation_system.py:50 Message not found for ai.thinking in any language
 ERROR    utils.translation_system:translation_system.py:50 Message not found for ai.definition_header in any language
@@ -4458,4 +4458,4 @@ ERROR tests/test_student_features.py::test_stats_command_displays_user_stats
 ERROR tests/test_student_features.py::test_stats_command_displays_user_stats
 ERROR tests/test_student_features.py::test_stats_command_for_new_user - sqlal...
 ERROR tests/test_student_features.py::test_stats_command_for_new_user - Unbou...
-============== 8 failed, 4 passed, 3 warnings, 40 errors in 3.74s ==============
+============== 8 failed, 4 passed, 3 warnings, 40 errors in 4.30s ==============

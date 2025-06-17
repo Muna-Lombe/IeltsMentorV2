@@ -158,7 +158,7 @@ async def get_content(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text(
         text=trans.get_message(
-            "teacher_exercise", "create_success", user.preferred_language
+            "teacher_exercise", "create_success", user.preferred_language, title=exercise_data["title"]
         )
     )
     
@@ -226,6 +226,6 @@ create_exercise_conv_handler = ConversationHandler(
         GET_CONTENT: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_content)],
     },
     fallbacks=[CommandHandler("cancel", cancel_exercise_creation)],
-    per_message=False,
-    per_user=True
+    per_user=True,
+    per_chat=True
 ) 

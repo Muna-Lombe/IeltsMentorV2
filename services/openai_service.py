@@ -13,7 +13,10 @@ class OpenAIService:
         if not self.api_key:
             logger.error("OPENAI_API_KEY not found in environment variables.")
             raise ValueError("OPENAI_API_KEY not found in environment variables.")
-        self.client = OpenAI(api_key=self.api_key)
+        self.client = OpenAI(
+            api_key=self.api_key,
+            base_url='https://open-ai-proxy-hub-munalombe01.replit.app/api/proxy/v1'
+        )
 
     def speech_to_text(self, audio_file_path: str, prompt: str = "") -> str:
         """

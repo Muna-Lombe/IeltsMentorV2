@@ -6,49 +6,102 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 import pytest
 from unittest.mock import MagicMock, AsyncMock, patch
+from sqlalchemy import create_engine, event
+from sqlalchemy.orm import sessionmaker
+from telegram import Update
 
 from app import create_app
 from extensions import db
 from models.user import User
+from models.practice_session import PracticeSession
+from models import Teacher, TeacherExercise, Group
 from utils.translation_system import TranslationSystem
-from models import Teacher, TeacherExercise
+
+# This engine will be used for the entire test session
+engine = create_engine("sqlite:///:memory:")
+TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 @pytest.fixture(scope='session')
 def app():
     """Create and configure a new app instance for each test session."""
     app = create_app('testing')
-    return app
-
-@pytest.fixture(scope='session')
-def app_context(app):
-    """Provide the app context for the test session."""
+    app.config.update({"TESTING": True, "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:"})
+    
     with app.app_context():
-        yield
+        # Bind the app's db metadata to the test engine
+        db.metadata.create_all(bind=engine)
 
-@pytest.fixture(scope='session')
-def client(app, app_context):
-    """A test client for the app."""
-    return app.test_client()
+    yield app
 
-@pytest.fixture(scope='session', autouse=True)
-def build_db(app_context):
-    """Build the database."""
-    db.create_all()
-    yield
-    db.drop_all()
+    with app.app_context():
+        db.metadata.drop_all(bind=engine)
 
-@pytest.fixture(scope='function', autouse=True)
-def session(app_context):
-    """Creates a new database session for a test and rolls back changes."""
-    connection = db.engine.connect()
+
+@pytest.fixture(scope='function')
+def session(app):
+    """
+    Creates a new database session for a test with nested transactions.
+    Rolls back to a savepoint after each test, ensuring test isolation.
+    """
+    connection = engine.connect()
     transaction = connection.begin()
+    
+    # The session is bound to the connection, ensuring it participates in the transaction
+    db_session = TestingSessionLocal(bind=connection)
 
-    # Use the existing db.session which is a scoped_session
-    yield db.session
+    # Establish a SAVEPOINT, and roll back to it after the test
+    nested = connection.begin_nested()
 
-    db.session.remove()
+    @event.listens_for(db_session, "after_transaction_end")
+    def end_savepoint(session, transaction):
+        # When the session ends (e.g., via commit or rollback), if the nested transaction is still active, roll it back
+        if not nested.is_active:
+            nested = connection.begin_nested()
+
+    yield db_session
+
+    # Rollback the overall transaction and close the connection
+    db_session.close()
     transaction.rollback()
     connection.close()
+
+# --- Mock Fixtures ---
+
+@pytest.fixture
+def mock_update():
+    """Creates a generic mock for the telegram.Update object."""
+    update = MagicMock(spec=Update)
+    update.effective_user = MagicMock()
+    update.effective_user.id = 12345
+    update.effective_user.first_name = "Test"
+    update.effective_user.last_name = "User"
+    update.effective_user.username = "testuser"
+    update.effective_user.language_code = 'en'
+    
+    update.effective_chat = MagicMock()
+    update.message = MagicMock()
+    update.callback_query = MagicMock()
+    
+    # Make mocks awaitable
+    update.message.reply_text = AsyncMock()
+    update.callback_query.answer = AsyncMock()
+    update.callback_query.edit_message_text = AsyncMock()
+    
+    # Configure from_user on callback_query
+    update.callback_query.from_user = update.effective_user
+    
+    return update
+
+@pytest.fixture
+def mock_context():
+    """Creates a generic mock for the telegram.ext.CallbackContext object."""
+    context = MagicMock()
+    context.bot = MagicMock()
+    context.bot.send_message = AsyncMock()
+    context.user_data = {}
+    return context
+
+# --- Data Fixtures ---
 
 @pytest.fixture(scope='function')
 def sample_user(session):
@@ -62,96 +115,82 @@ def sample_user(session):
         stats={'reading': {'correct': 5, 'total': 10}}
     )
     session.add(user)
-    session.flush()  # Persist user within the transaction without committing
+    session.commit()
     return user
+    
+@pytest.fixture(scope='function')
+def regular_user(session):
+    """Create a second sample user for testing interactions."""
+    user = User(
+        user_id=111,
+        first_name="Regular",
+        last_name="User",
+        username="regularuser"
+    )
+    session.add(user)
+    session.commit()
+    return user
+
+@pytest.fixture(scope='function')
+def approved_teacher(session):
+    """Create a sample teacher user who is approved."""
+    user = User(user_id=111, first_name="Approved", last_name="Teacher", username="approvedteacher", is_admin=True)
+    session.add(user)
+    session.commit()
+
+    teacher = Teacher(user_id=user.id, is_approved=True)
+    session.add(teacher)
+    session.commit()
+    return user
+
+@pytest.fixture(scope='function')
+def unapproved_teacher(session):
+    """Create a sample teacher user who is not yet approved."""
+    user = User(user_id=222, first_name="Unapproved", last_name="Teacher", username="unapprovedteacher", is_admin=True)
+    session.add(user)
+    session.commit()
+
+    teacher = Teacher(user_id=user.id, is_approved=False)
+    session.add(teacher)
+    session.commit()
+    return user
+
+@pytest.fixture(scope='function')
+def sample_teacher_with_exercises(session, approved_teacher):
+    """A teacher with some exercises already created."""
+    exercise1 = TeacherExercise(creator_id=approved_teacher.id, title="Test Exercise 1", exercise_type="reading", difficulty="medium", content={"q": "1"})
+    exercise2 = TeacherExercise(creator_id=approved_teacher.id, title="Test Exercise 2", exercise_type="writing", difficulty="hard", content={"q": "2"})
+    session.add_all([exercise1, exercise2])
+    session.commit()
+    return approved_teacher
+
+@pytest.fixture
+def mock_openai_service():
+    """Mocks the OpenAIService to prevent actual API calls."""
+    with patch('handlers.ai_commands_handler.OpenAIService') as mock_service:
+        mock_service.generate_explanation.return_value = "This is a mock explanation."
+        mock_service.generate_definition.return_value = "This is a mock definition."
+        yield mock_service
+
+@pytest.fixture
+def mock_reading_data():
+    """Mocks the function that loads reading practice data."""
+    with patch('handlers.practice_handler.load_reading_data') as mock_load:
+        mock_load.return_value = {
+            "passages": [{
+                "id": "rs1",
+                "passage": "This is a test passage.",
+                "questions": [{
+                    "question_id": "rs1_q1",
+                    "question_text": "What is this?",
+                    "options": ["A test", "A real thing", "Not sure"],
+                    "correct_option_index": 0
+                }]
+            }]
+        }
+        yield mock_load
 
 @pytest.fixture(scope="session", autouse=True)
 def _translations():
     """Load translations once for the entire test session."""
     TranslationSystem.load_translations()
-
-@pytest.fixture
-def mock_update():
-    """Create a mock Telegram update object."""
-    update = MagicMock()
-    
-    # Mock user
-    user_mock = MagicMock()
-    user_mock.id = 12345
-    user_mock.first_name = "Test"
-    user_mock.last_name = "User"
-    user_mock.username = "testuser"
-    user_mock.language_code = "en"
-    user_mock.to_dict.return_value = {
-        'id': user_mock.id,
-        'first_name': user_mock.first_name,
-        'last_name': user_mock.last_name,
-        'username': user_mock.username,
-        'language_code': user_mock.language_code,
-    }
-    
-    # Mock message
-    message_mock = AsyncMock() # Use AsyncMock for message and reply_text
-    
-    # Mock callback_query
-    callback_query_mock = AsyncMock()
-    
-    update.effective_user = user_mock
-    update.message = message_mock
-    update.callback_query = callback_query_mock
-    update.callback_query.from_user = user_mock # Callback queries also have a user
-    
-    return update
-
-@pytest.fixture
-def mock_context():
-    """Create a mock Telegram context object."""
-    context = MagicMock()
-    context.args = []
-    return context
-
-@pytest.fixture
-def mock_openai_service():
-    """Mock the OpenAIService."""
-    with patch('handlers.ai_commands_handler.OpenAIService') as mock:
-        instance = mock.return_value
-        instance.generate_explanation.return_value = "This is a mock explanation."
-        instance.generate_definition.return_value = "This is a mock definition."
-        yield mock 
-
-@pytest.fixture
-def regular_user(session):
-    """Fixture for a regular user who is not an admin."""
-    user = User(user_id=111, first_name="Regular", last_name="User", username="regularuser")
-    session.add(user)
-    session.flush()
-    return user
-
-@pytest.fixture
-def non_approved_teacher_user(session):
-    """Fixture for a user who is an admin but not an approved teacher."""
-    user = User(user_id=222, first_name="Admin", last_name="User", username="adminuser", is_admin=True)
-    teacher_profile = Teacher(user_id=user.id, is_approved=False)
-    user.teacher_profile = teacher_profile
-    session.add(user)
-    session.flush()
-    return user
-
-@pytest.fixture
-def approved_teacher_user(session):
-    """Fixture for a user who is an admin and an approved teacher."""
-    user = User(user_id=333, first_name="Approved", last_name="Teacher", username="approvedteacher", is_admin=True)
-    teacher_profile = Teacher(user_id=user.id, is_approved=True)
-    user.teacher_profile = teacher_profile
-    session.add(user)
-    session.flush()
-    return user
-
-@pytest.fixture
-def approved_teacher_with_exercises(session, approved_teacher_user):
-    """Fixture for an approved teacher with some exercises."""
-    ex1 = TeacherExercise(creator_id=approved_teacher_user.id, title="Grammar Test 1", exercise_type="grammar", content={}, difficulty="easy", is_published=True)
-    ex2 = TeacherExercise(creator_id=approved_teacher_user.id, title="Vocabulary Quiz", exercise_type="vocabulary", content={}, difficulty="medium", is_published=False)
-    session.add_all([ex1, ex2])
-    session.flush()
-    return approved_teacher_user 

@@ -67,16 +67,16 @@ async def test_stats_command_for_new_user(regular_user, mock_update, mock_contex
     """
     # Setup mock update for the new user
     mock_update.effective_user.id = regular_user.user_id
-    mock_update.callback_query = None
-    mock_update.message.reply_text = AsyncMock()
-
+    mock_update.callback_query = None # This is a message command
+    mock_update.message = AsyncMock() # Ensure message is an awaitable mock
+    
     # Call the handler
     await stats_command(mock_update, mock_context)
-
+    
     # Assertions
     mock_update.message.reply_text.assert_called_once()
     call_args = mock_update.message.reply_text.call_args.kwargs
-    assert "You don't have any stats yet" in call_args['text']
+    assert "No stats to show yet" in call_args['text']
 
 @pytest.mark.asyncio
 async def test_explain_command_with_valid_query(mock_update, mock_context, mock_openai_service):
@@ -84,23 +84,19 @@ async def test_explain_command_with_valid_query(mock_update, mock_context, mock_
     Tests the /explain command with a valid query, ensuring it calls the AI service.
     """
     mock_context.args = ["grammar", "present", "perfect"]
-    mock_update.message.reply_text = AsyncMock(return_value=AsyncMock()) # Mock initial message
-    thinking_message = await mock_update.message.reply_text()
-    thinking_message.edit_text = AsyncMock()
-
+    
     from handlers.ai_commands_handler import explain_command
     await explain_command(mock_update, mock_context)
-
+    
     # Check that the AI service was called
-    mock_openai_service.return_value.generate_explanation.assert_called_once_with(
+    mock_openai_service.generate_explanation.assert_called_once_with(
         query="present perfect", context="grammar", language="en"
     )
-
+    
     # Check that the thinking message is updated with the explanation
-    thinking_message.edit_text.assert_called_once()
-    call_args = thinking_message.edit_text.call_args[0]
-    assert "Here's an explanation for" in call_args[0]
-    assert "This is a mock explanation." in call_args[0]
+    mock_update.message.reply_text.assert_called_once()
+    call_args = mock_update.message.reply_text.call_args.kwargs
+    assert "This is a mock explanation." in call_args['text']
 
 @pytest.mark.asyncio
 async def test_define_command_with_valid_word(mock_update, mock_context, mock_openai_service):
@@ -108,20 +104,16 @@ async def test_define_command_with_valid_word(mock_update, mock_context, mock_op
     Tests the /define command with a valid word, ensuring it calls the AI service.
     """
     mock_context.args = ["elaborate"]
-    mock_update.message.reply_text = AsyncMock(return_value=AsyncMock()) # Mock initial message
-    thinking_message = await mock_update.message.reply_text()
-    thinking_message.edit_text = AsyncMock()
-
+    
     from handlers.ai_commands_handler import define_command
     await define_command(mock_update, mock_context)
-
+    
     # Check that the AI service was called
-    mock_openai_service.return_value.generate_definition.assert_called_once_with(
+    mock_openai_service.generate_definition.assert_called_once_with(
         word="elaborate", language="en"
     )
-
+    
     # Check that the thinking message is updated with the definition
-    thinking_message.edit_text.assert_called_once()
-    call_args = thinking_message.edit_text.call_args[0]
-    assert "Here's the definition for" in call_args[0]
-    assert "This is a mock definition." in call_args[0] 
+    mock_update.message.reply_text.assert_called_once()
+    call_args = mock_update.message.reply_text.call_args.kwargs
+    assert "This is a mock definition." in call_args['text'] 

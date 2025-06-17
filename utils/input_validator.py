@@ -2,17 +2,48 @@ import json
 import re
 
 class InputValidator:
+    """A utility class for validating and sanitizing user inputs."""
+
     @staticmethod
-    def sanitize_text_input(text, max_length=1000):
-        """Sanitize text input for database storage"""
-        if not text or not isinstance(text, str):
+    def validate_user_id(user_id: int) -> int | None:
+        """
+        Validates a Telegram user ID.
+        
+        Args:
+            user_id: The user ID to validate.
+            
+        Returns:
+            The user ID if it is valid, otherwise None.
+        """
+        if not isinstance(user_id, int):
+            return None
+        # Telegram user IDs are positive integers.
+        if user_id <= 0:
+            return None
+        return user_id
+
+    @staticmethod
+    def sanitize_text_input(text: str, max_length: int = 500) -> str:
+        """
+        Sanitizes text input to prevent injection attacks and limit length.
+        
+        Args:
+            text: The text to sanitize.
+            max_length: The maximum allowed length of the text.
+            
+        Returns:
+            The sanitized text.
+        """
+        if not isinstance(text, str):
             return ""
         
-        # Remove potentially dangerous characters
-        cleaned = re.sub(r'[<>"\\\']', '', text)
-        # Limit length
-        return cleaned[:max_length].strip()
+        # Remove characters that could be used for injection attacks.
+        # This is a basic example; a real-world app might need a more robust solution.
+        sanitized_text = re.sub(r'[<>/;"\']', '', text)
         
+        # Truncate to the maximum length
+        return sanitized_text[:max_length].strip()
+
     @staticmethod
     def validate_exercise_content(content_text: str):
         """

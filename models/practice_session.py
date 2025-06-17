@@ -14,8 +14,8 @@ class PracticeSession(db.Model):
     section = Column(String(50), nullable=False)  # e.g., 'speaking_part1', 'reading_mcq', 'writing_task2'
     
     score = Column(Float, nullable=True)
-    total_questions = Column(Integer, nullable=True)
-    correct_answers = Column(Integer, nullable=True)
+    total_questions = Column(Integer, nullable=False, default=0)
+    correct_answers = Column(Integer, nullable=False, default=0)
     
     started_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     completed_at = Column(DateTime(timezone=True), nullable=True)

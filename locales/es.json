@@ -1,24 +1,39 @@
 {
-  "welcome": {
-    "new_user": "¡Bienvenido al Bot Mentor de IELTS, {first_name}! Tu camino hacia el éxito en el IELTS comienza ahora. Tu idioma preferido se ha establecido en español.",
-    "returning_user": "¡Bienvenido de nuevo, {first_name}! Sigamos preparándonos para el IELTS."
+  "greetings": {
+    "welcome_new_user": "¡Bienvenido al Bot Mentor de IELTS, {first_name}! Estoy aquí para ayudarte a prepararte para tu examen. ¿Qué te gustaría hacer hoy?",
+    "welcome_existing_user": "¡Bienvenido de nuevo, {first_name}! ¿Listo para más práctica?"
   },
   "practice": {
     "select_section": "Por favor, selecciona una sección para practicar:",
-    "start_session": "Iniciando una sesión de práctica de {section}...",
-    "session_wip": "Las sesiones de práctica para {section} todavía están en desarrollo. ¡Vuelve más tarde!"
+    "button_speaking": "🗣️ Oral",
+    "button_writing": "✍️ Escrito",
+    "button_reading": "📖 Lectura",
+    "button_listening": "🎧 Auditiva",
+    "no_reading_material": "Lo sentimos, no hay materiales de lectura disponibles en este momento. Por favor, inténtalo de nuevo más tarde.",
+    "reading_session_complete": "¡Práctica de lectura completada!\\nTu puntuación: {score} ({percentage}%).",
+    "correct_answer": "¡Correcto! 🎉",
+    "incorrect_answer": "No del todo. La respuesta correcta era: {correct_answer}",
+    "session_wip": "La práctica de {section} es un trabajo en progreso. ¡Por favor, vuelve más tarde!"
   },
-  "ai": {
-    "explain_prompt": "¿Qué tema de IELTS o punto gramatical te gustaría que te explicara?",
-    "define_prompt": "¿Qué palabra te gustaría que definiera?",
-    "explanation_header": "🔍 Aquí tienes una explicación para *{query}*:",
-    "definition_header": "📖 Aquí tienes la definición de *{word}*:",
-    "thinking": "🤔 Pensando... Por favor, espera un momento."
+  "speaking_practice": {
+    "intro": "¡Bienvenido a la Práctica de Expresión Oral! Por favor, elige qué parte te gustaría practicar.",
+    "part_1_button": "Parte 1: Entrevista",
+    "part_2_button": "Parte 2: Tarjeta de Pista",
+    "part_3_button": "Parte 3: Discusión"
+  },
+  "ai_commands": {
+    "explain_usage": "Por favor, proporciona un tema o pregunta para explicar. Uso: /explain <tema>",
+    "define_usage": "Por favor, proporciona una palabra para definir. Uso: /define <palabra>",
+    "general_error": "Lo siento, no pude procesar eso. Por favor, inténtalo de nuevo."
   },
   "stats": {
-    "header": "📊 Aquí están tus estadísticas actuales:\n\n",
-    "reading_summary": "📖 Lectura: {correct}/{total} respuestas correctas.\n",
-    "no_stats": "Aún no tienes estadísticas. ¡Prueba una sesión de /practice para empezar!"
+    "no_stats": "Aún no hay estadísticas para mostrar. ¡Completa algunas sesiones de práctica primero!",
+    "user_stats_title": "📊 Tu Progreso en IELTS",
+    "reading_stats": "📖 Lectura: {correct}/{total} ({percentage}%)"
+  },
+  "general": {
+    "invalid_action": "Acción inválida. Por favor, inténtalo de nuevo.",
+    "cancel_button": "Cancelar"
   },
   "teacher": {
     "create_group_start": "Para crear un grupo, por favor responde con el nombre del grupo.",
@@ -32,6 +47,12 @@
     "exercise_status_published": "Publicado",
     "exercise_status_draft": "Borrador"
   },
+  "errors": {
+    "general_error": "Lo siento, algo salió mal. Por favor, inténtalo de nuevo más tarde.",
+    "unknown_command": "Lo siento, no entendí ese comando. Escribe /ayuda para ver la lista de comandos disponibles.",
+    "user_not_found": "No se pudo encontrar tu perfil de usuario. Por favor, usa /start para registrarte.",
+    "permission_denied_teacher": "Este comando solo está disponible para profesores aprobados."
+  },
   "teacher_exercise": {
     "create_start": "Vamos a crear un nuevo ejercicio. Primero, ¿cuál es el título del ejercicio?",
     "ask_for_description": "Entendido. Ahora, por favor, proporciona una breve descripción para este ejercicio.",
@@ -41,10 +62,13 @@
     "create_success": "✅ ¡Ejercicio creado con éxito! Puedes verlo usando /mis_ejercicios.",
     "create_cancel": "La creación del ejercicio ha sido cancelada.",
     "invalid_content": "El formato del contenido no es válido. Por favor, proporciona un objeto JSON válido con una lista de 'questions', como en el ejemplo.",
+    "create_exercise_title_prompt": "Vamos a crear un nuevo ejercicio. Primero, ¿cuál es el título?",
+    "create_exercise_description_prompt": "Genial. Ahora, proporciona una breve descripción para el ejercicio.",
+    "create_exercise_type_prompt": "Entendido. ¿Qué tipo de ejercicio es este? (p. ej., Vocabulario, Gramática, Lectura)",
+    "create_exercise_difficulty_prompt": "Excelente. ¿Cuál es el nivel de dificultad? (p. ej., Principiante, Intermedio, Avanzado)",
+    "create_exercise_content_prompt": "Casi listo. Por favor, proporciona el contenido del ejercicio en formato JSON. Por ejemplo: `{\\\"questions\\\": [{\\\"text\\\": \\\"...\\\", \\\"answer\\\": \\\"...\\\"}]}`",
+    "create_exercise_invalid_json": "El contenido proporcionado no es un JSON válido. Por favor, revisa el formato e inténtalo de nuevo.",
     "speaking_practice_intro": "¡Bienvenido a la Práctica de Expresión Oral! Por favor, elige una parte para comenzar.",
-    "part_1_button": "Parte 1: Introducción",
-    "part_2_button": "Parte 2: Tarjeta de Pista",
-    "part_3_button": "Parte 3: Discusión",
     "please_send_voice_response": "Por favor, envíame tu respuesta como un mensaje de voz.",
     "please_send_voice_message_prompt": "Este paso requiere un mensaje de voz. Por favor, envía tu respuesta como una grabación de voz.",
     "processing_voice_message": "Gracias. Procesando tu mensaje de voz ahora...",
@@ -62,11 +86,5 @@
     "error_formatting_feedback": "Lo siento, ha habido un error al formatear tus comentarios.",
     "practice_canceled": "Práctica cancelada.",
     "feature_not_implemented": "Esta función aún no está implementada. Por favor, selecciona otra opción."
-  },
-  "errors": {
-    "general_error": "Lo siento, algo salió mal. Por favor, inténtalo de nuevo más tarde.",
-    "unknown_command": "Lo siento, no entendí ese comando. Escribe /ayuda para ver la lista de comandos disponibles.",
-    "user_not_found": "No se pudo encontrar tu perfil de usuario. Por favor, usa /start para registrarte.",
-    "permission_denied_teacher": "Este comando solo está disponible para profesores aprobados."
   }
 }

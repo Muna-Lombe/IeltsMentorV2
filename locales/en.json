@@ -1,24 +1,39 @@
 {
-  "welcome": {
-    "new_user": "Welcome to the IELTS Mentor Bot, {first_name}! Your journey to IELTS success starts now. Your preferred language is set to English.",
-    "returning_user": "Welcome back, {first_name}! Let's continue preparing for the IELTS."
+  "greetings": {
+    "welcome_new_user": "Welcome to the IELTS Mentor Bot, {first_name}! I'm here to help you prepare for your exam. What would you like to do today?",
+    "welcome_existing_user": "Welcome back, {first_name}! Ready for more practice?"
   },
   "practice": {
     "select_section": "Please select a section to practice:",
-    "start_session": "Starting a {section} practice session...",
-    "session_wip": "Practice sessions for {section} are still under development. Please check back later!"
+    "button_speaking": "🗣️ Speaking",
+    "button_writing": "✍️ Writing",
+    "button_reading": "📖 Reading",
+    "button_listening": "🎧 Listening",
+    "no_reading_material": "Sorry, no reading materials are available at this moment. Please try again later.",
+    "reading_session_complete": "Reading practice complete!\\nYour score: {score} ({percentage}%).",
+    "correct_answer": "Correct! 🎉",
+    "incorrect_answer": "Not quite. The correct answer was: {correct_answer}",
+    "session_wip": "{section} practice is a work in progress. Please check back later!"
   },
-  "ai": {
-    "explain_prompt": "What IELTS topic or grammar point would you like me to explain?",
-    "define_prompt": "What word would you like me to define?",
-    "explanation_header": "🔍 Here's an explanation for *{query}*:",
-    "definition_header": "📖 Here's the definition for *{word}*:",
-    "thinking": "🤔 Thinking... Please wait a moment."
+  "speaking_practice": {
+    "intro": "Welcome to Speaking Practice! Please choose which part you'd like to practice.",
+    "part_1_button": "Part 1: Interview",
+    "part_2_button": "Part 2: Cue Card",
+    "part_3_button": "Part 3: Discussion"
+  },
+  "ai_commands": {
+    "explain_usage": "Please provide a topic or question to explain. Usage: /explain <topic>",
+    "define_usage": "Please provide a word to define. Usage: /define <word>",
+    "general_error": "Sorry, I couldn't process that. Please try again."
   },
   "stats": {
-    "header": "📊 Here are your current stats:\n\n",
-    "reading_summary": "📖 Reading: {correct}/{total} correct answers.\n",
-    "no_stats": "You don't have any stats yet. Try a /practice session to get started!"
+    "no_stats": "No stats to show yet. Complete some practice sessions first!",
+    "user_stats_title": "📊 Your IELTS Progress",
+    "reading_stats": "📖 Reading: {correct}/{total} ({percentage}%)"
+  },
+  "general": {
+    "invalid_action": "Invalid action. Please try again.",
+    "cancel_button": "Cancel"
   },
   "teacher": {
     "create_group_start": "To create a group, please reply with the group name.",
@@ -39,6 +54,14 @@
     "permission_denied_teacher": "This command is only available to approved teachers."
   },
   "teacher_exercise": {
+    "create_start": "Let's create a new exercise. First, what is the title of the exercise?",
+    "ask_for_description": "Got it. Now, please provide a short description for this exercise.",
+    "ask_for_type": "Excellent. Now, please select the exercise type.",
+    "ask_for_difficulty": "Great choice. Now, what's the difficulty level for this exercise?",
+    "ask_for_content": "Perfect. Please provide the exercise content as a JSON object. For example:\\n\\n`{{\\\"questions\\\": [{{\\\"text\\\": \\\"Your question here...\\\"}}]}}`",
+    "create_success": "✅ Exercise created successfully! You can view it using /my_exercises.",
+    "create_cancel": "Exercise creation has been cancelled.",
+    "invalid_content": "The content format is invalid. Please provide a valid JSON object with a 'questions' list, like the example.",
     "create_exercise_title_prompt": "Let's create a new exercise. First, what is the title?",
     "create_exercise_description_prompt": "Great. Now, provide a brief description for the exercise.",
     "create_exercise_type_prompt": "Got it. What type of exercise is this? (e.g., Vocabulary, Grammar, Reading)",
@@ -47,9 +70,6 @@
     "create_exercise_invalid_json": "The content provided is not valid JSON. Please check the format and try again.",
     "create_exercise_success": "Successfully created exercise: {title}",
     "speaking_practice_intro": "Welcome to Speaking Practice! Please choose a part to begin.",
-    "part_1_button": "Part 1: Introduction",
-    "part_2_button": "Part 2: Cue Card",
-    "part_3_button": "Part 3: Discussion",
     "please_send_voice_response": "Please send me your response as a voice message.",
     "please_send_voice_message_prompt": "This step requires a voice message. Please send your response as a voice recording.",
     "processing_voice_message": "Thank you. Processing your voice message now...",

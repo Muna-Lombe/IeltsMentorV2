@@ -41,7 +41,8 @@ application.add_handler(exercise_management_handler.create_exercise_conv_handler
 application.add_handler(speaking_practice_handler.speaking_practice_conv_handler)
 
 # Register callback query handlers
-application.add_handler(CallbackQueryHandler(practice_handler.practice_section_callback, pattern=f"^{practice_handler.PRACTICE_CALLBACK_LISTENING}|{practice_handler.PRACTICE_CALLBACK_READING}|{practice_handler.PRACTICE_CALLBACK_WRITING}"))
+application.add_handler(CallbackQueryHandler(practice_handler.practice_section_callback, pattern=f"^{practice_handler.PRACTICE_CALLBACK_LISTENING}|{practice_handler.PRACTICE_CALLBACK_READING}|{practice_handler.PRACTICE_CALLBACK_SPEAKING}|{practice_handler.PRACTICE_CALLBACK_WRITING}"))
+application.add_handler(CallbackQueryHandler(practice_handler.handle_reading_answer, pattern=f"^reading_answer:"))
 
 # Fallback for unknown commands
 application.add_handler(MessageHandler(filters.COMMAND, core_handlers.unknown_command))

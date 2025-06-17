@@ -1,7 +1,8 @@
 {
   "greetings": {
     "welcome_new_user": "¡Bienvenido al Bot Mentor de IELTS, {first_name}! Estoy aquí para ayudarte a prepararte para tu examen. ¿Qué te gustaría hacer hoy?",
-    "welcome_existing_user": "¡Bienvenido de nuevo, {first_name}! ¿Listo para más práctica?"
+    "welcome_existing_user": "¡Bienvenido de nuevo, {first_name}! ¿Listo para más práctica?",
+    "welcome_returning_user": "¡Bienvenido de nuevo, {first_name}! ¿Listo para más práctica?"
   },
   "practice": {
     "select_section": "Por favor, selecciona una sección para practicar:",
@@ -25,6 +26,11 @@
     "explain_usage": "Por favor, proporciona un tema o pregunta para explicar. Uso: /explain <tema>",
     "define_usage": "Por favor, proporciona una palabra para definir. Uso: /define <palabra>",
     "general_error": "Lo siento, no pude procesar eso. Por favor, inténtalo de nuevo."
+  },
+  "ai": {
+    "thinking": "🤔 Pensando...",
+    "explanation_header": "🔍 Aquí tienes una explicación para *{query}*:",
+    "definition_header": "📖 Definición de *{word}*:"
   },
   "stats": {
     "no_stats": "Aún no hay estadísticas para mostrar. ¡Completa algunas sesiones de práctica primero!",

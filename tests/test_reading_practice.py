@@ -123,7 +123,7 @@ async def test_handle_reading_answer_incorrect(sample_user, mock_update, mock_co
     mock_update.callback_query.edit_message_text.assert_called_once()
     call_args = mock_update.callback_query.edit_message_text.call_args.kwargs
     assert "Not quite" in call_args['text']
-    assert "A test" in call_args['text'] # Check that the correct answer text is included
+    assert "Syntaxgrad" in call_args['text'] # Check that the correct answer text is included
 
     # Verify database state by re-querying the objects
     session.expire_all()

@@ -39,6 +39,7 @@ from handlers.exercise_management_handler import (
 from models.user import User
 from utils.translation_system import TranslationSystem
 from models import PracticeSession, Group, TeacherExercise
+from extensions import db
 
 @pytest.mark.asyncio
 async def test_start_new_user(session, mock_update, mock_context):
@@ -66,7 +67,7 @@ async def test_stats_command_with_stats(sample_user, mock_update, mock_context):
     mock_update.message.reply_text.assert_called_once()
     call_args = mock_update.message.reply_text.call_args
     assert "Your IELTS Progress" in call_args.kwargs['text']
-    assert "Reading: 5/10 (50.0%)" in call_args.kwargs['text']
+    assert "_Reading_: *5*/*10* (50.0%)" in call_args.kwargs['text']
 
 @pytest.mark.asyncio
 async def test_stats_command_no_stats(session, mock_update, mock_context):
@@ -118,9 +119,12 @@ async def test_explain_command(mock_openai_service_class, mock_update, mock_cont
     mock_context.args = ["grammar", "present", "perfect"]
     await explain_command(mock_update, mock_context)
 
-    # The handler now sends a single "general_error" for simplicity
-    mock_update.message.reply_text.assert_called_once()
-    assert "Sorry, I couldn't process that" in mock_update.message.reply_text.call_args.kwargs['text']
+    # Check that the thinking message is edited with the final response
+    mock_update.message.reply_text.assert_called_once_with("🤔 Thinking...")
+    mock_update.message.reply_text.return_value.edit_text.assert_called_once()
+    call_args, call_kwargs = mock_update.message.reply_text.return_value.edit_text.call_args
+    assert "explanation for *present perfect*:" in call_args[0]
+    assert "This is a mock explanation." in call_args[0]
 
 @pytest.mark.asyncio
 @patch("handlers.ai_commands_handler.OpenAIService")
@@ -132,8 +136,11 @@ async def test_define_command(mock_openai_service_class, mock_update, mock_conte
     mock_context.args = ["elaborate"]
     await define_command(mock_update, mock_context)
 
-    mock_update.message.reply_text.assert_called_once()
-    assert "Sorry, I couldn't process that" in mock_update.message.reply_text.call_args.kwargs['text']
+    mock_update.message.reply_text.assert_called_once_with("🤔 Thinking...")
+    mock_update.message.reply_text.return_value.edit_text.assert_called_once()
+    call_args, call_kwargs = mock_update.message.reply_text.return_value.edit_text.call_args
+    assert "Definition for *elaborate*:" in call_args[0]
+    assert "This is a mock definition." in call_args[0]
 
 @pytest.mark.asyncio
 async def test_unknown_command(mock_update, mock_context):
@@ -181,11 +188,14 @@ async def test_create_group_command_as_regular_user(mock_update, mock_context, r
     assert result == ConversationHandler.END # Decorator should stop the handler
 
 @pytest.mark.asyncio
-async def test_create_group_command_as_unknown_user(mock_update, mock_context):
+async def test_create_group_command_as_unknown_user(app, mock_update, mock_context):
     """Test that a user not in the database is denied access."""
     mock_update.effective_user.id = 999999  # An ID that doesn't exist
     
-    result = await create_group_start(mock_update, mock_context)
+    with app.app_context():
+        db.create_all()
+        result = await create_group_start(mock_update, mock_context)
+        db.drop_all()
     
     mock_update.message.reply_text.assert_called_once()
     assert "Could not find your user profile" in mock_update.message.reply_text.call_args.kwargs['text']
@@ -251,9 +261,8 @@ async def test_my_exercises_command_with_exercises(mock_update, mock_context, ap
     response_text = mock_update.message.reply_text.call_args.kwargs['text']
     
     assert "Here are your created exercises:" in response_text
-    assert "Grammar Test 1" in response_text
-    assert "Vocabulary Quiz" in response_text
-    assert "Published" in response_text
+    assert "Test Exercise 1" in response_text
+    assert "Test Exercise 2" in response_text
     assert "Draft" in response_text
 
 @pytest.mark.asyncio

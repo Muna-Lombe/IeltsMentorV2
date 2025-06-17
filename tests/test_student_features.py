@@ -57,7 +57,7 @@ async def test_stats_command_displays_user_stats(sample_user, mock_update, mock_
     call_args = mock_update.message.reply_text.call_args.kwargs
     
     # Check that the stats are in the response
-    assert "Here are your current stats" in call_args['text']
+    assert "Your IELTS Progress" in call_args['text']
     assert "Reading" in call_args['text']
     assert "*5*/*10*" in call_args['text']
     assert "50.0%" in call_args['text']
@@ -91,14 +91,14 @@ async def test_explain_command_with_valid_query(mock_update, mock_context, mock_
     await explain_command(mock_update, mock_context)
     
     # Check that the AI service was called
-    mock_openai_service.generate_explanation.assert_called_once_with(
+    mock_openai_service.return_value.generate_explanation.assert_called_once_with(
         query="present perfect", context="grammar", language="en"
     )
     
     # Check that the thinking message is updated with the explanation
-    mock_update.message.reply_text.assert_called_once()
-    call_args = mock_update.message.reply_text.call_args.kwargs
-    assert "This is a mock explanation." in call_args['text']
+    mock_update.message.reply_text.return_value.edit_text.assert_called_once()
+    call_args, call_kwargs = mock_update.message.reply_text.return_value.edit_text.call_args
+    assert "This is a mock explanation." in call_args[0]
 
 @pytest.mark.asyncio
 async def test_define_command_with_valid_word(mock_update, mock_context, mock_openai_service):
@@ -111,11 +111,11 @@ async def test_define_command_with_valid_word(mock_update, mock_context, mock_op
     await define_command(mock_update, mock_context)
     
     # Check that the AI service was called
-    mock_openai_service.generate_definition.assert_called_once_with(
+    mock_openai_service.return_value.generate_definition.assert_called_once_with(
         word="elaborate", language="en"
     )
     
     # Check that the thinking message is updated with the definition
-    mock_update.message.reply_text.assert_called_once()
-    call_args = mock_update.message.reply_text.call_args.kwargs
-    assert "This is a mock definition." in call_args['text'] 
+    mock_update.message.reply_text.return_value.edit_text.assert_called_once()
+    call_args, call_kwargs = mock_update.message.reply_text.return_value.edit_text.call_args
+    assert "This is a mock definition." in call_args[0] 

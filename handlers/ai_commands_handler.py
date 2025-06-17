@@ -15,7 +15,7 @@ async def explain_command(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     lang_code = TranslationSystem.detect_language(user.to_dict())
 
     if not context.args or len(context.args) < 2:
-        message = TranslationSystem.get_message("ai", "explain_usage", lang_code)
+        message = TranslationSystem.get_message("ai_commands", "explain_usage", lang_code)
         await update.message.reply_text(message)
         return
 
@@ -48,7 +48,7 @@ async def define_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     lang_code = TranslationSystem.detect_language(user.to_dict())
 
     if not context.args or len(context.args) > 1:
-        message = TranslationSystem.get_message("ai", "define_usage", lang_code)
+        message = TranslationSystem.get_message("ai_commands", "define_usage", lang_code)
         await update.message.reply_text(message)
         return
 

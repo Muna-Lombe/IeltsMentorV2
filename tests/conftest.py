@@ -40,30 +40,28 @@ def app():
 @pytest.fixture(scope='function')
 def session(app):
     """
-    Creates a new database session for a test with nested transactions.
-    Rolls back to a savepoint after each test, ensuring test isolation.
+    Creates a new database session for each test, managed by a transaction.
+    The transaction is rolled back after each test, ensuring test isolation.
     """
-    connection = engine.connect()
-    transaction = connection.begin()
-    
-    # The session is bound to the connection, ensuring it participates in the transaction
-    db_session = TestingSessionLocal(bind=connection)
+    with app.app_context():
+        # Create all tables for each test function
+        db.create_all()
 
-    # Establish a SAVEPOINT, and roll back to it after the test
-    nested = connection.begin_nested()
+        connection = db.engine.connect()
+        transaction = connection.begin()
+        
+        # The session is bound to the connection, ensuring it participates in the transaction
+        db_session = TestingSessionLocal(bind=connection)
 
-    @event.listens_for(db_session, "after_transaction_end")
-    def end_savepoint(session, transaction):
-        # When the session ends (e.g., via commit or rollback), if the nested transaction is still active, roll it back
-        if not nested.is_active:
-            nested = connection.begin_nested()
+        yield db_session
 
-    yield db_session
+        # Rollback the transaction and close the connection
+        db_session.close()
+        transaction.rollback()
+        connection.close()
 
-    # Rollback the overall transaction and close the connection
-    db_session.close()
-    transaction.rollback()
-    connection.close()
+        # Drop all tables to ensure a clean state for the next test
+        db.drop_all()
 
 # --- Mock Fixtures ---
 
@@ -115,7 +113,7 @@ def sample_user(session):
         stats={'reading': {'correct': 5, 'total': 10}}
     )
     session.add(user)
-    session.commit()
+    session.flush()
     return user
     
 @pytest.fixture(scope='function')
@@ -128,49 +126,50 @@ def regular_user(session):
         username="regularuser"
     )
     session.add(user)
-    session.commit()
+    session.flush()
     return user
 
 @pytest.fixture(scope='function')
-def approved_teacher(session):
+def approved_teacher_user(session):
     """Create a sample teacher user who is approved."""
-    user = User(user_id=111, first_name="Approved", last_name="Teacher", username="approvedteacher", is_admin=True)
+    user = User(user_id=777, first_name="Approved", last_name="Teacher", username="approvedteacher", is_admin=True)
     session.add(user)
-    session.commit()
+    session.flush()
 
     teacher = Teacher(user_id=user.id, is_approved=True)
     session.add(teacher)
-    session.commit()
+    session.flush()
     return user
 
 @pytest.fixture(scope='function')
-def unapproved_teacher(session):
+def non_approved_teacher_user(session):
     """Create a sample teacher user who is not yet approved."""
-    user = User(user_id=222, first_name="Unapproved", last_name="Teacher", username="unapprovedteacher", is_admin=True)
+    user = User(user_id=888, first_name="Unapproved", last_name="Teacher", username="unapprovedteacher", is_admin=True)
     session.add(user)
-    session.commit()
+    session.flush()
 
     teacher = Teacher(user_id=user.id, is_approved=False)
     session.add(teacher)
-    session.commit()
+    session.flush()
     return user
 
 @pytest.fixture(scope='function')
-def sample_teacher_with_exercises(session, approved_teacher):
+def approved_teacher_with_exercises(session, approved_teacher_user):
     """A teacher with some exercises already created."""
-    exercise1 = TeacherExercise(creator_id=approved_teacher.id, title="Test Exercise 1", exercise_type="reading", difficulty="medium", content={"q": "1"})
-    exercise2 = TeacherExercise(creator_id=approved_teacher.id, title="Test Exercise 2", exercise_type="writing", difficulty="hard", content={"q": "2"})
+    exercise1 = TeacherExercise(creator_id=approved_teacher_user.id, title="Test Exercise 1", exercise_type="reading", difficulty="medium", content={"q": "1"})
+    exercise2 = TeacherExercise(creator_id=approved_teacher_user.id, title="Test Exercise 2", exercise_type="writing", difficulty="hard", content={"q": "2"})
     session.add_all([exercise1, exercise2])
-    session.commit()
-    return approved_teacher
+    session.flush()
+    return approved_teacher_user
 
 @pytest.fixture
 def mock_openai_service():
     """Mocks the OpenAIService to prevent actual API calls."""
-    with patch('handlers.ai_commands_handler.OpenAIService') as mock_service:
-        mock_service.generate_explanation.return_value = "This is a mock explanation."
-        mock_service.generate_definition.return_value = "This is a mock definition."
-        yield mock_service
+    with patch('handlers.ai_commands_handler.OpenAIService') as mock_service_class:
+        mock_instance = mock_service_class.return_value
+        mock_instance.generate_explanation.return_value = "This is a mock explanation."
+        mock_instance.generate_definition.return_value = "This is a mock definition."
+        yield mock_service_class
 
 @pytest.fixture
 def mock_reading_data():

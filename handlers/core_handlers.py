@@ -29,9 +29,9 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         )
         db.session.add(user)
         db.session.flush()  # Use flush to assign an ID within the transaction
-        message = trans.get_message(
-            'welcome',
-            'new_user',
+        message = TranslationSystem.get_message(
+            'greetings',
+            'welcome_new_user',
             lang_code,
             first_name=effective_user.first_name
         )
@@ -39,9 +39,10 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         # Update language preference if it has changed
         if user.preferred_language != lang_code:
             user.preferred_language = lang_code
-        message = trans.get_message(
-            'welcome',
-            'returning_user',
+            
+        message = TranslationSystem.get_message(
+            'greetings',
+            'welcome_returning_user',
             lang_code,
             first_name=effective_user.first_name
         )
@@ -60,7 +61,7 @@ async def stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
 
     if user and user.stats:
         # Build the statistics message
-        header = trans.get_message('stats', 'header', lang_code)
+        header = TranslationSystem.get_message('stats', 'user_stats_title', lang_code)
         stats_parts = []
         for section, section_stats in user.stats.items():
             correct = section_stats.get('correct', 0)
@@ -74,12 +75,12 @@ async def stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         if stats_parts:
             stats_message = header + "\n" + "\n".join(stats_parts)
         else:
-            stats_message = trans.get_message('stats', 'no_stats', lang_code)
+            stats_message = TranslationSystem.get_message('stats', 'no_stats', lang_code)
         
         await update.message.reply_text(text=stats_message)
     else:
         # User has no stats record at all
-        stats_message = trans.get_message('stats', 'no_stats', lang_code)
+        stats_message = TranslationSystem.get_message('stats', 'no_stats', lang_code)
         await update.message.reply_text(text=stats_message)
 
 

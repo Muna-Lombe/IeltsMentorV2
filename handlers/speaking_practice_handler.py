@@ -11,8 +11,12 @@ from telegram.ext import (
     CommandHandler,
 )
 
+from models import User, PracticeSession
 from services.openai_service import OpenAIService
 from utils.translation_system import TranslationSystem
+from extensions import db
+from datetime import datetime
+from sqlalchemy.orm.attributes import flag_modified
 
 # Enable logging
 logging.basicConfig(
@@ -21,22 +25,33 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # State definitions for ConversationHandler
-SELECTING_PART, IN_PART_1, IN_PART_2, IN_PART_3, AWAITING_VOICE = range(5)
+SELECTING_PART, AWAITING_VOICE = range(2)
 
 # Temporary directory for audio files
 TEMP_AUDIO_DIR = "temp_audio"
+if not os.path.exists(TEMP_AUDIO_DIR):
+    os.makedirs(TEMP_AUDIO_DIR)
 
 
 async def start_speaking_practice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Starts the speaking practice session by showing part selection."""
     query = update.callback_query
     await query.answer()
-    lang_code = TranslationSystem.detect_language(query.from_user.to_dict())
+    
+    user = db.session.query(User).filter_by(user_id=query.from_user.id).first()
+    if not user:
+        await query.edit_message_text("User not found. Please /start the bot.")
+        return ConversationHandler.END
 
+    new_session = PracticeSession(user_id=user.id, section="speaking", total_questions=0)
+    db.session.add(new_session)
+    db.session.commit()
+    context.user_data["practice_session_id"] = new_session.id
+    
+    lang_code = user.preferred_language
     keyboard = [
         [InlineKeyboardButton(TranslationSystem.get_message("speaking_practice", "part_1_button", lang_code), callback_data="sp_part_1")],
         [InlineKeyboardButton(TranslationSystem.get_message("speaking_practice", "part_2_button", lang_code), callback_data="sp_part_2")],
-        [InlineKeyboardButton(TranslationSystem.get_message("speaking_practice", "part_3_button", lang_code), callback_data="sp_part_3")],
         [InlineKeyboardButton(TranslationSystem.get_message("general", "cancel_button", lang_code), callback_data="sp_cancel")],
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -53,13 +68,55 @@ async def handle_part_1(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
     await query.answer()
     lang_code = TranslationSystem.detect_language(query.from_user.to_dict())
     
-    # For now, using a hardcoded question. This will be replaced by OpenAI generation.
-    question = "Let's talk about your hometown. What kind of place is it?"
+    openai_service = OpenAIService()
+    question_data = openai_service.generate_speaking_question(part_number=1)
+    
+    question = question_data.get("question", "Let's talk about your hometown. What kind of place is it?")
     context.user_data["speaking_question"] = question
     context.user_data["speaking_part"] = 1
 
     message = TranslationSystem.get_message("speaking_practice", "please_send_voice_response", lang_code)
-    await query.edit_message_text(text=f"Part 1: {question}\n\n{message}")
+    await query.edit_message_text(text=f"Part 1: {question}\\n\\n{message}")
+    return AWAITING_VOICE
+
+
+async def handle_part_2(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    """Handles Speaking Part 2, which then leads to Part 3."""
+    query = update.callback_query
+    await query.answer()
+    lang_code = TranslationSystem.detect_language(query.from_user.to_dict())
+    
+    openai_service = OpenAIService()
+    question_data = openai_service.generate_speaking_question(part_number=2)
+
+    question = question_data.get("question", "Describe a memorable journey you have taken.")
+    topic = question_data.get("topic", "A memorable journey")
+    
+    context.user_data["speaking_question"] = question
+    context.user_data["speaking_topic"] = topic
+    context.user_data["speaking_part"] = 2
+
+    message = TranslationSystem.get_message("speaking_practice", "please_send_voice_response", lang_code)
+    await query.edit_message_text(text=f"Part 2: {question}\\n\\n{message}")
+    return AWAITING_VOICE
+
+
+async def handle_part_3_question(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    """Generates and asks a Part 3 question."""
+    user = db.session.query(User).filter_by(user_id=update.effective_user.id).first()
+    lang_code = user.preferred_language
+    
+    part_2_topic = context.user_data.get("speaking_topic", "your previous answer")
+    
+    openai_service = OpenAIService()
+    question_data = openai_service.generate_speaking_question(part_number=3, topic=part_2_topic)
+    question = question_data.get("question", f"Let's discuss more about {part_2_topic}. Why is it important?")
+    
+    context.user_data["speaking_question"] = question
+    context.user_data["speaking_part"] = 3
+
+    message = TranslationSystem.get_message("speaking_practice", "please_send_voice_response", lang_code)
+    await context.bot.send_message(chat_id=update.effective_chat.id, text=f"Part 3: {question}\\n\\n{message}")
     return AWAITING_VOICE
 
 
@@ -67,7 +124,16 @@ async def handle_voice_message(update: Update, context: ContextTypes.DEFAULT_TYP
     """Handles the user's voice message, transcribes, gets feedback, and replies."""
     message = update.message
     voice = message.voice
-    lang_code = TranslationSystem.detect_language(message.from_user.to_dict())
+    
+    user = db.session.query(User).filter_by(user_id=message.from_user.id).first()
+    lang_code = user.preferred_language
+    
+    session_id = context.user_data.get("practice_session_id")
+    session = db.session.query(PracticeSession).filter_by(id=session_id).first()
+
+    if not session:
+        await message.reply_text(TranslationSystem.get_error_message("general", lang_code))
+        return ConversationHandler.END
 
     if not voice:
         await message.reply_text(TranslationSystem.get_message("speaking_practice", "please_send_voice_prompt", lang_code))
@@ -76,35 +142,56 @@ async def handle_voice_message(update: Update, context: ContextTypes.DEFAULT_TYP
     await message.reply_text(TranslationSystem.get_message("speaking_practice", "processing_voice_message", lang_code))
 
     try:
-        # Download the voice file
         file = await context.bot.get_file(voice.file_id)
         file_name = f"{uuid.uuid4()}.ogg"
         file_path = os.path.join(TEMP_AUDIO_DIR, file_name)
         await file.download_to_drive(file_path)
 
-        # Transcribe the audio
         openai_service = OpenAIService()
         question = context.user_data.get("speaking_question", "")
-        transcript = openai_service.speech_to_text(audio_file_path=file_path, prompt=question)
-        logger.info(f"Transcript for user {update.effective_user.id}: {transcript}")
-
-        # Get feedback from AI
+        transcript = openai_service.speech_to_text(audio_file_path=file_path)
+        
         part_number = context.user_data.get("speaking_part", 1)
         feedback = openai_service.generate_speaking_feedback(transcript, part_number, question)
 
-        # Format and send feedback
+        session.total_questions += 1
+        current_session_data = session.session_data or []
+        current_session_data.append({
+            "part": part_number,
+            "question": question,
+            "transcript": transcript,
+            "feedback": feedback,
+        })
+        session.session_data = current_session_data
+        
+        try:
+            estimated_band = float(feedback.get('estimated_band', 0.0))
+            session.score = ((session.score or 0.0) * (session.total_questions - 1) + estimated_band) / session.total_questions
+            if estimated_band > 0:
+                session.correct_answers += 1
+        except (ValueError, TypeError):
+            pass # Keep score as is
+
+        flag_modified(session, "session_data")
+        db.session.commit()
+
         feedback_text = format_feedback(feedback, lang_code)
         await message.reply_text(feedback_text)
-
-        # Clean up the audio file
+        
         os.remove(file_path)
+
+        if part_number == 2:
+            return await handle_part_3_question(update, context)
 
     except Exception as e:
         logger.error(f"Error processing voice message: {e}", exc_info=True)
         await message.reply_text(TranslationSystem.get_error_message("general", lang_code))
+        db.session.rollback()
         return ConversationHandler.END
 
-    await message.reply_text(TranslationSystem.get_message("speaking_practice", "completed", lang_code))
+    session.completed_at = datetime.utcnow()
+    db.session.commit()
+    await message.reply_text(TranslationSystem.get_message("speaking_practice", "speaking_practice_completed", lang_code))
     return ConversationHandler.END
 
 
@@ -112,19 +199,19 @@ def format_feedback(feedback: dict, lang_code: str) -> str:
     """Formats the structured feedback into a user-friendly string."""
     try:
         band = feedback.get('estimated_band', 'N/A')
-        strengths = "\n- ".join(feedback.get('strengths', []))
-        improvements = "\n- ".join(feedback.get('areas_for_improvement', []))
+        strengths = "\\n- ".join(feedback.get('strengths', []))
+        improvements = "\\n- ".join(feedback.get('areas_for_improvement', []))
         
         return (
-            f"*{TranslationSystem.get_message('feedback', 'summary_title', lang_code)}*\n\n"
-            f"*{TranslationSystem.get_message('feedback', 'estimated_band_label', lang_code)}:* {band}\n\n"
-            f"*{TranslationSystem.get_message('feedback', 'strengths_label', lang_code)}:*\n- {strengths}\n\n"
-            f"*{TranslationSystem.get_message('feedback', 'improvements_label', lang_code)}:*\n- {improvements}\n\n"
-            f"*{TranslationSystem.get_message('feedback', 'vocabulary_label', lang_code)}:*\n{feedback.get('vocabulary_feedback', '')}\n\n"
-            f"*{TranslationSystem.get_message('feedback', 'grammar_label', lang_code)}:*\n{feedback.get('grammar_feedback', '')}\n\n"
-            f"*{TranslationSystem.get_message('feedback', 'fluency_label', lang_code)}:*\n{feedback.get('fluency_feedback', '')}\n\n"
-            f"*{TranslationSystem.get_message('feedback', 'pronunciation_label', lang_code)}:*\n{feedback.get('pronunciation_feedback', '')}\n\n"
-            f"*{TranslationSystem.get_message('feedback', 'next_tip_label', lang_code)}:*\n_{feedback.get('tips_for_next', '')}_"
+            f"*{TranslationSystem.get_message('feedback', 'summary_title', lang_code)}*\\n\\n"
+            f"*{TranslationSystem.get_message('feedback', 'estimated_band_label', lang_code)}:* {band}\\n\\n"
+            f"*{TranslationSystem.get_message('feedback', 'strengths_label', lang_code)}:*\\n- {strengths}\\n\\n"
+            f"*{TranslationSystem.get_message('feedback', 'improvements_label', lang_code)}:*\\n- {improvements}\\n\\n"
+            f"*{TranslationSystem.get_message('feedback', 'vocabulary_label', lang_code)}:*\\n{feedback.get('vocabulary_feedback', '')}\\n\\n"
+            f"*{TranslationSystem.get_message('feedback', 'grammar_label', lang_code)}:*\\n{feedback.get('grammar_feedback', '')}\\n\\n"
+            f"*{TranslationSystem.get_message('feedback', 'fluency_label', lang_code)}:*\\n{feedback.get('fluency_feedback', '')}\\n\\n"
+            f"*{TranslationSystem.get_message('feedback', 'pronunciation_label', lang_code)}:*\\n{feedback.get('pronunciation_feedback', '')}\\n\\n"
+            f"*{TranslationSystem.get_message('feedback', 'next_tip_label', lang_code)}:*\\n_{feedback.get('tips_for_next', '')}_"
         )
     except Exception as e:
         logger.error(f"Error formatting feedback: {e}")
@@ -133,6 +220,13 @@ def format_feedback(feedback: dict, lang_code: str) -> str:
 
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Cancels and ends the conversation."""
+    session_id = context.user_data.get("practice_session_id")
+    if session_id:
+        session = db.session.query(PracticeSession).filter_by(id=session_id).first()
+        if session:
+            db.session.delete(session)
+            db.session.commit()
+
     query = update.callback_query
     if query:
         lang_code = TranslationSystem.detect_language(query.from_user.to_dict())
@@ -142,25 +236,7 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         lang_code = TranslationSystem.detect_language(update.message.from_user.to_dict())
         await update.message.reply_text(TranslationSystem.get_message("general", "practice_canceled", lang_code))
         
-    logger.info(f"User {update.effective_user.id} canceled the speaking practice.")
-    context.user_data.pop("speaking_question", None)
-    context.user_data.pop("speaking_part", None)
-    return ConversationHandler.END
-
-
-# Dummy handlers for parts 2 and 3 for now
-async def handle_part_2(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    query = update.callback_query
-    await query.answer()
-    lang_code = TranslationSystem.detect_language(query.from_user.to_dict())
-    await query.edit_message_text(text=TranslationSystem.get_message("general", "feature_not_implemented", lang_code))
-    return ConversationHandler.END
-
-async def handle_part_3(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    query = update.callback_query
-    await query.answer()
-    lang_code = TranslationSystem.detect_language(query.from_user.to_dict())
-    await query.edit_message_text(text=TranslationSystem.get_message("general", "feature_not_implemented", lang_code))
+    context.user_data.clear()
     return ConversationHandler.END
 
 
@@ -170,13 +246,11 @@ speaking_practice_conv_handler = ConversationHandler(
         SELECTING_PART: [
             CallbackQueryHandler(handle_part_1, pattern="^sp_part_1$"),
             CallbackQueryHandler(handle_part_2, pattern="^sp_part_2$"),
-            CallbackQueryHandler(handle_part_3, pattern="^sp_part_3$"),
             CallbackQueryHandler(cancel, pattern="^sp_cancel$"),
         ],
         AWAITING_VOICE: [
             MessageHandler(filters.VOICE, handle_voice_message)
         ],
-        # IN_PART_1, IN_PART_2, IN_PART_3 will be used for multi-turn conversations
     },
     fallbacks=[CommandHandler("cancel", cancel)],
     per_user=True,

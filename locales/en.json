@@ -27,7 +27,12 @@
     "intro": "Welcome to Speaking Practice! Please choose which part you'd like to practice.",
     "part_1_button": "Part 1: Interview",
     "part_2_button": "Part 2: Cue Card",
-    "part_3_button": "Part 3: Discussion"
+    "part_3_button": "Part 3: Discussion",
+    "please_send_voice_response": "Please send me your response as a voice message.",
+    "please_send_voice_message_prompt": "This step requires a voice message. Please send your response as a voice recording.",
+    "processing_voice_message": "Thank you. Processing your voice message now...",
+    "error_processing_voice": "Sorry, there was an error processing your voice message. Please try again later.",
+    "speaking_practice_completed": "Speaking practice complete. You can start a new session anytime using /practice."
   },
   "ai_commands": {
     "explain_usage": "Please provide a topic or question to explain. Usage: /explain <topic>",
@@ -46,7 +51,9 @@
   },
   "general": {
     "invalid_action": "Invalid action. Please try again.",
-    "cancel_button": "Cancel"
+    "cancel_button": "Cancel",
+    "practice_canceled": "Practice canceled.",
+    "feature_not_implemented": "This feature is not yet implemented. Please select another option."
   },
   "teacher": {
     "create_group_start": "To create a group, please reply with the group name.",
@@ -76,14 +83,10 @@
     "create_exercise_difficulty_prompt": "Excellent. What is the difficulty level? (e.g., Beginner, Intermediate, Advanced)",
     "create_exercise_content_prompt": "Almost done. Please provide the exercise content in JSON format. For example: `{\\\"questions\\\": [{\\\"text\\\": \\\"...\\\", \\\"answer\\\": \\\"...\\\"}]}`",
     "create_exercise_invalid_json": "The content provided is not valid JSON. Please check the format and try again.",
-    "create_exercise_success": "Successfully created exercise: {title}",
-    "speaking_practice_intro": "Welcome to Speaking Practice! Please choose a part to begin.",
-    "please_send_voice_response": "Please send me your response as a voice message.",
-    "please_send_voice_message_prompt": "This step requires a voice message. Please send your response as a voice recording.",
-    "processing_voice_message": "Thank you. Processing your voice message now...",
-    "error_processing_voice": "Sorry, there was an error processing your voice message. Please try again later.",
-    "speaking_practice_completed": "Speaking practice for this question is complete. You can start a new practice anytime.",
-    "feedback_summary_title": "Feedback Summary",
+    "create_exercise_success": "Successfully created exercise: {title}"
+  },
+  "feedback": {
+    "summary_title": "Feedback Summary",
     "estimated_band_label": "Estimated Band",
     "strengths_label": "Strengths",
     "improvements_label": "Areas for Improvement",
@@ -92,8 +95,6 @@
     "fluency_label": "Fluency & Coherence",
     "pronunciation_label": "Pronunciation",
     "next_tip_label": "Next Tip",
-    "error_formatting_feedback": "Sorry, there was an error formatting your feedback.",
-    "practice_canceled": "Practice canceled.",
-    "feature_not_implemented": "This feature is not yet implemented. Please select another option."
+    "error_formatting_feedback": "Sorry, there was an error formatting your feedback."
   }
 } 

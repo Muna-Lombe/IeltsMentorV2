@@ -37,13 +37,13 @@ tests/test_models.py::test_update_stats PASSED                           [ 73%]
 tests/test_reading_practice.py::test_reading_practice_starts_correctly PASSED [ 76%]
 tests/test_reading_practice.py::test_handle_reading_answer_correct PASSED [ 78%]
 tests/test_reading_practice.py::test_handle_reading_answer_incorrect PASSED [ 81%]
-tests/test_speaking_practice.py::test_start_speaking_practice PASSED     [ 84%]
-tests/test_speaking_practice.py::test_handle_part_1 PASSED               [ 86%]
-tests/test_student_features.py::test_practice_command_shows_selection_menu PASSED [ 89%]
-tests/test_student_features.py::test_stats_command_displays_user_stats PASSED [ 92%]
-tests/test_student_features.py::test_stats_command_for_new_user PASSED   [ 94%]
-tests/test_student_features.py::test_explain_command_with_valid_query PASSED [ 97%]
-tests/test_student_features.py::test_define_command_with_valid_word PASSED [100%]
+tests/test_student_features.py::test_practice_command_shows_selection_menu PASSED [ 84%]
+tests/test_student_features.py::test_stats_command_displays_user_stats PASSED [ 86%]
+tests/test_student_features.py::test_stats_command_for_new_user PASSED   [ 89%]
+tests/test_student_features.py::test_explain_command_with_valid_query PASSED [ 92%]
+tests/test_student_features.py::test_define_command_with_valid_word PASSED [ 94%]
+tests/unit/test_speaking_practice.py::test_start_speaking_practice PASSED [ 97%]
+tests/unit/test_speaking_practice.py::test_handle_part_1 PASSED          [100%]
 
 =============================== warnings summary ===============================
 ../../../../../../../miniconda3/lib/python3.11/site-packages/pydub/utils.py:14
@@ -54,9 +54,9 @@ handlers/exercise_management_handler.py:221
   /home/muna/code/Muna-Lombe/tutorials/PythOn/telegram/bots/IeltsMentorV2/handlers/exercise_management_handler.py:221: PTBUserWarning: If 'per_message=False', 'CallbackQueryHandler' will not be tracked for every message. Read this FAQ entry to learn more about the per_* settings: https://github.com/python-telegram-bot/python-telegram-bot/wiki/Frequently-Asked-Questions#what-do-the-per_-settings-in-conversationhandler-do.
     create_exercise_conv_handler = ConversationHandler(
 
-handlers/speaking_practice_handler.py:167
-  /home/muna/code/Muna-Lombe/tutorials/PythOn/telegram/bots/IeltsMentorV2/handlers/speaking_practice_handler.py:167: PTBUserWarning: If 'per_message=False', 'CallbackQueryHandler' will not be tracked for every message. Read this FAQ entry to learn more about the per_* settings: https://github.com/python-telegram-bot/python-telegram-bot/wiki/Frequently-Asked-Questions#what-do-the-per_-settings-in-conversationhandler-do.
+handlers/speaking_practice_handler.py:243
+  /home/muna/code/Muna-Lombe/tutorials/PythOn/telegram/bots/IeltsMentorV2/handlers/speaking_practice_handler.py:243: PTBUserWarning: If 'per_message=False', 'CallbackQueryHandler' will not be tracked for every message. Read this FAQ entry to learn more about the per_* settings: https://github.com/python-telegram-bot/python-telegram-bot/wiki/Frequently-Asked-Questions#what-do-the-per_-settings-in-conversationhandler-do.
     speaking_practice_conv_handler = ConversationHandler(
 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
-======================== 38 passed, 3 warnings in 0.56s ========================
+======================== 38 passed, 3 warnings in 0.60s ========================

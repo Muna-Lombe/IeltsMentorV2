@@ -175,6 +175,55 @@ Provide your feedback in a structured JSON format with the following keys:
             logger.error(f"OpenAI API error during definition generation: {e}")
             raise
 
+    def generate_speaking_question(self, part_number: int, topic: str = None) -> dict:
+        """
+        Generates a question for a specific part of the IELTS speaking test.
+
+        Args:
+            part_number: The part of the IELTS speaking test (1, 2, or 3).
+            topic: An optional topic for Part 2 or 3.
+
+        Returns:
+            A dictionary containing the question and topic, e.g., 
+            {'topic': 'A hobby you enjoy', 'question': 'Describe a hobby...'}.
+        """
+        part_prompts = {
+            1: "Generate a common IELTS Speaking Part 1 question. It should be about a familiar topic like home, family, work, studies, or interests.",
+            2: "Generate an IELTS Speaking Part 2 cue card. Provide a main topic and 3-4 bullet points of things the student should talk about. The topic should be about a personal experience.",
+            3: f"Generate a thought-provoking IELTS Speaking Part 3 discussion question. It should be related to the topic of '{topic if topic else 'hobbies and free time'}' and require abstract thinking."
+        }
+
+        if part_number not in part_prompts:
+            raise ValueError("Invalid part number for speaking question.")
+
+        system_message = f"""
+You are an expert IELTS examiner creating questions for a practice test.
+Your task is to generate a question for IELTS Speaking Part {part_number}.
+
+{part_prompts[part_number]}
+
+Return the response as a JSON object with the following keys:
+- "topic": A very short, descriptive title for the question topic (e.g., "Hometown", "A memorable trip").
+- "question": The full question or cue card text to be presented to the student.
+"""
+        try:
+            response = self.client.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {"role": "system", "content": system_message}
+                ],
+                response_format={"type": "json_object"},
+                temperature=0.9, # Higher temperature for more varied questions
+            )
+            question_data = json.loads(response.choices[0].message.content)
+            return question_data
+        except OpenAIError as e:
+            logger.error(f"OpenAI API error during question generation: {e}")
+            raise
+        except (json.JSONDecodeError, TypeError) as e:
+            logger.error(f"Failed to parse JSON question from OpenAI: {e}")
+            raise
+
 # Example usage (for testing this file directly)
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO) # Ensure root logger is configured for stream output

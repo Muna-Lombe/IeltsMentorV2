@@ -13,8 +13,15 @@ from handlers import (
     teacher_handler, 
     exercise_management_handler,
     speaking_practice_handler,
-    writing_practice_handler
+    writing_practice_handler,
+    listening_practice_handler,
 )
+from handlers.reading_practice_handler import reading_practice_conv_handler
+from handlers.speaking_practice_handler import speaking_practice_conv_handler
+from handlers.writing_practice_handler import writing_practice_conv_handler
+from handlers.listening_practice_handler import listening_practice_conv_handler
+from utils.translation_system import TranslationSystem
+from extensions import db
 
 # Configure logging
 logging.basicConfig(
@@ -39,12 +46,17 @@ application.add_handler(CommandHandler("define", ai_commands_handler.define_comm
 application.add_handler(teacher_handler.create_group_conv_handler)
 application.add_handler(CommandHandler("my_exercises", exercise_management_handler.my_exercises_command))
 application.add_handler(exercise_management_handler.create_exercise_conv_handler)
-application.add_handler(speaking_practice_handler.speaking_practice_conv_handler)
-application.add_handler(writing_practice_handler.writing_practice_conv_handler)
+application.add_handler(reading_practice_conv_handler)
+application.add_handler(speaking_practice_conv_handler)
+application.add_handler(writing_practice_conv_handler)
+application.add_handler(listening_practice_conv_handler)
 
 # Register callback query handlers
-application.add_handler(CallbackQueryHandler(practice_handler.practice_section_callback, pattern=f"^{practice_handler.PRACTICE_CALLBACK_LISTENING}|{practice_handler.PRACTICE_CALLBACK_READING}|{practice_handler.PRACTICE_CALLBACK_SPEAKING}|{practice_handler.PRACTICE_CALLBACK_WRITING}"))
-application.add_handler(CallbackQueryHandler(practice_handler.handle_reading_answer, pattern=f"^reading_answer:"))
+# The practice_section_callback is no longer needed as each practice type
+# is now a ConversationHandler triggered by its own callback pattern.
+
+# Register error handler
+application.add_error_handler(core_handlers.error_handler)
 
 # Fallback for unknown commands
 application.add_handler(MessageHandler(filters.COMMAND, core_handlers.unknown_command))

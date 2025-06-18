@@ -5,12 +5,13 @@
     "welcome_returning_user": "Welcome back, {first_name}! Ready for more practice?"
   },
   "practice": {
+    "loading_session": "Loading {section} practice session...",
     "select_section": "Please select a section to practice:",
     "button_speaking": "🗣️ Speaking",
     "button_writing": "✍️ Writing",
     "button_reading": "📖 Reading",
     "button_listening": "🎧 Listening",
-    "no_reading_material": "Sorry, no reading materials are available at this moment. Please try again later.",
+    "no_reading_material": "Sorry, no reading materials are available right now. Please try again later.",
     "reading_session_complete": "Reading practice complete!\\nYour score: {score} ({percentage}%).",
     "correct_answer": "Correct! 🎉",
     "incorrect_answer": "Not quite. The correct answer was: {correct_answer}",
@@ -47,7 +48,9 @@
   "stats": {
     "no_stats": "No stats to show yet. Complete some practice sessions first!",
     "user_stats_title": "📊 Your IELTS Progress",
-    "reading_stats": "📖 Reading: {correct}/{total} ({percentage}%)"
+    "reading_stats": "📖 Reading: {correct}/{total} ({percentage}%)",
+    "total": "Total",
+    "average_score": "Average Score"
   },
   "general": {
     "invalid_action": "Invalid action. Please try again.",

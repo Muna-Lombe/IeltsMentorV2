@@ -1,0 +1,40 @@
+[
+  {
+    "id": "cambridge_17_test_1_part_1",
+    "name": "Cambridge 17, Test 1, Part 1",
+    "audio_file": "data/seed-data/listening_tasks/Cambridge_IELTS17_Test1_Audio1_ieltsxpress.mp3",
+    "questions": [
+      {
+        "question_number": 1,
+        "question_text": "What type of transport will the man use?",
+        "options": {
+          "A": "Train",
+          "B": "Bus",
+          "C": "Car"
+        },
+        "correct_answer": "B"
+      },
+      {
+        "question_number": 2,
+        "question_text": "What is the reason for the man's journey?",
+        "options": {
+          "A": "Business",
+          "B": "Holiday",
+          "C": "Visiting family"
+        },
+        "correct_answer": "A"
+      },
+      {
+        "question_number": 3,
+        "question_text": "The man is travelling to the...",
+        "options": {
+          "A": "City centre",
+          "B": "Airport",
+          "C": "Suburbs"
+        },
+        "correct_answer": "B"
+      }
+    ]
+  }
+]
+

@@ -89,25 +89,22 @@ async def test_practice_command(mock_update, mock_context):
     
     mock_update.message.reply_text.assert_called_once()
     call_args = mock_update.message.reply_text.call_args
-    assert "Please select a section to practice" in call_args.kwargs['text']
+    assert "Please select a section to practice" in call_args.kwargs["text"]
     assert isinstance(call_args.kwargs["reply_markup"], InlineKeyboardMarkup)
 
 @pytest.mark.asyncio
 async def test_practice_section_callback(sample_user, mock_update, mock_context):
-    """Test the practice section callback."""
+    """Test the practice section callback now just shows a loading message."""
     # Simulate the callback query
-    mock_update.callback_query.data = PRACTICE_CALLBACK_READING
+    mock_update.callback_query.data = "practice_reading"
     await practice_section_callback(mock_update, mock_context)
 
-    # Verify the message was edited
+    # Verify the message was edited with a "loading" message
     mock_update.callback_query.edit_message_text.assert_called_once()
     call_args = mock_update.callback_query.edit_message_text.call_args
     response_text = call_args.kwargs["text"]
-    
-    # Check that the response contains the key elements of a reading practice question
-    assert "**Reading Passage**" in response_text
-    assert "**Question**" in response_text
-    assert isinstance(call_args.kwargs["reply_markup"], InlineKeyboardMarkup)
+
+    assert "Loading Reading practice session..." in response_text
 
 @pytest.mark.asyncio
 @patch("handlers.ai_commands_handler.OpenAIService")

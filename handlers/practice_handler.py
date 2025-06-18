@@ -66,114 +66,22 @@ async def practice_section_callback(update: Update, context: ContextTypes.DEFAUL
         await query.edit_message_text(text=trans.get_message("errors", "user_not_found", lang_code))
         return
 
-    # Create a new practice session
-    session = PracticeSession(user_id=user.id, section=section)
-    db.session.add(session)
-    db.session.flush()
+    # This function now only logs the selection.
+    # The actual practice start is handled by ConversationHandlers
+    # triggered by the callback data.
+    logger.info(f"User {user_id} selected '{section}' practice.")
 
-    logger.info(f"User {user_id} started a new '{section}' practice session (ID: {session.id}).")
-        
-    if section == "reading":
-        reading_data = load_reading_data()
-        if not reading_data:
-            await query.edit_message_text(text=trans.get_message("practice", "no_reading_material", lang_code))
-            return
-        
-        # For simplicity, we'll use the first set and first question
-        practice_set = reading_data[0]
-        question_data = practice_set["questions"][0]
-        context.user_data['current_question'] = {
-            "session_id": session.id,
-            "question_id": question_data["question_id"],
-            "correct_option_index": question_data["correct_option_index"]
-        }
-
-        # Format the message with the passage and question
-        passage_text = practice_set["passage"]
-        question_text = question_data["text"]
-        
-        buttons = []
-        for i, option in enumerate(question_data["options"]):
-            callback_data = f"reading_answer:{question_data['question_id']}:{i}"
-            buttons.append([InlineKeyboardButton(option, callback_data=callback_data)])
-        
-        reply_markup = InlineKeyboardMarkup(buttons)
-
-        full_message = f"**Reading Passage**\n\n{passage_text}\n\n**Question**\n\n{question_text}"
-        await query.edit_message_text(text=full_message, reply_markup=reply_markup, parse_mode='Markdown')
-
-    else:
-        # For other sections, we'll just use a generic "work in progress" message.
-        message = trans.get_message(
-            "practice", "session_wip", lang_code, section=section.capitalize()
+    # We can send a generic confirmation message here,
+    # but the respective handlers should take over the conversation.
+    # For example, we might just edit the message to show "Loading..."
+    # before the new handler takes over.
+    await query.edit_message_text(
+        text=trans.get_message(
+            "practice", "loading_session", lang_code, section=section.capitalize()
         )
-        await query.edit_message_text(text=message)
+    )
 
-async def handle_reading_answer(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Handles the user's answer to a reading question."""
-    query = update.callback_query
-    await query.answer()
-
-    user_id = query.from_user.id
-    lang_code = trans.detect_language(query.from_user.to_dict())
-
-    # Parse callback data
-    try:
-        _, question_id, selected_index_str = query.data.split(':')
-        selected_index = int(selected_index_str)
-    except (ValueError, IndexError):
-        await query.edit_message_text(text=trans.get_message("errors", "invalid_action", lang_code))
-        return
-
-    current_question = context.user_data.get('current_question')
-    if not current_question or current_question.get("question_id") != question_id:
-        await query.edit_message_text(text=trans.get_message("errors", "session_expired", lang_code))
-        return
-
-    session = db.session.query(PracticeSession).filter_by(id=current_question["session_id"]).first()
-    if not session:
-        await query.edit_message_text(text=trans.get_message("errors", "session_not_found", lang_code))
-        return
-
-    is_correct = (selected_index == current_question["correct_option_index"])
-    
-    # Update stats
-    session.total_questions += 1
-    user = db.session.query(User).filter_by(user_id=user_id).first()
-    
-    stats = user.stats or {}
-    reading_stats = stats.get("reading", {"correct": 0, "total": 0})
-    reading_stats["total"] += 1
-    
-    feedback_message = ""
-    if is_correct:
-        session.correct_answers += 1
-        reading_stats["correct"] += 1
-        feedback_message = trans.get_message("practice", "correct_answer", lang_code)
-    else:
-        # Find the correct answer text to show the user
-        reading_data = load_reading_data()
-        correct_text = ""
-        # This is inefficient but simple. A better approach would be to not reload the file.
-        for p_set in reading_data:
-            for q in p_set['questions']:
-                if q['question_id'] == question_id:
-                    correct_text = q['options'][current_question["correct_option_index"]]
-                    break
-            if correct_text:
-                break
-        feedback_message = trans.get_message("practice", "incorrect_answer", lang_code, correct_answer=correct_text)
-
-    user.stats = stats
-    flag_modified(user, "stats")
-    db.session.add(session)
-    db.session.add(user)
-    db.session.commit()
-    
-    await query.edit_message_text(text=feedback_message)
-
-    # Clean up user_data
-    del context.user_data['current_question']
+# The reading practice logic has been moved to handlers/reading_practice_handler.py
 
 # Placeholder for translation keys that would be added to en.json/es.json:
 # "practice": {

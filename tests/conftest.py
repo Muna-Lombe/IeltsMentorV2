@@ -5,7 +5,7 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import pytest
-from unittest.mock import MagicMock, AsyncMock, patch
+from unittest.mock import MagicMock, AsyncMock, patch, Mock
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker
 from telegram import Update
@@ -25,7 +25,7 @@ TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engin
 def app():
     """Create and configure a new app instance for each test session."""
     app = create_app('testing')
-    app.config.update({"TESTING": True, "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:"})
+    app.config.update({"TESTING": True, "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:", 'SQLALCHEMY_TRACK_MODIFICATIONS': False, 'WTF_CSRF_ENABLED': False})
     
     with app.app_context():
         # Bind the app's db metadata to the test engine
@@ -92,12 +92,49 @@ def mock_update():
 
 @pytest.fixture
 def mock_context():
-    """Creates a generic mock for the telegram.ext.CallbackContext object."""
-    context = MagicMock()
-    context.bot = MagicMock()
-    context.bot.send_message = AsyncMock()
-    context.user_data = {}
-    return context
+    """Create mock Telegram context object."""
+    mock_context = MagicMock()
+    mock_context.bot = AsyncMock()
+    mock_context.user_data = {}
+    
+    return mock_context
+
+class MockUser:
+    def __init__(self, id, first_name="Test", last_name="User", username="testuser", preferred_language="en"):
+        self.id = id
+        self.first_name = first_name
+        self.last_name = last_name
+        self.username = username
+        self.preferred_language = preferred_language
+        self.is_admin = False
+        # Add a mock 'stats' attribute to align with the User model
+        self.stats = {'reading': {'correct': 0, 'total': 0}, 'writing': {'tasks_submitted': 0, 'avg_score': 0}}
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'first_name': self.first_name,
+            'last_name': self.last_name,
+            'username': self.username,
+            'language_code': self.preferred_language
+        }
+
+class MockMessage:
+    def __init__(self, text, from_user=None):
+        self.text = text
+        self.from_user = from_user or MockUser(id=123)
+        self.chat_id = 12345
+        self.reply_text = AsyncMock()
+        self.delete = AsyncMock()
+        self.edit_text = AsyncMock()
+
+class MockCallbackQuery:
+    def __init__(self, data, from_user=None, message=None):
+        self.data = data
+        self.from_user = from_user or MockUser(id=123)
+        self.message = message or MockMessage(text="Original message")
+        self.answer = AsyncMock()
+        self.edit_message_text = AsyncMock()
 
 # --- Data Fixtures ---
 

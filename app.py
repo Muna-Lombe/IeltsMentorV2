@@ -12,7 +12,8 @@ from handlers import (
     ai_commands_handler, 
     teacher_handler, 
     exercise_management_handler,
-    speaking_practice_handler
+    speaking_practice_handler,
+    writing_practice_handler
 )
 
 # Configure logging
@@ -39,6 +40,7 @@ application.add_handler(teacher_handler.create_group_conv_handler)
 application.add_handler(CommandHandler("my_exercises", exercise_management_handler.my_exercises_command))
 application.add_handler(exercise_management_handler.create_exercise_conv_handler)
 application.add_handler(speaking_practice_handler.speaking_practice_conv_handler)
+application.add_handler(writing_practice_handler.writing_practice_conv_handler)
 
 # Register callback query handlers
 application.add_handler(CallbackQueryHandler(practice_handler.practice_section_callback, pattern=f"^{practice_handler.PRACTICE_CALLBACK_LISTENING}|{practice_handler.PRACTICE_CALLBACK_READING}|{practice_handler.PRACTICE_CALLBACK_SPEAKING}|{practice_handler.PRACTICE_CALLBACK_WRITING}"))

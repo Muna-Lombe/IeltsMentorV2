@@ -224,6 +224,96 @@ Return the response as a JSON object with the following keys:
             logger.error(f"Failed to parse JSON question from OpenAI: {e}")
             raise
 
+    def generate_writing_task(self, task_type: int) -> dict:
+        """
+        Generates a task for IELTS Writing.
+
+        Args:
+            task_type: The type of writing task (1 or 2).
+
+        Returns:
+            A dictionary containing the task details.
+        """
+        task_prompts = {
+            1: "Generate a detailed IELTS Writing Task 1 prompt. The prompt should describe a chart, graph, table, or diagram. The student needs to summarize the information by selecting and reporting the main features, and make comparisons where relevant.",
+            2: "Generate a standard IELTS Writing Task 2 essay question. The question should present a point of view, argument, or problem, and ask the student to write an essay in response."
+        }
+        if task_type not in task_prompts:
+            raise ValueError("Invalid task type for writing question.")
+
+        system_message = f"""
+You are an expert IELTS examiner creating a practice test.
+Your task is to generate a prompt for IELTS Writing Task {task_type}.
+
+{task_prompts[task_type]}
+
+Return the response as a JSON object with the following keys:
+- "task_type": The integer {task_type}.
+- "question": The full task prompt to be presented to the student.
+- "image_url": For Task 1, an optional URL to an image of the chart or graph. For Task 2, this should be null.
+"""
+        try:
+            response = self.client.chat.completions.create(
+                model="gpt-4o",
+                messages=[{"role": "system", "content": system_message}],
+                response_format={"type": "json_object"},
+                temperature=0.8,
+            )
+            task_data = json.loads(response.choices[0].message.content)
+            return task_data
+        except OpenAIError as e:
+            logger.error(f"OpenAI API error during writing task generation: {e}")
+            raise
+        except (json.JSONDecodeError, TypeError) as e:
+            logger.error(f"Failed to parse JSON writing task from OpenAI: {e}")
+            raise
+
+    def provide_writing_feedback(self, essay_text: str, task_type: int, question: str) -> dict:
+        """
+        Generates structured feedback for an IELTS writing response.
+
+        Args:
+            essay_text: The user's written response.
+            task_type: The writing task type (1 or 2).
+            question: The question the user was answering.
+
+        Returns:
+            A dictionary containing structured feedback.
+        """
+        system_message = f"""
+You are an expert IELTS writing examiner. Your task is to provide constructive feedback on a student's essay for IELTS Writing Task {task_type}.
+The student was responding to the following prompt: "{question}"
+
+Please analyze the following essay:
+---
+{essay_text}
+---
+
+Provide your feedback in a structured JSON format with the following keys:
+- "strengths": [A list of 1-2 specific strengths of the essay.]
+- "areas_for_improvement": [A list of 1-2 specific and actionable areas for improvement.]
+- "task_achievement": "A brief comment on how well the writer addressed the task requirements.",
+- "coherence_cohesion": "A brief comment on the organization, paragraphing, and linking of ideas.",
+- "lexical_resource": "A brief comment on the range and accuracy of the vocabulary used.",
+- "grammatical_range_accuracy": "A brief comment on the range and accuracy of grammar.",
+- "estimated_band": A float representing the estimated band score for this essay, from 6.0 to 9.0.
+"""
+        try:
+            response = self.client.chat.completions.create(
+                model="gpt-4o",
+                messages=[{"role": "system", "content": system_message}],
+                response_format={"type": "json_object"},
+                temperature=0.7,
+            )
+            feedback = json.loads(response.choices[0].message.content)
+            return feedback
+        except OpenAIError as e:
+            logger.error(f"OpenAI API error during writing feedback generation: {e}")
+            raise
+        except (json.JSONDecodeError, TypeError) as e:
+            logger.error(f"Failed to parse JSON writing feedback from OpenAI: {e}")
+            raise
+
 # Example usage (for testing this file directly)
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO) # Ensure root logger is configured for stream output

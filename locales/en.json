@@ -66,7 +66,11 @@
     "my_exercises_list_title": "Here are your created exercises:",
     "my_exercises_none": "You have not created any exercises yet. Use /create_exercise to begin.",
     "exercise_status_published": "Published",
-    "exercise_status_draft": "Draft"
+    "exercise_status_draft": "Draft",
+    "group_name_prompt": "Please enter the name for your new group.",
+    "group_description_prompt": "Great! Now, please enter a short description for the group '{group_name}'.",
+    "group_created": "✅ Group '{group_name}' has been created successfully!",
+    "group_creation_canceled": "Group creation has been canceled."
   },
   "teacher_exercise": {
     "create_start": "Let's create a new exercise. First, what is the title of the exercise?",
@@ -96,5 +100,20 @@
     "pronunciation_label": "Pronunciation",
     "next_tip_label": "Next Tip",
     "error_formatting_feedback": "Sorry, there was an error formatting your feedback."
+  },
+  "writing_practice": {
+    "welcome": "Welcome to Writing Practice! Please choose a task to begin.",
+    "generating_task": "Generating your writing task, please wait...",
+    "task_prompt_single_message": "Please send your full response in a single text message.",
+    "analysis_in_progress": "Thank you. Analyzing your essay now, this may take a moment...",
+    "session_not_found": "Could not find your practice session. Please start again.",
+    "feedback_summary_title": "*Writing Feedback Summary*",
+    "estimated_band": "*Estimated Band:*",
+    "task_achievement": "*Task Achievement:*",
+    "coherence_cohesion": "*Coherence & Cohesion:*",
+    "lexical_resource": "*Lexical Resource (Vocabulary):*",
+    "grammatical_range_accuracy": "*Grammatical Range & Accuracy:*",
+    "strengths": "*Strengths:*",
+    "areas_for_improvement": "*Areas for Improvement:*"
   }
 } 

@@ -143,10 +143,16 @@ async def get_content(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     context.user_data["content"] = content
     
+    # Find the teacher profile associated with the user
+    teacher = user.teacher_profile
+    if not teacher:
+        await update.message.reply_text(text=trans.get_message('teacher', 'teacher_profile_not_found', user.preferred_language))
+        return ConversationHandler.END
+
     # All data collected, create the exercise
     exercise_data = context.user_data
     new_exercise = TeacherExercise(
-        creator_id=user.id,
+        creator_id=teacher.id,  # Use the teacher's ID
         title=exercise_data["title"],
         description=exercise_data["description"],
         exercise_type=exercise_data["type"],
@@ -154,7 +160,7 @@ async def get_content(update: Update, context: ContextTypes.DEFAULT_TYPE):
         content=exercise_data["content"],
     )
     db.session.add(new_exercise)
-    db.session.flush()
+    db.session.commit()  # Commit the changes to the database
 
     await update.message.reply_text(
         text=trans.get_message(

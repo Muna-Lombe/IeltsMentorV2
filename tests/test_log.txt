@@ -50,8 +50,8 @@ tests/test_student_features.py::test_define_command_with_valid_word PASSED [100%
   /home/muna/miniconda3/lib/python3.11/site-packages/pydub/utils.py:14: DeprecationWarning: 'audioop' is deprecated and slated for removal in Python 3.13
     import audioop
 
-handlers/exercise_management_handler.py:215
-  /home/muna/code/Muna-Lombe/tutorials/PythOn/telegram/bots/IeltsMentorV2/handlers/exercise_management_handler.py:215: PTBUserWarning: If 'per_message=False', 'CallbackQueryHandler' will not be tracked for every message. Read this FAQ entry to learn more about the per_* settings: https://github.com/python-telegram-bot/python-telegram-bot/wiki/Frequently-Asked-Questions#what-do-the-per_-settings-in-conversationhandler-do.
+handlers/exercise_management_handler.py:221
+  /home/muna/code/Muna-Lombe/tutorials/PythOn/telegram/bots/IeltsMentorV2/handlers/exercise_management_handler.py:221: PTBUserWarning: If 'per_message=False', 'CallbackQueryHandler' will not be tracked for every message. Read this FAQ entry to learn more about the per_* settings: https://github.com/python-telegram-bot/python-telegram-bot/wiki/Frequently-Asked-Questions#what-do-the-per_-settings-in-conversationhandler-do.
     create_exercise_conv_handler = ConversationHandler(
 
 handlers/speaking_practice_handler.py:167
@@ -59,4 +59,4 @@ handlers/speaking_practice_handler.py:167
     speaking_practice_conv_handler = ConversationHandler(
 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
-======================== 38 passed, 3 warnings in 1.15s ========================
+======================== 38 passed, 3 warnings in 0.56s ========================

@@ -1,23 +1,23 @@
 from extensions import db
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, JSON, ForeignKey
 from sqlalchemy.orm import relationship
-import datetime
-from .user import JSONBType
+from datetime import datetime
 
 class TeacherExercise(db.Model):
     __tablename__ = 'teacher_exercises'
 
-    id = db.Column(db.Integer, primary_key=True)
-    creator_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    title = db.Column(db.String(255), nullable=False)
-    description = db.Column(db.Text, nullable=True)
-    exercise_type = db.Column(db.String(20), nullable=False)
-    content = db.Column(JSONBType, nullable=False)
-    difficulty = db.Column(db.String(20), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
-    is_published = db.Column(db.Boolean, default=False, nullable=False)
+    id = Column(Integer, primary_key=True, index=True)
+    creator_id = Column(Integer, ForeignKey('teachers.id'), nullable=False, index=True)
+    title = Column(String(255), nullable=False)
+    description = Column(Text, nullable=True)
+    exercise_type = Column(String(20), nullable=False)
+    content = Column(JSON, nullable=False)
+    difficulty = Column(String(20), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    is_published = Column(Boolean, default=False, nullable=False)
 
-    creator = relationship("User", back_populates="created_exercises")
+    creator = relationship("Teacher", back_populates="created_exercises")
 
     def __repr__(self):
-        return f'<TeacherExercise {self.title}>' 
+        return f"<TeacherExercise(id={self.id}, title='{self.title}', creator_id={self.creator_id})>" 

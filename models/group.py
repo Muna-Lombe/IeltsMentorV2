@@ -1,19 +1,21 @@
 from extensions import db
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, ForeignKey
 from sqlalchemy.orm import relationship
-import datetime
+from datetime import datetime
 
 class Group(db.Model):
     __tablename__ = 'groups'
 
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text, nullable=True)
-    teacher_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-    is_active = db.Column(db.Boolean, default=True, nullable=False)
-    last_updated = db.Column(db.DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(100), nullable=False)
+    description = Column(Text, nullable=True)
+    teacher_id = Column(Integer, ForeignKey('teachers.id'), nullable=False, index=True)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    is_active = Column(Boolean, default=True, nullable=False)
+    last_updated = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    teacher = relationship("User", back_populates="groups_taught")
+    # Relationship to the Teacher model
+    teacher = relationship("Teacher", back_populates="groups")
 
     def __repr__(self):
-        return f'<Group {self.name}>' 
+        return f"<Group(id={self.id}, name='{self.name}', teacher_id={self.teacher_id})>" 

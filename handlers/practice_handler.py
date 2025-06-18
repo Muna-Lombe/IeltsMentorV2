@@ -133,7 +133,7 @@ async def handle_reading_answer(update: Update, context: ContextTypes.DEFAULT_TY
     session = db.session.query(PracticeSession).filter_by(id=current_question["session_id"]).first()
     if not session:
         await query.edit_message_text(text=trans.get_message("errors", "session_not_found", lang_code))
-            return
+        return
 
     is_correct = (selected_index == current_question["correct_option_index"])
     
@@ -146,7 +146,7 @@ async def handle_reading_answer(update: Update, context: ContextTypes.DEFAULT_TY
     reading_stats["total"] += 1
     
     feedback_message = ""
-        if is_correct:
+    if is_correct:
         session.correct_answers += 1
         reading_stats["correct"] += 1
         feedback_message = trans.get_message("practice", "correct_answer", lang_code)

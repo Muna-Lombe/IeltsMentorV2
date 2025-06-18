@@ -16,6 +16,7 @@ GET_GROUP_NAME, GET_GROUP_DESCRIPTION = range(2)
 @teacher_required
 async def create_group_start(update: Update, context: ContextTypes.DEFAULT_TYPE, user: User):
     """Starts the group creation conversation."""
+    context.user_data['user_id'] = user.user_id  # Pass user_id to context
     await update.message.reply_text(text=trans.get_message('teacher', 'create_group_start', user.preferred_language))
     return GET_GROUP_NAME
 
@@ -44,13 +45,19 @@ async def get_group_description(update: Update, context: ContextTypes.DEFAULT_TY
     group_name = context.user_data.get('group_name')
     group_description = update.message.text
 
+    # Find the teacher profile associated with the user
+    teacher = user.teacher_profile
+    if not teacher:
+        await update.message.reply_text(text=trans.get_message('teacher', 'teacher_profile_not_found', user.preferred_language))
+        return ConversationHandler.END
+
     new_group = Group(
         name=group_name,
         description=group_description,
-        teacher_id=user.id
+        teacher_id=teacher.id  # Use the teacher's ID
     )
     db.session.add(new_group)
-    db.session.flush()
+    db.session.commit()  # Commit the changes to the database
 
     await update.message.reply_text(text=trans.get_message('teacher', 'create_group_success', user.preferred_language, group_name=group_name))
     

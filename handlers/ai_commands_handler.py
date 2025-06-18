@@ -3,6 +3,7 @@ from telegram import Update
 from telegram.ext import ContextTypes
 
 from utils.translation_system import TranslationSystem
+from utils.input_validator import InputValidator
 from services.openai_service import OpenAIService
 from .decorators import error_handler
 
@@ -21,8 +22,15 @@ async def explain_command(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 
     # e.g., /explain grammar present perfect
     ai_context = context.args[0]
-    query = " ".join(context.args[1:])
-    
+    raw_query = " ".join(context.args[1:])
+    query = InputValidator.sanitize_text_input(raw_query)
+
+    if not query:
+        # Handle case where sanitization removes the whole query
+        error_message = TranslationSystem.get_error_message("invalid_input", lang_code)
+        await update.message.reply_text(error_message)
+        return
+
     # Let the user know the bot is working
     thinking_message = await update.message.reply_text(
         TranslationSystem.get_message('ai', 'thinking', lang_code)
@@ -52,7 +60,13 @@ async def define_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         await update.message.reply_text(message)
         return
 
-    word_to_define = context.args[0]
+    raw_word = context.args[0]
+    word_to_define = InputValidator.sanitize_text_input(raw_word, max_length=100) # Shorter max length for a single word
+
+    if not word_to_define:
+        error_message = TranslationSystem.get_error_message("invalid_input", lang_code)
+        await update.message.reply_text(error_message)
+        return
 
     # Let the user know the bot is working
     thinking_message = await update.message.reply_text(

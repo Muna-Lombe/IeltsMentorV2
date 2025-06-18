@@ -16,6 +16,13 @@
     "incorrect_answer": "Not quite. The correct answer was: {correct_answer}",
     "session_wip": "{section} practice is a work in progress. Please check back later!"
   },
+  "errors": {
+    "general": "Sorry, I encountered a problem. Please try again later.",
+    "unknown_command": "Sorry, I didn't understand that command. Type /help to see the list of available commands.",
+    "user_not_found": "Could not find your user profile. Please use /start to register.",
+    "permission_denied_teacher": "This command is only available to approved teachers.",
+    "invalid_input": "Your input was invalid or contained disallowed characters. Please try again."
+  },
   "speaking_practice": {
     "intro": "Welcome to Speaking Practice! Please choose which part you'd like to practice.",
     "part_1_button": "Part 1: Interview",
@@ -47,17 +54,12 @@
     "create_group_success": "✅ Group '{group_name}' has been created successfully!",
     "create_group_cancel": "Group creation has been cancelled.",
     "create_group_invalid_name": "Invalid name. Please provide a name that is at least 3 characters long.",
+    "teacher_profile_not_found": "Could not find your teacher profile. Please contact an admin.",
     "my_exercises_wip": "The /my_exercises command is under construction. Soon you'll be able to see and manage your exercises here.",
     "my_exercises_list_title": "Here are your created exercises:",
     "my_exercises_none": "You have not created any exercises yet. Use /create_exercise to begin.",
     "exercise_status_published": "Published",
     "exercise_status_draft": "Draft"
-  },
-  "errors": {
-    "general_error": "Sorry, something went wrong. Please try again later.",
-    "unknown_command": "Sorry, I didn't understand that command. Type /help to see the list of available commands.",
-    "user_not_found": "Could not find your user profile. Please use /start to register.",
-    "permission_denied_teacher": "This command is only available to approved teachers."
   },
   "teacher_exercise": {
     "create_start": "Let's create a new exercise. First, what is the title of the exercise?",

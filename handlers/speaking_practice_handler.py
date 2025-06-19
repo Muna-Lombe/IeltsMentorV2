@@ -154,7 +154,7 @@ async def handle_voice_message(update: Update, context: ContextTypes.DEFAULT_TYP
         part_number = context.user_data.get("speaking_part", 1)
         feedback = openai_service.generate_speaking_feedback(transcript, part_number, question)
 
-        session.total_questions += 1
+        session.total_questions = (session.total_questions or 0) + 1
         current_session_data = session.session_data or []
         current_session_data.append({
             "part": part_number,
@@ -168,7 +168,7 @@ async def handle_voice_message(update: Update, context: ContextTypes.DEFAULT_TYP
             estimated_band = float(feedback.get('estimated_band', 0.0))
             session.score = ((session.score or 0.0) * (session.total_questions - 1) + estimated_band) / session.total_questions
             if estimated_band > 0:
-                session.correct_answers += 1
+                session.correct_answers = (session.correct_answers or 0) + 1
         except (ValueError, TypeError):
             pass # Keep score as is
 

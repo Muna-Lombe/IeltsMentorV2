@@ -70,7 +70,7 @@ async def practice_section_callback(update: Update, context: ContextTypes.DEFAUL
     # The actual practice start is handled by ConversationHandlers
     # triggered by the callback data.
     logger.info(f"User {user_id} selected '{section}' practice.")
-
+        
     # We can send a generic confirmation message here,
     # but the respective handlers should take over the conversation.
     # For example, we might just edit the message to show "Loading..."

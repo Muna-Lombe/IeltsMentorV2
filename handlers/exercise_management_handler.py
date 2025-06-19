@@ -233,5 +233,6 @@ create_exercise_conv_handler = ConversationHandler(
     },
     fallbacks=[CommandHandler("cancel", cancel_exercise_creation)],
     per_user=True,
-    per_chat=True
-) 
+    per_chat=True,
+    per_message=False,
+)

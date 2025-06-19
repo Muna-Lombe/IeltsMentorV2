@@ -31,8 +31,6 @@ def load_listening_exercises():
         logger.error("Failed to load listening_mcq.json")
         return []
 
-LISTENING_EXERCISES = load_listening_exercises()
-
 async def start_listening_practice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Starts the listening practice session by showing exercise selection."""
     query = update.callback_query
@@ -40,14 +38,15 @@ async def start_listening_practice(update: Update, context: ContextTypes.DEFAULT
 
     user = db.session.query(User).filter_by(user_id=query.from_user.id).first()
     lang_code = user.preferred_language
-
-    if not LISTENING_EXERCISES:
+    
+    listening_exercises = load_listening_exercises()
+    if not listening_exercises:
         await query.edit_message_text(text="Sorry, no listening exercises are available at the moment.")
         return ConversationHandler.END
 
     keyboard = [
         [InlineKeyboardButton(ex["name"], callback_data=f"lp_select_{ex['id']}")]
-        for ex in LISTENING_EXERCISES
+        for ex in listening_exercises
     ]
     keyboard.append([InlineKeyboardButton("Cancel", callback_data="lp_cancel")])
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -63,11 +62,18 @@ async def select_exercise(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     query = update.callback_query
     await query.answer()
     
-    exercise_id = query.data.split('_')[-1]
-    exercise = next((ex for ex in LISTENING_EXERCISES if ex["id"] == exercise_id), None)
+
+    exercise_id = query.data.replace("lp_select_", "")
+    
+    listening_exercises = load_listening_exercises()
+    exercise = next((ex for ex in listening_exercises if ex["id"] == exercise_id), None)
 
     if not exercise:
         await query.edit_message_text(text="Sorry, that exercise could not be found.")
+        print(f"Exercise with id {exercise_id} not found in listening exercises! \n"
+              f"Exercise_id extracted from query: {query.data} \n"
+              f"Listening exercises: {listening_exercises} \n"
+        )
         return ConversationHandler.END
 
     await query.edit_message_text(text=f"Starting: {exercise['name']}")
@@ -77,11 +83,21 @@ async def select_exercise(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         with open(exercise["audio_file"], "rb") as audio:
             await context.bot.send_audio(chat_id=query.message.chat_id, audio=audio)
     except FileNotFoundError:
-        await context.bot.send_message(chat_id=query.message.chat_id, text="Sorry, the audio file for this exercise is missing.")
+        print(f"File not found: {exercise['audio_file']}\n"
+              f"Exercise: {exercise}\n"
+              f"Listening exercises: {listening_exercises}")
+        await context.bot.send_message(
+            chat_id=query.message.chat_id,
+            text="Sorry, the audio file for this exercise is missing.",
+        )
         return ConversationHandler.END
 
     user = db.session.query(User).filter_by(user_id=query.from_user.id).first()
-    session = PracticeSession(user_id=user.id, section=f"listening_{exercise_id}", total_questions=len(exercise["questions"]))
+    session = PracticeSession(
+        user_id=user.id,
+        section=f"listening_{exercise_id}",
+        total_questions=len(exercise["questions"]),
+    )
     db.session.add(session)
     db.session.commit()
 
@@ -97,7 +113,9 @@ async def send_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Sends the current question to the user."""
     exercise_id = context.user_data["exercise_id"]
     question_index = context.user_data["question_index"]
-    exercise = next((ex for ex in LISTENING_EXERCISES if ex["id"] == exercise_id), None)
+    
+    listening_exercises = load_listening_exercises()
+    exercise = next((ex for ex in listening_exercises if ex["id"] == exercise_id), None)
     
     question_data = exercise["questions"][question_index]
     question_text = f"Question {question_data['question_number']}:\n{question_data['question_text']}"
@@ -123,7 +141,9 @@ async def handle_answer(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
     
     exercise_id = context.user_data["exercise_id"]
     question_index = context.user_data["question_index"]
-    exercise = next((ex for ex in LISTENING_EXERCISES if ex["id"] == exercise_id), None)
+    
+    listening_exercises = load_listening_exercises()
+    exercise = next((ex for ex in listening_exercises if ex["id"] == exercise_id), None)
     question_data = exercise["questions"][question_index]
 
     if selected_option == question_data["correct_answer"]:
@@ -179,4 +199,5 @@ listening_practice_conv_handler = ConversationHandler(
     fallbacks=[CallbackQueryHandler(cancel, pattern="^lp_cancel$")],
     per_user=True,
     per_chat=True,
+    per_message=False,
 )

@@ -181,4 +181,5 @@ writing_practice_conv_handler = ConversationHandler(
     fallbacks=[CallbackQueryHandler(cancel, pattern="^wp_cancel$")],
     per_user=True,
     per_chat=True,
+    per_message=False,
 ) 

@@ -23,7 +23,9 @@
     "unknown_command": "Sorry, I didn't understand that command. Type /help to see the list of available commands.",
     "user_not_found": "Could not find your user profile. Please use /start to register.",
     "permission_denied_teacher": "This command is only available to approved teachers.",
-    "invalid_input": "Your input was invalid or contained disallowed characters. Please try again."
+    "invalid_input": "Your input was invalid or contained disallowed characters. Please try again.",
+    "permission_denied_botmaster": "Sorry, this command is restricted to Botmasters only.",
+    "ai_error": "There was an issue with the AI service. Please try again shortly."
   },
   "speaking_practice": {
     "intro": "Welcome to Speaking Practice! Please choose which part you'd like to practice.",
@@ -126,5 +128,14 @@
     "grammatical_range_accuracy": "*Grammatical Range & Accuracy:*",
     "strengths": "*Strengths:*",
     "areas_for_improvement": "*Areas for Improvement:*"
+  },
+  "botmaster": {
+    "approve_teacher_prompt": "Please enter the Telegram User ID or @username of the teacher you want to approve.",
+    "user_not_found": "Sorry, I could not find a user with that ID or username.",
+    "not_a_teacher_applicant": "This user has not registered as a teacher and cannot be approved.",
+    "already_approved": "This teacher has already been approved.",
+    "approve_teacher_success": "✅ Success! Teacher {teacher_name} has been approved.",
+    "action_cancelled": "Action cancelled.",
+    "system_stats_message": "📊 *System Statistics*\n\n- Total Users: {total_users}\n- Approved Teachers: {total_teachers}\n- Total Groups: {total_groups}\n- Custom Exercises: {total_exercises}\n- Homeworks Assigned: {total_homeworks}"
   }
 } 

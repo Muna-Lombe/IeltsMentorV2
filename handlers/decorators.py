@@ -65,6 +65,30 @@ def teacher_required(func):
             return await func(update, context, user=user, *args, **kwargs)
     return wrapper
 
+def botmaster_required(func):
+    """
+    Decorator to ensure a user is a botmaster.
+    Passes the user object from the database to the decorated function.
+    """
+    @wraps(func)
+    async def wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE, *args, **kwargs):
+        if not update.effective_user:
+            return ConversationHandler.END
+
+        with current_app.app_context():
+            user_id = update.effective_user.id
+            user = db.session.query(User).filter(User.user_id == user_id).first()
+            
+            language = user.preferred_language if user and user.preferred_language else trans.detect_language(update.effective_user.to_dict())
+
+            if not user or not user.is_botmaster:
+                if update.message:
+                    await update.message.reply_text(text=trans.get_message('errors', 'permission_denied_botmaster', language))
+                return ConversationHandler.END
+
+            return await func(update, context, user=user, *args, **kwargs)
+    return wrapper
+
 class BotError(Exception):
     """Base exception class for bot-specific errors."""
     def __init__(self, message: str, error_type: str = 'general'):

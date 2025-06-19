@@ -157,13 +157,14 @@ def sample_user(session):
 def regular_user(session):
     """Create a second sample user for testing interactions."""
     user = User(
-        user_id=111,
+        user_id=999,
         first_name="Regular",
         last_name="User",
         username="regularuser"
     )
     session.add(user)
     session.flush()
+    session.commit()
     return user
 
 @pytest.fixture(scope='function')
@@ -278,3 +279,56 @@ def sample_exercise(db_session, sample_teacher):
     # Implementation of this fixture is not provided in the original file or the new code block
     # This fixture is assumed to exist as it's called in the new code block
     pass
+
+@pytest.fixture
+def botmaster_user(session):
+    """Create a botmaster user for testing."""
+    user = User(
+        user_id=111,
+        first_name="Bot",
+        last_name="Master",
+        username="botmaster",
+        is_botmaster=True
+    )
+    session.add(user)
+    session.commit()
+    return user
+
+@pytest.fixture
+def pending_teacher_user(session):
+    """Create a user who has a teacher profile but is not yet approved."""
+    user = User(
+        user_id=222,
+        first_name="Pending",
+        last_name="Teacher",
+        username="pendingteacher"
+    )
+    session.add(user)
+    session.flush()
+
+    teacher = Teacher(
+        user_id=user.id,
+        is_approved=False
+    )
+    session.add(teacher)
+    session.commit()
+    return user
+
+@pytest.fixture
+def sample_teacher(db_session):
+    """Create a sample teacher for testing."""
+    user = User(
+        user_id=777,
+        first_name="Approved",
+        last_name="Teacher",
+        username="approvedteacher",
+        is_admin=True
+    )
+    db.session.add(user)
+    db.session.commit()
+    return user
+
+@pytest.fixture
+def client(app):
+    """A test client for the app."""
+    return app.test_client()

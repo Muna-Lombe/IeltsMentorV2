@@ -1,6 +1,7 @@
 import os
 import logging
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template, redirect, url_for, session, flash
+from functools import wraps
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, CallbackQueryHandler
 
@@ -15,12 +16,14 @@ from handlers import (
     speaking_practice_handler,
     writing_practice_handler,
     listening_practice_handler,
+    botmaster_handler,
 )
 from handlers.reading_practice_handler import reading_practice_conv_handler
 from handlers.speaking_practice_handler import speaking_practice_conv_handler
 from handlers.writing_practice_handler import writing_practice_conv_handler
 from handlers.listening_practice_handler import listening_practice_conv_handler
 from utils.translation_system import TranslationSystem
+from services.auth_service import AuthService
 from extensions import db
 
 # Configure logging
@@ -51,6 +54,8 @@ application.add_handler(reading_practice_conv_handler)
 application.add_handler(speaking_practice_conv_handler)
 application.add_handler(writing_practice_conv_handler)
 application.add_handler(listening_practice_conv_handler)
+application.add_handler(botmaster_handler.approve_teacher_conv_handler)
+application.add_handler(CommandHandler("system_stats", botmaster_handler.system_stats))
 
 # Register callback query handlers
 # The practice_section_callback is no longer needed as each practice type
@@ -61,6 +66,14 @@ application.add_error_handler(core_handlers.error_handler)
 
 # Fallback for unknown commands
 application.add_handler(MessageHandler(filters.COMMAND, core_handlers.unknown_command))
+
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 def create_app(config_name='development'):
     """Create and configure an instance of the Flask application."""
@@ -77,10 +90,129 @@ def create_app(config_name='development'):
     with app.app_context():
         from models.user import User
         from models.practice_session import PracticeSession
+        from models.group import Group
+        from models.exercise import TeacherExercise
 
         @app.route("/")
         def index():
             return "Hello, IELTS Prep Bot is alive! Flask is running."
+        
+        @app.route("/login", methods=["GET", "POST"])
+        def login():
+            if request.method == "POST":
+                token = request.form.get("api_token")
+                user = AuthService.validate_token(token)
+                if user:
+                    session['user_id'] = user.id
+                    session['user_first_name'] = user.first_name
+                    return redirect(url_for('dashboard'))
+                else:
+                    flash("Invalid API Token. Please try again.", "error")
+                    return render_template("login.html", error="Invalid API Token.")
+            return render_template("login.html")
+
+        @app.route("/dashboard")
+        @login_required
+        def dashboard():
+            user_first_name = session.get('user_first_name', 'Teacher')
+            return render_template("dashboard.html", user={'first_name': user_first_name})
+
+        @app.route("/logout")
+        def logout():
+            session.clear()
+            return redirect(url_for('login'))
+
+        # API Endpoints
+        @app.route("/api/groups", methods=["GET"])
+        @login_required
+        def get_groups():
+            teacher_user_id = session.get('user_id')
+            teacher = db.session.query(User).filter_by(id=teacher_user_id).first()
+            
+            if not teacher or not teacher.teacher_profile:
+                return jsonify({"success": False, "error": "Teacher profile not found"}), 404
+
+            groups = teacher.teacher_profile.groups
+            groups_data = [{"id": group.id, "name": group.name, "description": group.description} for group in groups]
+            
+            return jsonify({"success": True, "data": groups_data})
+
+        @app.route("/api/groups", methods=["POST"])
+        @login_required
+        def create_group():
+            teacher_user_id = session.get('user_id')
+            teacher = db.session.query(User).filter_by(id=teacher_user_id).first()
+
+            if not teacher or not teacher.teacher_profile:
+                return jsonify({"success": False, "error": "Teacher profile not found"}), 404
+
+            data = request.json
+            name = data.get('name')
+            description = data.get('description')
+
+            if not name:
+                return jsonify({"success": False, "error": "Group name is required"}), 400
+
+            new_group = Group(
+                name=name,
+                description=description,
+                teacher_id=teacher.id
+            )
+            db.session.add(new_group)
+            db.session.commit()
+
+            return jsonify({"success": True, "data": {"id": new_group.id, "name": new_group.name, "description": new_group.description}}), 201
+
+        @app.route("/api/exercises", methods=["GET"])
+        @login_required
+        def get_exercises():
+            teacher_user_id = session.get('user_id')
+            
+            exercises = db.session.query(TeacherExercise).filter_by(creator_id=teacher_user_id).all()
+            
+            exercises_data = [
+                {
+                    "id": ex.id, 
+                    "title": ex.title, 
+                    "description": ex.description,
+                    "exercise_type": ex.exercise_type,
+                    "difficulty": ex.difficulty,
+                    "is_published": ex.is_published
+                } for ex in exercises
+            ]
+            
+            return jsonify({"success": True, "data": exercises_data})
+
+        @app.route("/api/exercises", methods=["POST"])
+        @login_required
+        def create_exercise():
+            teacher_user_id = session.get('user_id')
+            data = request.json
+
+            # Basic validation
+            required_fields = ['title', 'description', 'exercise_type', 'difficulty', 'content']
+            if not all(field in data for field in required_fields):
+                return jsonify({"success": False, "error": "Missing required fields"}), 400
+
+            new_exercise = TeacherExercise(
+                creator_id=teacher_user_id,
+                title=data['title'],
+                description=data['description'],
+                exercise_type=data['exercise_type'],
+                difficulty=data['difficulty'],
+                content=data['content'] # Assuming content is a valid JSON object
+            )
+            db.session.add(new_exercise)
+            db.session.commit()
+
+            return jsonify({
+                "success": True, 
+                "data": {
+                    "id": new_exercise.id,
+                    "title": new_exercise.title,
+                    "description": new_exercise.description
+                }
+            }), 201
 
         @app.route("/webhook", methods=["POST"])
         async def webhook():

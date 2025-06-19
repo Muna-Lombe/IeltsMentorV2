@@ -62,10 +62,13 @@
     "assign_homework_cancel": "La asignación de tarea ha sido cancelada."
   },
   "errors": {
-    "general_error": "Lo siento, algo salió mal. Por favor, inténtalo de nuevo más tarde.",
+    "general_error": "Ocurrió un error inesperado. El equipo ha sido notificado. Por favor, inténtalo de nuevo más tarde.",
     "unknown_command": "Lo siento, no entendí ese comando. Escribe /ayuda para ver la lista de comandos disponibles.",
     "user_not_found": "No se pudo encontrar tu perfil de usuario. Por favor, usa /start para registrarte.",
-    "permission_denied_teacher": "Este comando solo está disponible para profesores aprobados."
+    "permission_denied_teacher": "Lo sentimos, no tienes los permisos necesarios para realizar esta acción. Debes ser un profesor aprobado.",
+    "permission_denied_botmaster": "Lo sentimos, este comando está restringido solo para Botmasters.",
+    "invalid_input": "La entrada proporcionada no es válida. Por favor, verifica e inténtalo de nuevo.",
+    "ai_error": "Hubo un problema con el servicio de IA. Por favor, inténtalo de nuevo en breve."
   },
   "teacher_exercise": {
     "create_start": "Vamos a crear un nuevo ejercicio. Primero, ¿cuál es el título del ejercicio?",
@@ -100,5 +103,14 @@
     "error_formatting_feedback": "Lo siento, ha habido un error al formatear tus comentarios.",
     "practice_canceled": "Práctica cancelada.",
     "feature_not_implemented": "Esta función aún no está implementada. Por favor, selecciona otra opción."
+  },
+  "botmaster": {
+    "approve_teacher_prompt": "Por favor, introduce el ID de usuario de Telegram o el @username del profesor que quieres aprobar.",
+    "user_not_found": "Lo siento, no pude encontrar un usuario con ese ID o nombre de usuario.",
+    "not_a_teacher_applicant": "Este usuario no se ha registrado como profesor y no puede ser aprobado.",
+    "already_approved": "Este profesor ya ha sido aprobado.",
+    "approve_teacher_success": "✅ ¡Éxito! El profesor {teacher_name} ha sido aprobado.",
+    "action_cancelled": "Acción cancelada.",
+    "system_stats_message": "📊 *Estadísticas del Sistema*\n\n- Usuarios Totales: {total_users}\n- Profesores Aprobados: {total_teachers}\n- Grupos Totales: {total_groups}\n- Ejercicios Personalizados: {total_exercises}\n- Tareas Asignadas: {total_homeworks}"
   }
 }

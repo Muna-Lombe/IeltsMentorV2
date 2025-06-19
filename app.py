@@ -44,6 +44,7 @@ application.add_handler(CommandHandler("practice", practice_handler.practice_com
 application.add_handler(CommandHandler("explain", ai_commands_handler.explain_command))
 application.add_handler(CommandHandler("define", ai_commands_handler.define_command))
 application.add_handler(teacher_handler.create_group_conv_handler)
+application.add_handler(teacher_handler.assign_homework_conv_handler)
 application.add_handler(CommandHandler("my_exercises", exercise_management_handler.my_exercises_command))
 application.add_handler(exercise_management_handler.create_exercise_conv_handler)
 application.add_handler(reading_practice_conv_handler)

@@ -14,7 +14,8 @@
     "reading_session_complete": "¡Práctica de lectura completada!\\nTu puntuación: {score} ({percentage}%).",
     "correct_answer": "¡Correcto! 🎉",
     "incorrect_answer": "No del todo. La respuesta correcta era: {correct_answer}",
-    "session_wip": "La práctica de {section} es un trabajo en progreso. ¡Por favor, vuelve más tarde!"
+    "session_wip": "La práctica de {section} es un trabajo en progreso. ¡Por favor, vuelve más tarde!",
+    "welcome_reading": "¡Bienvenido a la práctica de lectura!"
   },
   "speaking_practice": {
     "intro": "¡Bienvenido a la Práctica de Expresión Oral! Por favor, elige qué parte te gustaría practicar.",
@@ -51,7 +52,14 @@
     "my_exercises_list_title": "Aquí están tus ejercicios creados:",
     "my_exercises_none": "Aún no has creado ningún ejercicio. Usa /create_exercise para empezar.",
     "exercise_status_published": "Publicado",
-    "exercise_status_draft": "Borrador"
+    "exercise_status_draft": "Borrador",
+    "no_groups_for_homework": "Aún no has creado ningún grupo. Por favor, crea un grupo primero usando /create_group.",
+    "assign_homework_select_group": "Por favor, selecciona un grupo para asignarle la tarea:",
+    "no_exercises_to_assign": "Aún no has creado ningún ejercicio. Por favor, crea uno primero usando /create_exercise.",
+    "no_published_exercises_to_assign": "No tienes ejercicios publicados para asignar. Por favor, crea y publica un ejercicio primero.",
+    "assign_homework_select_exercise": "Por favor, selecciona un ejercicio para asignar:",
+    "assign_homework_success": "✅ ¡Tarea asignada con éxito!\\n\\nEl ejercicio '{exercise_title}' ha sido asignado al grupo '{group_name}'.",
+    "assign_homework_cancel": "La asignación de tarea ha sido cancelada."
   },
   "errors": {
     "general_error": "Lo siento, algo salió mal. Por favor, inténtalo de nuevo más tarde.",

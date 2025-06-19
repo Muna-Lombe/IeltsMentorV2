@@ -1,7 +1,13 @@
 from extensions import db
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, ForeignKey, Table
 from sqlalchemy.orm import relationship
 from datetime import datetime
+
+# Association Table for the many-to-many relationship between Users and Groups
+group_membership_table = Table('group_membership', db.Model.metadata,
+    Column('user_id', Integer, ForeignKey('users.id'), primary_key=True),
+    Column('group_id', Integer, ForeignKey('groups.id'), primary_key=True)
+)
 
 class Group(db.Model):
     __tablename__ = 'groups'
@@ -16,6 +22,12 @@ class Group(db.Model):
 
     # Relationship to the Teacher model
     teacher = relationship("Teacher", back_populates="groups")
+    
+    # Many-to-many relationship with User (students)
+    members = relationship("User", secondary=group_membership_table, back_populates="groups")
+    
+    # Relationship to Homework
+    homework_assignments = relationship("Homework", back_populates="group", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<Group(id={self.id}, name='{self.name}', teacher_id={self.teacher_id})>" 

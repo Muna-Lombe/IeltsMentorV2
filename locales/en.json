@@ -15,7 +15,8 @@
     "reading_session_complete": "Reading practice complete!\\nYour score: {score} ({percentage}%).",
     "correct_answer": "Correct! 🎉",
     "incorrect_answer": "Not quite. The correct answer was: {correct_answer}",
-    "session_wip": "{section} practice is a work in progress. Please check back later!"
+    "session_wip": "{section} practice is a work in progress. Please check back later!",
+    "welcome_reading": "Welcome to reading practice!"
   },
   "errors": {
     "general": "Sorry, I encountered a problem. Please try again later.",
@@ -73,7 +74,14 @@
     "group_name_prompt": "Please enter the name for your new group.",
     "group_description_prompt": "Great! Now, please enter a short description for the group '{group_name}'.",
     "group_created": "✅ Group '{group_name}' has been created successfully!",
-    "group_creation_canceled": "Group creation has been canceled."
+    "group_creation_canceled": "Group creation has been canceled.",
+    "no_groups_for_homework": "You have not created any groups yet. Please create a group first using /create_group.",
+    "assign_homework_select_group": "Please select a group to assign homework to:",
+    "no_exercises_to_assign": "You have not created any exercises yet. Please create one first using /create_exercise.",
+    "no_published_exercises_to_assign": "You have no published exercises to assign. Please create and publish an exercise first.",
+    "assign_homework_select_exercise": "Please select an exercise to assign:",
+    "assign_homework_success": "✅ Homework assigned successfully!\\n\\nExercise '{exercise_title}' has been assigned to group '{group_name}'.",
+    "assign_homework_cancel": "Homework assignment has been cancelled."
   },
   "teacher_exercise": {
     "create_start": "Let's create a new exercise. First, what is the title of the exercise?",

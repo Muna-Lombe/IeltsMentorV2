@@ -29,6 +29,12 @@ class User(db.Model):
     # Relationships
     practice_sessions = relationship("PracticeSession", back_populates="user", cascade="all, delete-orphan")
     teacher_profile = relationship("Teacher", back_populates="user", uselist=False, cascade="all, delete-orphan")
+    
+    # Many-to-many relationship with Group (for students)
+    groups = relationship("Group", secondary="group_membership", back_populates="members")
+    
+    # Relationship to HomeworkSubmissions
+    homework_submissions = relationship("HomeworkSubmission", back_populates="student", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<User(id={self.id}, user_id={self.user_id}, username='{self.username}')>" 

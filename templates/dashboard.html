@@ -71,7 +71,10 @@
             if (result.success && result.data.length > 0) {
                 result.data.forEach(group => {
                     const item = document.createElement('li');
-                    item.textContent = `${group.name} - ${group.description || 'No description'}`;
+                    const link = document.createElement('a');
+                    link.href = `/groups/${group.id}`;
+                    link.textContent = `${group.name} - ${group.description || 'No description'}`;
+                    item.appendChild(link);
                     list.appendChild(item);
                 });
             } else {

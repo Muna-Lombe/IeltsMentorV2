@@ -122,6 +122,12 @@ def create_app(config_name='development'):
             session.clear()
             return redirect(url_for('login'))
 
+        @app.route("/groups/<int:group_id>")
+        @login_required
+        def group_details_page(group_id):
+            # The actual data will be fetched by JS, this just renders the page
+            return render_template("group_details.html", group_id=group_id)
+
         # API Endpoints
         @app.route("/api/groups", methods=["GET"])
         @login_required
@@ -162,6 +168,46 @@ def create_app(config_name='development'):
             db.session.commit()
 
             return jsonify({"success": True, "data": {"id": new_group.id, "name": new_group.name, "description": new_group.description}}), 201
+
+        @app.route("/api/groups/<int:group_id>", methods=["GET"])
+        @login_required
+        def get_group(group_id):
+            teacher_user_id = session.get('user_id')
+            group = db.session.query(Group).filter_by(id=group_id).first()
+
+            if not group:
+                return jsonify({"success": False, "error": "Group not found"}), 404
+
+            if group.teacher_id != teacher_user_id:
+                return jsonify({"success": False, "error": "Unauthorized"}), 403
+
+            return jsonify({
+                "success": True,
+                "data": {
+                    "id": group.id,
+                    "name": group.name,
+                    "description": group.description
+                }
+            })
+
+        @app.route("/api/groups/<int:group_id>", methods=["PUT"])
+        @login_required
+        def update_group(group_id):
+            teacher_user_id = session.get('user_id')
+            group = db.session.query(Group).filter_by(id=group_id).first()
+
+            if not group:
+                return jsonify({"success": False, "error": "Group not found"}), 404
+
+            if group.teacher_id != teacher_user_id:
+                return jsonify({"success": False, "error": "Unauthorized"}), 403
+
+            data = request.json
+            group.name = data.get('name', group.name)
+            group.description = data.get('description', group.description)
+            db.session.commit()
+
+            return jsonify({"success": True, "data": {"id": group.id, "name": group.name, "description": group.description}})
 
         @app.route("/api/exercises", methods=["GET"])
         @login_required

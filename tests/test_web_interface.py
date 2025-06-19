@@ -137,4 +137,49 @@ def test_create_and_get_exercise(client, approved_teacher_user, session):
     get_data = get_response.get_json()
     assert get_data['success'] is True
     assert len(get_data['data']) == 1
-    assert get_data['data'][0]['title'] == 'New Vocab Test' 
+    assert get_data['data'][0]['title'] == 'New Vocab Test'
+
+def test_get_specific_group_authorized(client, approved_teacher_user, session):
+    """Test fetching a specific group that the user owns."""
+    with client.session_transaction() as sess:
+        sess['user_id'] = approved_teacher_user.id
+    
+    # Create a group first
+    group_res = client.post('/api/groups', json={'name': 'My Group', 'description': ''})
+    group_id = group_res.get_json()['data']['id']
+
+    # Fetch the specific group
+    res = client.get(f'/api/groups/{group_id}')
+    assert res.status_code == 200
+    data = res.get_json()
+    assert data['success'] is True
+    assert data['data']['name'] == 'My Group'
+
+def test_get_specific_group_unauthorized(client, approved_teacher_user, another_teacher_user, session):
+    """Test that a teacher cannot fetch a group they do not own."""
+    # Create a group with the first teacher
+    with client.session_transaction() as sess:
+        sess['user_id'] = approved_teacher_user.id
+    group_res = client.post('/api/groups', json={'name': 'Belongs to first teacher', 'description': ''})
+    group_id = group_res.get_json()['data']['id']
+
+    # Log in as the second teacher and try to fetch it
+    with client.session_transaction() as sess:
+        sess['user_id'] = another_teacher_user.id
+    
+    res = client.get(f'/api/groups/{group_id}')
+    assert res.status_code == 403
+
+def test_update_specific_group(client, approved_teacher_user, session):
+    """Test successfully updating an owned group."""
+    with client.session_transaction() as sess:
+        sess['user_id'] = approved_teacher_user.id
+    
+    group_res = client.post('/api/groups', json={'name': 'Old Name', 'description': 'Old Desc'})
+    group_id = group_res.get_json()['data']['id']
+
+    update_res = client.put(f'/api/groups/{group_id}', json={'name': 'New Name', 'description': 'New Desc'})
+    assert update_res.status_code == 200
+    data = update_res.get_json()
+    assert data['data']['name'] == 'New Name'
+    assert data['data']['description'] == 'New Desc' 

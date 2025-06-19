@@ -8,7 +8,7 @@ import pytest
 from unittest.mock import MagicMock, AsyncMock, patch, Mock
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker
-from telegram import Update
+from telegram import Update, User as TelegramUser
 
 from app import create_app
 from extensions import db
@@ -16,6 +16,7 @@ from models.user import User
 from models.practice_session import PracticeSession
 from models import Teacher, TeacherExercise, Group
 from utils.translation_system import TranslationSystem
+from services.auth_service import AuthService
 
 # This engine will be used for the entire test session
 engine = create_engine("sqlite:///:memory:")
@@ -170,7 +171,7 @@ def regular_user(session):
 @pytest.fixture(scope='function')
 def approved_teacher_user(session):
     """Create a sample teacher user who is approved."""
-    user = User(user_id=777, first_name="Approved", last_name="Teacher", username="approvedteacher", is_admin=True)
+    user = User(user_id=789, first_name="Approved", last_name="Teacher", username="approvedteacher", is_admin=True)
     session.add(user)
     session.flush()
 
@@ -332,3 +333,30 @@ def sample_teacher(db_session):
 def client(app):
     """A test client for the app."""
     return app.test_client()
+
+@pytest.fixture(scope="function")
+def another_teacher_user(session):
+    """Create a second approved teacher for auth tests."""
+    user = User(
+        user_id=777,
+        first_name="Another",
+        last_name="Teacher",
+        username="anotherteacher"
+    )
+    session.add(user)
+    session.flush() # Ensure user.id is available
+
+    teacher = Teacher(
+        user_id=user.id,
+        api_token=AuthService.generate_api_token(),
+        is_approved=True
+    )
+    session.add(teacher)
+    session.commit()
+    
+    yield user
+    
+    # Teardown: clean up the created objects
+    session.delete(teacher)
+    session.delete(user)
+    session.commit()

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Group Details</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f9; margin: 0; padding: 20px; }
+        .container { max-width: 600px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h1 { color: #333; }
+        a { color: #007bff; text-decoration: none; }
+        form { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+        input, textarea { padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+        button { padding: 10px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: #218838; }
+        .message { padding: 10px; border-radius: 4px; margin-top: 10px; }
+        .success { background-color: #d4edda; color: #155724; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/dashboard"> &larr; Back to Dashboard</a>
+        <h1>Edit Group</h1>
+        <div id="message-area"></div>
+        <form id="edit-group-form">
+            <input type="text" id="group-name" required>
+            <textarea id="group-description" rows="4"></textarea>
+            <button type="submit">Save Changes</button>
+        </form>
+    </div>
+
+    <script>
+        const groupId = { group_id };
+        const form = document.getElementById('edit-group-form');
+        const nameInput = document.getElementById('group-name');
+        const descriptionInput = document.getElementById('group-description');
+        const messageArea = document.getElementById('message-area');
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            const response = await fetch(`/api/groups/${groupId}`);
+            if (response.ok) {
+                const result = await response.json();
+                if (result.success) {
+                    nameInput.value = result.data.name;
+                    descriptionInput.value = result.data.description;
+                }
+            } else {
+                window.location.href = '/dashboard'; // Redirect if not found or unauthorized
+            }
+        });
+
+        form.addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const updatedData = {
+                name: nameInput.value,
+                description: descriptionInput.value
+            };
+
+            const response = await fetch(`/api/groups/${groupId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatedData)
+            });
+
+            messageArea.innerHTML = '';
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message');
+
+            if (response.ok) {
+                messageDiv.classList.add('success');
+                messageDiv.textContent = 'Group updated successfully!';
+            } else {
+                messageDiv.classList.add('error');
+                messageDiv.textContent = 'Failed to update group.';
+            }
+            messageArea.appendChild(messageDiv);
+        });
+    </script>
+</body>
+</html> 

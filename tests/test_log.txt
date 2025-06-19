@@ -80,4 +80,4 @@ handlers/reading_practice_handler.py:193
     reading_practice_conv_handler = ConversationHandler(
 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
-======================== 47 passed, 6 warnings in 1.01s ========================
+======================== 47 passed, 6 warnings in 0.88s ========================

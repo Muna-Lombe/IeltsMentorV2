@@ -1,7 +1,7 @@
 import os
 import logging
-from flask import Flask, request, jsonify, render_template, redirect, url_for, session, flash
 from functools import wraps
+from flask import Flask, request, jsonify, render_template, redirect, url_for, session, flash
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, CallbackQueryHandler
 
@@ -25,6 +25,11 @@ from handlers.listening_practice_handler import listening_practice_conv_handler
 from utils.translation_system import TranslationSystem
 from services.auth_service import AuthService
 from extensions import db
+from models.user import User
+from models.teacher import Teacher
+from models.group import Group, GroupMembership
+from models.exercise import TeacherExercise
+from models.practice_session import PracticeSession
 
 # Configure logging
 logging.basicConfig(
@@ -57,10 +62,6 @@ application.add_handler(listening_practice_conv_handler)
 application.add_handler(botmaster_handler.approve_teacher_conv_handler)
 application.add_handler(CommandHandler("system_stats", botmaster_handler.system_stats))
 
-# Register callback query handlers
-# The practice_section_callback is no longer needed as each practice type
-# is now a ConversationHandler triggered by its own callback pattern.
-
 # Register error handler
 application.add_error_handler(core_handlers.error_handler)
 
@@ -88,11 +89,6 @@ def create_app(config_name='development'):
 
     # Import models and register routes within the app context
     with app.app_context():
-        from models.user import User
-        from models.practice_session import PracticeSession
-        from models.group import Group
-        from models.exercise import TeacherExercise
-
         @app.route("/")
         def index():
             return "Hello, IELTS Prep Bot is alive! Flask is running."
@@ -125,7 +121,6 @@ def create_app(config_name='development'):
         @app.route("/groups/<int:group_id>")
         @login_required
         def group_details_page(group_id):
-            # The actual data will be fetched by JS, this just renders the page
             return render_template("group_details.html", group_id=group_id)
 
         # API Endpoints
@@ -133,25 +128,14 @@ def create_app(config_name='development'):
         @login_required
         def get_groups():
             teacher_user_id = session.get('user_id')
-            teacher = db.session.query(User).filter_by(id=teacher_user_id).first()
-            
-            if not teacher or not teacher.teacher_profile:
-                return jsonify({"success": False, "error": "Teacher profile not found"}), 404
-
-            groups = teacher.teacher_profile.groups
+            groups = db.session.query(Group).filter_by(teacher_id=teacher_user_id).all()
             groups_data = [{"id": group.id, "name": group.name, "description": group.description} for group in groups]
-            
             return jsonify({"success": True, "data": groups_data})
 
         @app.route("/api/groups", methods=["POST"])
         @login_required
         def create_group():
             teacher_user_id = session.get('user_id')
-            teacher = db.session.query(User).filter_by(id=teacher_user_id).first()
-
-            if not teacher or not teacher.teacher_profile:
-                return jsonify({"success": False, "error": "Teacher profile not found"}), 404
-
             data = request.json
             name = data.get('name')
             description = data.get('description')
@@ -159,11 +143,7 @@ def create_app(config_name='development'):
             if not name:
                 return jsonify({"success": False, "error": "Group name is required"}), 400
 
-            new_group = Group(
-                name=name,
-                description=description,
-                teacher_id=teacher.id
-            )
+            new_group = Group(name=name, description=description, teacher_id=teacher_user_id)
             db.session.add(new_group)
             db.session.commit()
 
@@ -180,13 +160,16 @@ def create_app(config_name='development'):
 
             if group.teacher_id != teacher_user_id:
                 return jsonify({"success": False, "error": "Unauthorized"}), 403
+            
+            members = [{"id": member.id, "first_name": member.first_name, "last_name": member.last_name, "username": member.username} for member in group.members]
 
             return jsonify({
                 "success": True,
                 "data": {
                     "id": group.id,
                     "name": group.name,
-                    "description": group.description
+                    "description": group.description,
+                    "members": members
                 }
             })
 
@@ -194,13 +177,10 @@ def create_app(config_name='development'):
         @login_required
         def update_group(group_id):
             teacher_user_id = session.get('user_id')
-            group = db.session.query(Group).filter_by(id=group_id).first()
+            group = db.session.query(Group).filter_by(id=group_id, teacher_id=teacher_user_id).first()
 
             if not group:
-                return jsonify({"success": False, "error": "Group not found"}), 404
-
-            if group.teacher_id != teacher_user_id:
-                return jsonify({"success": False, "error": "Unauthorized"}), 403
+                return jsonify({"success": False, "error": "Group not found or you are not authorized"}), 404
 
             data = request.json
             group.name = data.get('name', group.name)
@@ -209,24 +189,60 @@ def create_app(config_name='development'):
 
             return jsonify({"success": True, "data": {"id": group.id, "name": group.name, "description": group.description}})
 
+        @app.route("/api/groups/<int:group_id>/members", methods=["POST"])
+        @login_required
+        def add_group_member(group_id):
+            teacher_user_id = session.get('user_id')
+            group = db.session.query(Group).filter_by(id=group_id, teacher_id=teacher_user_id).first()
+
+            if not group:
+                return jsonify({"success": False, "error": "Group not found or you are not authorized"}), 404
+
+            data = request.json
+            student_id = data.get('student_id')
+
+            if not student_id:
+                return jsonify({"success": False, "error": "Student ID is required"}), 400
+
+            student = db.session.query(User).filter_by(id=student_id).first()
+            if not student:
+                return jsonify({"success": False, "error": "Student not found"}), 404
+            
+            existing_membership = db.session.query(GroupMembership).filter_by(group_id=group.id, student_id=student.id).first()
+            if existing_membership:
+                return jsonify({"success": False, "error": "Student is already in this group"}), 409
+
+            new_membership = GroupMembership(group_id=group.id, student_id=student.id)
+            db.session.add(new_membership)
+            db.session.commit()
+
+            return jsonify({"success": True, "message": "Student added to group successfully"}), 201
+
+        @app.route("/api/groups/<int:group_id>/members/<int:student_id>", methods=["DELETE"])
+        @login_required
+        def remove_group_member(group_id, student_id):
+            teacher_user_id = session.get('user_id')
+            group = db.session.query(Group).filter_by(id=group_id, teacher_id=teacher_user_id).first()
+
+            if not group:
+                return jsonify({"success": False, "error": "Group not found or you are not authorized"}), 404
+
+            membership = db.session.query(GroupMembership).filter_by(group_id=group.id, student_id=student_id).first()
+
+            if not membership:
+                return jsonify({"success": False, "error": "Student is not in this group"}), 404
+
+            db.session.delete(membership)
+            db.session.commit()
+
+            return jsonify({"success": True, "message": "Student removed from group successfully"})
+
         @app.route("/api/exercises", methods=["GET"])
         @login_required
         def get_exercises():
             teacher_user_id = session.get('user_id')
-            
             exercises = db.session.query(TeacherExercise).filter_by(creator_id=teacher_user_id).all()
-            
-            exercises_data = [
-                {
-                    "id": ex.id, 
-                    "title": ex.title, 
-                    "description": ex.description,
-                    "exercise_type": ex.exercise_type,
-                    "difficulty": ex.difficulty,
-                    "is_published": ex.is_published
-                } for ex in exercises
-            ]
-            
+            exercises_data = [{"id": ex.id, "title": ex.title, "description": ex.description} for ex in exercises]
             return jsonify({"success": True, "data": exercises_data})
 
         @app.route("/api/exercises", methods=["POST"])
@@ -234,46 +250,56 @@ def create_app(config_name='development'):
         def create_exercise():
             teacher_user_id = session.get('user_id')
             data = request.json
+            title = data.get('title')
+            description = data.get('description')
 
-            # Basic validation
-            required_fields = ['title', 'description', 'exercise_type', 'difficulty', 'content']
-            if not all(field in data for field in required_fields):
-                return jsonify({"success": False, "error": "Missing required fields"}), 400
+            if not title:
+                return jsonify({"success": False, "error": "Exercise title is required"}), 400
 
             new_exercise = TeacherExercise(
+                title=title,
+                description=description,
                 creator_id=teacher_user_id,
-                title=data['title'],
-                description=data['description'],
-                exercise_type=data['exercise_type'],
-                difficulty=data['difficulty'],
-                content=data['content'] # Assuming content is a valid JSON object
+                exercise_type='vocabulary',
+                difficulty='medium',
+                content={'default': 'content'}
             )
             db.session.add(new_exercise)
             db.session.commit()
 
-            return jsonify({
-                "success": True, 
-                "data": {
-                    "id": new_exercise.id,
-                    "title": new_exercise.title,
-                    "description": new_exercise.description
-                }
-            }), 201
+            return jsonify({"success": True, "data": {"id": new_exercise.id, "title": new_exercise.title, "description": new_exercise.description}}), 201
 
         @app.route("/webhook", methods=["POST"])
         async def webhook():
-            """Webhook endpoint to receive updates from Telegram."""
-            if request.is_json:
-                update_data = request.get_json()
-                update = Update.de_json(update_data, application.bot)
-                await application.process_update(update)
-                return jsonify(status="ok")
-            else:
-                return jsonify(status="bad request", error="Request must be JSON"), 400
-            
+            update = Update.de_json(request.get_json(force=True), application.bot)
+            await application.process_update(update)
+            return jsonify({"status": "ok"})
+
+        @app.route('/health', methods=['GET'])
+        def health_check():
+            return jsonify({"status": "ok"}), 200
+
+        # Error Handlers
+        @app.errorhandler(404)
+        def not_found(error):
+            return jsonify({"success": False, "error": "Not Found"}), 404
+
+        @app.errorhandler(500)
+        def internal_error(error):
+            return jsonify({"success": False, "error": "Internal Server Error"}), 500
+
     return app
 
-# The flask command will now call create_app
-app = create_app()
-
-# ... (rest of your Telegram bot setup) ... 
+if __name__ == '__main__':
+    app = create_app(os.getenv('FLASK_CONFIG') or 'default')
+    # The bot polling and Flask app running are mutually exclusive in this script.
+    # For production, you'd run the Flask app with a WSGI server (like Gunicorn)
+    # and set up the Telegram webhook to point to your server's /webhook endpoint.
+    # You would not run application.run_polling().
+    
+    # To run the bot with polling for development (without web interface):
+    # import asyncio
+    # asyncio.run(application.run_polling())
+    
+    # To run the Flask app for development (for web interface):
+    app.run(port=5000) 

@@ -27,54 +27,114 @@
             <textarea id="group-description" rows="4"></textarea>
             <button type="submit">Save Changes</button>
         </form>
+        <hr>
+        <h2>Members</h2>
+        <ul id="member-list">
+            <!-- Members will be dynamically inserted here -->
+        </ul>
+
+        <h3>Add Member</h3>
+        <form id="add-member-form">
+            <input type="number" id="student-id" name="student_id" placeholder="Enter Student User ID" required>
+            <button type="submit">Add Member</button>
+        </form>
+        
+        <p><a href="/dashboard">Back to Dashboard</a></p>
     </div>
 
     <script>
         const groupId = { group_id };
-        const form = document.getElementById('edit-group-form');
-        const nameInput = document.getElementById('group-name');
-        const descriptionInput = document.getElementById('group-description');
-        const messageArea = document.getElementById('message-area');
+        const editForm = document.getElementById('edit-group-form');
+        const memberList = document.getElementById('member-list');
+        const addMemberForm = document.getElementById('add-member-form');
 
-        document.addEventListener('DOMContentLoaded', async function() {
+        async function fetchGroupDetails() {
             const response = await fetch(`/api/groups/${groupId}`);
-            if (response.ok) {
-                const result = await response.json();
-                if (result.success) {
-                    nameInput.value = result.data.name;
-                    descriptionInput.value = result.data.description;
+            const result = await response.json();
+
+            if (result.success) {
+                const group = result.data;
+                document.getElementById('name').value = group.name;
+                document.getElementById('description').value = group.description;
+                
+                memberList.innerHTML = ''; // Clear existing members
+                if (group.members && group.members.length > 0) {
+                    group.members.forEach(member => {
+                        const li = document.createElement('li');
+                        li.textContent = `${member.first_name || ''} ${member.last_name || ''} (@${member.username || member.id})`;
+                        const removeButton = document.createElement('button');
+                        removeButton.textContent = 'Remove';
+                        removeButton.classList.add('remove-btn');
+                        removeButton.onclick = () => removeMember(member.id);
+                        li.appendChild(removeButton);
+                        memberList.appendChild(li);
+                    });
+                } else {
+                    memberList.innerHTML = '<li>No members in this group yet.</li>';
                 }
             } else {
-                window.location.href = '/dashboard'; // Redirect if not found or unauthorized
+                alert('Error fetching group details: ' + result.error);
             }
-        });
+        }
 
-        form.addEventListener('submit', async function(event) {
-            event.preventDefault();
-            const updatedData = {
-                name: nameInput.value,
-                description: descriptionInput.value
-            };
+        editForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('name').value;
+            const description = document.getElementById('description').value;
 
             const response = await fetch(`/api/groups/${groupId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(updatedData)
+                body: JSON.stringify({ name, description })
             });
 
-            messageArea.innerHTML = '';
-            const messageDiv = document.createElement('div');
-            messageDiv.classList.add('message');
-
-            if (response.ok) {
-                messageDiv.classList.add('success');
-                messageDiv.textContent = 'Group updated successfully!';
+            const result = await response.json();
+            if (result.success) {
+                alert('Group updated successfully!');
             } else {
-                messageDiv.classList.add('error');
-                messageDiv.textContent = 'Failed to update group.';
+                alert('Error updating group: ' + result.error);
             }
-            messageArea.appendChild(messageDiv);
         });
+
+        addMemberForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const studentId = document.getElementById('student-id').value;
+
+            const response = await fetch(`/api/groups/${groupId}/members`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ student_id: parseInt(studentId) })
+            });
+
+            const result = await response.json();
+            if (response.ok) {
+                alert('Member added successfully!');
+                fetchGroupDetails(); // Refresh member list
+                addMemberForm.reset();
+            } else {
+                alert('Error adding member: ' + result.error);
+            }
+        });
+
+        async function removeMember(studentId) {
+            if (!confirm('Are you sure you want to remove this member?')) {
+                return;
+            }
+
+            const response = await fetch(`/api/groups/${groupId}/members/${studentId}`, {
+                method: 'DELETE'
+            });
+
+            const result = await response.json();
+            if (response.ok) {
+                alert('Member removed successfully!');
+                fetchGroupDetails(); // Refresh member list
+            } else {
+                alert('Error removing member: ' + result.error);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchGroupDetails);
     </script>
 </body>
 </html> 

@@ -95,9 +95,9 @@ create_group_conv_handler = ConversationHandler(
 @teacher_required
 async def assign_homework_start(update: Update, context: ContextTypes.DEFAULT_TYPE, user: User):
     """Starts the homework assignment conversation by listing the teacher's groups."""
-    print(f"user: {user}")
+    # print(f"user: {user}")
     teacher = user.teacher_profile
-    print(f"is teacher: {teacher}")
+    # print(f"is teacher: {teacher}")
 
     if not teacher or not teacher.groups:
         await update.message.reply_text(text=trans.get_message('teacher', 'no_groups_for_homework', user.preferred_language))

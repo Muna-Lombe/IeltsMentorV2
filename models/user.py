@@ -3,6 +3,7 @@ from sqlalchemy import Column, Integer, String, Boolean, Float, BigInteger, JSON
 from sqlalchemy.orm import relationship, attributes
 import time
 from typing import Dict, Any, Optional
+from datetime import datetime
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -29,12 +30,13 @@ class User(db.Model):
     # Relationships
     practice_sessions = relationship("PracticeSession", back_populates="user", cascade="all, delete-orphan")
     teacher_profile = relationship("Teacher", back_populates="user", uselist=False, cascade="all, delete-orphan")
-    
-    # Many-to-many relationship with Group (for students)
-    groups = relationship("Group", secondary="group_membership", back_populates="members")
+    # taught_groups = relationship("Group", back_populates="teacher")
     
     # Relationship to HomeworkSubmissions
     homework_submissions = relationship("HomeworkSubmission", back_populates="student", cascade="all, delete-orphan")
+
+    # Association for group membership
+    group_associations = relationship("GroupMembership", back_populates="student", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<User(id={self.id}, user_id={self.user_id}, username='{self.username}')>" 
@@ -91,3 +93,7 @@ class User(db.Model):
         if section:
             return [session for session in self.practice_sessions if session.section == section]
         return self.practice_sessions 
+
+    @property
+    def groups(self):
+        return [association.group for association in self.group_associations] 

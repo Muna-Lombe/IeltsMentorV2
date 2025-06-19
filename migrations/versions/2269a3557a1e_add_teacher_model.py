@@ -6,6 +6,7 @@ Create Date: 2025-06-18 12:36:08.720791
 
 """
 from alembic import op
+import models
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
@@ -29,7 +30,7 @@ def upgrade():
     with op.batch_alter_table('teacher_exercises', schema=None) as batch_op:
         batch_op.alter_column('content',
                existing_type=postgresql.JSON(astext_type=sa.Text()),
-               type_=models.user.JSONBType(),
+               type_=sa.JSON(),
                existing_nullable=False)
 
     with op.batch_alter_table('teachers', schema=None) as batch_op:
@@ -59,7 +60,7 @@ def downgrade():
 
     with op.batch_alter_table('teacher_exercises', schema=None) as batch_op:
         batch_op.alter_column('content',
-               existing_type=models.user.JSONBType(),
+               existing_type=sa.JSON(),
                type_=postgresql.JSON(astext_type=sa.Text()),
                existing_nullable=False)
 

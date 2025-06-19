@@ -18,7 +18,8 @@ class Teacher(db.Model):
     
     # Relationship to the Group model
     groups = relationship("Group", back_populates="teacher")
-
+    taught_groups = relationship("Group", back_populates="teacher")
+    
     # Relationship to the TeacherExercise model
     created_exercises = relationship("TeacherExercise", back_populates="creator", cascade="all, delete-orphan")
 

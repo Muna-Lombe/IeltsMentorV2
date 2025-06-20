@@ -4,26 +4,98 @@ cachedir: .pytest_cache
 rootdir: /home/muna/code/Muna-Lombe/tutorials/PythOn/telegram/bots/IeltsMentorV2
 plugins: cov-6.2.1, mock-3.14.1, asyncio-1.0.0, anyio-4.9.0
 asyncio: mode=Mode.AUTO, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
-collecting ... collected 18 items
+collecting ... collected 90 items
 
-tests/test_web_interface.py::TestWebInterface::test_login_page_loads PASSED [  5%]
-tests/test_web_interface.py::TestWebInterface::test_successful_login PASSED [ 11%]
-tests/test_web_interface.py::TestWebInterface::test_failed_login_invalid_token PASSED [ 16%]
-tests/test_web_interface.py::TestWebInterface::test_dashboard_access_unauthorized PASSED [ 22%]
-tests/test_web_interface.py::TestWebInterface::test_dashboard_access_authorized PASSED [ 27%]
-tests/test_web_interface.py::TestWebInterface::test_logout PASSED        [ 33%]
-tests/test_web_interface.py::TestWebInterface::test_get_groups_unauthorized PASSED [ 38%]
-tests/test_web_interface.py::TestWebInterface::test_get_groups_authorized_empty PASSED [ 44%]
-tests/test_web_interface.py::TestWebInterface::test_create_and_get_group PASSED [ 50%]
-tests/test_web_interface.py::TestWebInterface::test_get_exercises_unauthorized PASSED [ 55%]
-tests/test_web_interface.py::TestWebInterface::test_get_exercises_authorized_empty PASSED [ 61%]
-tests/test_web_interface.py::TestWebInterface::test_create_and_get_exercise PASSED [ 66%]
-tests/test_web_interface.py::TestWebInterface::test_get_specific_group_authorized PASSED [ 72%]
-tests/test_web_interface.py::TestWebInterface::test_get_specific_group_unauthorized PASSED [ 77%]
-tests/test_web_interface.py::TestWebInterface::test_update_specific_group PASSED [ 83%]
-tests/test_web_interface.py::TestWebInterface::test_get_specific_exercise_authorized PASSED [ 88%]
-tests/test_web_interface.py::TestWebInterface::test_get_specific_exercise_unauthorized PASSED [ 94%]
-tests/test_web_interface.py::TestWebInterface::test_update_specific_exercise PASSED [100%]
+tests/integration/test_botmaster_feature.py::test_approve_teacher_start_as_botmaster PASSED [  1%]
+tests/integration/test_botmaster_feature.py::test_approve_teacher_start_as_non_botmaster PASSED [  2%]
+tests/integration/test_botmaster_feature.py::test_approve_pending_teacher_success PASSED [  3%]
+tests/integration/test_botmaster_feature.py::test_approve_already_approved_teacher PASSED [  4%]
+tests/integration/test_botmaster_feature.py::test_approve_non_teacher_applicant PASSED [  5%]
+tests/integration/test_botmaster_feature.py::test_approve_user_not_found PASSED [  6%]
+tests/integration/test_botmaster_feature.py::test_cancel_approval_flow PASSED [  7%]
+tests/integration/test_botmaster_feature.py::test_system_stats_as_botmaster PASSED [  8%]
+tests/integration/test_botmaster_feature.py::test_system_stats_as_non_botmaster PASSED [ 10%]
+tests/integration/test_group_membership.py::test_add_member_to_group_success PASSED [ 11%]
+tests/integration/test_group_membership.py::test_add_member_unauthorized PASSED [ 12%]
+tests/integration/test_group_membership.py::test_add_member_student_not_found PASSED [ 13%]
+tests/integration/test_group_membership.py::test_add_member_already_in_group PASSED [ 14%]
+tests/integration/test_group_membership.py::test_remove_member_from_group_success PASSED [ 15%]
+tests/integration/test_group_membership.py::test_remove_member_unauthorized PASSED [ 16%]
+tests/integration/test_handlers.py::test_start_new_user PASSED           [ 17%]
+tests/integration/test_handlers.py::test_start_existing_user PASSED      [ 18%]
+tests/integration/test_handlers.py::test_stats_command_with_stats PASSED [ 20%]
+tests/integration/test_handlers.py::test_stats_command_no_stats PASSED   [ 21%]
+tests/integration/test_handlers.py::test_practice_command PASSED         [ 22%]
+tests/integration/test_handlers.py::test_practice_section_callback PASSED [ 23%]
+tests/integration/test_handlers.py::test_explain_command PASSED          [ 24%]
+tests/integration/test_handlers.py::test_define_command PASSED           [ 25%]
+tests/integration/test_handlers.py::test_unknown_command PASSED          [ 26%]
+tests/integration/test_handlers.py::test_create_group_command_as_approved_teacher PASSED [ 27%]
+tests/integration/test_handlers.py::test_create_group_command_as_non_approved_teacher PASSED [ 28%]
+tests/integration/test_handlers.py::test_create_group_command_as_regular_user PASSED [ 30%]
+tests/integration/test_handlers.py::test_create_group_command_as_unknown_user PASSED [ 31%]
+tests/integration/test_handlers.py::test_get_group_name_handler PASSED   [ 32%]
+tests/integration/test_handlers.py::test_get_group_description_handler PASSED [ 33%]
+tests/integration/test_handlers.py::test_cancel_group_creation_handler PASSED [ 34%]
+tests/integration/test_handlers.py::test_my_exercises_command_with_exercises PASSED [ 35%]
+tests/integration/test_handlers.py::test_my_exercises_command_no_exercises PASSED [ 36%]
+tests/integration/test_handlers.py::test_create_exercise_start_command PASSED [ 37%]
+tests/integration/test_handlers.py::test_create_exercise_get_title PASSED [ 38%]
+tests/integration/test_handlers.py::test_create_exercise_get_description PASSED [ 40%]
+tests/integration/test_handlers.py::test_create_exercise_get_type PASSED [ 41%]
+tests/integration/test_handlers.py::test_create_exercise_get_difficulty PASSED [ 42%]
+tests/integration/test_handlers.py::test_create_exercise_get_content_and_create PASSED [ 43%]
+tests/integration/test_handlers.py::test_create_exercise_get_content_invalid PASSED [ 44%]
+tests/integration/test_handlers.py::test_create_exercise_cancel PASSED   [ 45%]
+tests/integration/test_homework_feature.py::test_assign_homework_start_with_groups PASSED [ 46%]
+tests/integration/test_homework_feature.py::test_assign_homework_start_no_groups PASSED [ 47%]
+tests/integration/test_homework_feature.py::test_select_group_for_homework_with_exercises PASSED [ 48%]
+tests/integration/test_homework_feature.py::test_select_exercise_and_create_homework PASSED [ 50%]
+tests/integration/test_homework_feature.py::test_cancel_homework_assignment PASSED [ 51%]
+tests/integration/test_listening_practice.py::test_start_listening_practice PASSED [ 52%]
+tests/integration/test_listening_practice.py::test_select_exercise_and_send_first_question PASSED [ 53%]
+tests/integration/test_listening_practice.py::test_handle_answer_correct_and_continue PASSED [ 54%]
+tests/integration/test_listening_practice.py::test_handle_answer_incorrect_and_finish PASSED [ 55%]
+tests/integration/test_models.py::test_user_creation PASSED              [ 56%]
+tests/integration/test_models.py::test_update_stats PASSED               [ 57%]
+tests/integration/test_reading_practice.py::test_reading_practice_starts_correctly PASSED [ 58%]
+tests/integration/test_reading_practice.py::test_handle_reading_answer_correct PASSED [ 60%]
+tests/integration/test_reading_practice.py::test_handle_reading_answer_incorrect PASSED [ 61%]
+tests/integration/test_speaking_practice.py::test_start_speaking_practice PASSED [ 62%]
+tests/integration/test_speaking_practice.py::test_handle_part_1 PASSED   [ 63%]
+tests/integration/test_speaking_practice.py::test_handle_voice_message_part_1 PASSED [ 64%]
+tests/integration/test_speaking_practice.py::test_cancel_flow PASSED     [ 65%]
+tests/integration/test_student_features.py::test_practice_command_shows_selection_menu PASSED [ 66%]
+tests/integration/test_student_features.py::test_stats_command_displays_user_stats PASSED [ 67%]
+tests/integration/test_student_features.py::test_stats_command_for_new_user PASSED [ 68%]
+tests/integration/test_student_features.py::test_explain_command_with_valid_query PASSED [ 70%]
+tests/integration/test_student_features.py::test_define_command_with_valid_word PASSED [ 71%]
+tests/integration/test_web_interface.py::TestWebInterface::test_login_page_loads PASSED [ 72%]
+tests/integration/test_web_interface.py::TestWebInterface::test_successful_login PASSED [ 73%]
+tests/integration/test_web_interface.py::TestWebInterface::test_failed_login_invalid_token PASSED [ 74%]
+tests/integration/test_web_interface.py::TestWebInterface::test_dashboard_access_unauthorized PASSED [ 75%]
+tests/integration/test_web_interface.py::TestWebInterface::test_dashboard_access_authorized PASSED [ 76%]
+tests/integration/test_web_interface.py::TestWebInterface::test_logout PASSED [ 77%]
+tests/integration/test_web_interface.py::TestWebInterface::test_get_groups_unauthorized PASSED [ 78%]
+tests/integration/test_web_interface.py::TestWebInterface::test_get_groups_authorized_empty PASSED [ 80%]
+tests/integration/test_web_interface.py::TestWebInterface::test_create_and_get_group PASSED [ 81%]
+tests/integration/test_web_interface.py::TestWebInterface::test_get_exercises_unauthorized PASSED [ 82%]
+tests/integration/test_web_interface.py::TestWebInterface::test_get_exercises_authorized_empty PASSED [ 83%]
+tests/integration/test_web_interface.py::TestWebInterface::test_create_and_get_exercise PASSED [ 84%]
+tests/integration/test_web_interface.py::TestWebInterface::test_get_specific_group_authorized PASSED [ 85%]
+tests/integration/test_web_interface.py::TestWebInterface::test_get_specific_group_unauthorized PASSED [ 86%]
+tests/integration/test_web_interface.py::TestWebInterface::test_update_specific_group PASSED [ 87%]
+tests/integration/test_web_interface.py::TestWebInterface::test_get_specific_exercise_authorized PASSED [ 88%]
+tests/integration/test_web_interface.py::TestWebInterface::test_get_specific_exercise_unauthorized PASSED [ 90%]
+tests/integration/test_web_interface.py::TestWebInterface::test_update_specific_exercise PASSED [ 91%]
+tests/integration/test_web_interface.py::TestWebInterface::test_add_and_remove_group_member PASSED [ 92%]
+tests/integration/test_writing_practice.py::test_start_writing_practice PASSED [ 93%]
+tests/integration/test_writing_practice.py::test_handle_task_selection PASSED [ 94%]
+tests/integration/test_writing_practice.py::test_handle_essay PASSED     [ 95%]
+tests/unit/test_input_validator.py::test_validate_user_id_valid PASSED   [ 96%]
+tests/unit/test_input_validator.py::test_validate_user_id_zero PASSED    [ 97%]
+tests/unit/test_input_validator.py::test_validate_user_id_negative PASSED [ 98%]
+tests/unit/test_input_validator.py::test_validate_user_id_non_integer PASSED [100%]
 
 =============================== warnings summary ===============================
 ../../../../../../../miniconda3/lib/python3.11/site-packages/pydub/utils.py:14
@@ -54,17 +126,17 @@ handlers/reading_practice_handler.py:193
   /home/muna/code/Muna-Lombe/tutorials/PythOn/telegram/bots/IeltsMentorV2/handlers/reading_practice_handler.py:193: PTBUserWarning: If 'per_message=False', 'CallbackQueryHandler' will not be tracked for every message. Read this FAQ entry to learn more about the per_* settings: https://github.com/python-telegram-bot/python-telegram-bot/wiki/Frequently-Asked-Questions#what-do-the-per_-settings-in-conversationhandler-do.
     reading_practice_conv_handler = ConversationHandler(
 
-tests/test_web_interface.py::TestWebInterface::test_successful_login
-  /home/muna/code/Muna-Lombe/tutorials/PythOn/telegram/bots/IeltsMentorV2/tests/conftest.py:158: SAWarning: relationship 'Teacher.taught_groups' will copy column teachers.id to column groups.teacher_id, which conflicts with relationship(s): 'Teacher.groups' (copies teachers.id to groups.teacher_id). If this is not the intention, consider if these relationships should be linked with back_populates, or if viewonly=True should be applied to one or more if they are read-only. For the less common case that foreign key constraints are partially overlapping, the orm.foreign() annotation can be used to isolate the columns that should be written towards.   To silence this warning, add the parameter 'overlaps="groups"' to the 'Teacher.taught_groups' relationship. (Background on this warning at: https://sqlalche.me/e/20/qzyx) (This warning originated from the `configure_mappers()` process, which was invoked automatically in response to a user-initiated operation.)
-    user = User(user_id=789, first_name="Approved", last_name="Teacher", username="approvedteacher", is_admin=True)
+tests/integration/test_botmaster_feature.py::test_approve_teacher_start_as_botmaster
+  /home/muna/code/Muna-Lombe/tutorials/PythOn/telegram/bots/IeltsMentorV2/tests/conftest.py:276: SAWarning: relationship 'Teacher.taught_groups' will copy column teachers.id to column groups.teacher_id, which conflicts with relationship(s): 'Teacher.groups' (copies teachers.id to groups.teacher_id). If this is not the intention, consider if these relationships should be linked with back_populates, or if viewonly=True should be applied to one or more if they are read-only. For the less common case that foreign key constraints are partially overlapping, the orm.foreign() annotation can be used to isolate the columns that should be written towards.   To silence this warning, add the parameter 'overlaps="groups"' to the 'Teacher.taught_groups' relationship. (Background on this warning at: https://sqlalche.me/e/20/qzyx) (This warning originated from the `configure_mappers()` process, which was invoked automatically in response to a user-initiated operation.)
+    user = User(
 
-tests/test_web_interface.py::TestWebInterface::test_update_specific_group
-  /home/muna/code/Muna-Lombe/tutorials/PythOn/telegram/bots/IeltsMentorV2/tests/test_web_interface.py:139: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+tests/integration/test_web_interface.py::TestWebInterface::test_update_specific_group
+  /home/muna/code/Muna-Lombe/tutorials/PythOn/telegram/bots/IeltsMentorV2/tests/integration/test_web_interface.py:139: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
     updated_group = session.query(Group).get(group.id)
 
-tests/test_web_interface.py::TestWebInterface::test_update_specific_exercise
-  /home/muna/code/Muna-Lombe/tutorials/PythOn/telegram/bots/IeltsMentorV2/tests/test_web_interface.py:187: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+tests/integration/test_web_interface.py::TestWebInterface::test_update_specific_exercise
+  /home/muna/code/Muna-Lombe/tutorials/PythOn/telegram/bots/IeltsMentorV2/tests/integration/test_web_interface.py:187: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
     updated_exercise = session.query(TeacherExercise).get(exercise.id)
 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
-======================= 18 passed, 10 warnings in 0.46s ========================
+======================= 90 passed, 10 warnings in 3.67s ========================

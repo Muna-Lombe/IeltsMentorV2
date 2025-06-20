@@ -187,3 +187,36 @@ class TestWebInterface:
         updated_exercise = session.query(TeacherExercise).get(exercise.id)
         assert updated_exercise.title == 'New Title'
         assert updated_exercise.is_published is True
+
+    def test_add_and_remove_group_member(self, client, session, approved_teacher_user, regular_user):
+        """Test adding and removing a member from a group."""
+        client.post('/login', data={'api_token': 'valid-test-token'})
+        
+        # 1. Create a group
+        group_res = client.post('/api/groups', json={'name': 'Member Management Test', 'description': 'A group for testing member management.'})
+        assert group_res.status_code == 201
+        group_id = group_res.json['data']['id']
+
+        # 2. Add a student to the group
+        add_res = client.post(f'/api/groups/{group_id}/members', json={'student_id': regular_user.id})
+        assert add_res.status_code == 201
+        assert add_res.json['message'] == 'Student added to group successfully'
+
+        # 3. Verify the student is in the member list
+        get_res = client.get(f'/api/groups/{group_id}')
+        assert get_res.status_code == 200
+        members = get_res.json['data']['members']
+        assert len(members) == 1
+        assert members[0]['id'] == regular_user.id
+        assert members[0]['username'] == regular_user.username
+
+        # 4. Remove the student from the group
+        remove_res = client.delete(f'/api/groups/{group_id}/members/{regular_user.id}')
+        assert remove_res.status_code == 200
+        assert remove_res.json['message'] == 'Student removed from group successfully'
+
+        # 5. Verify the student has been removed
+        get_res_after_remove = client.get(f'/api/groups/{group_id}')
+        assert get_res_after_remove.status_code == 200
+        members_after_remove = get_res_after_remove.json['data']['members']
+        assert len(members_after_remove) == 0

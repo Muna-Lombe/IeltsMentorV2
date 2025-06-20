@@ -43,7 +43,7 @@
     </div>
 
     <script>
-        const groupId = { group_id };
+        const groupId = "{{ group_id }}";
         const editForm = document.getElementById('edit-group-form');
         const memberList = document.getElementById('member-list');
         const addMemberForm = document.getElementById('add-member-form');
@@ -54,8 +54,8 @@
 
             if (result.success) {
                 const group = result.data;
-                document.getElementById('name').value = group.name;
-                document.getElementById('description').value = group.description;
+                document.getElementById('group-name').value = group.name;
+                document.getElementById('group-description').value = group.description;
                 
                 memberList.innerHTML = ''; // Clear existing members
                 if (group.members && group.members.length > 0) {
@@ -79,8 +79,8 @@
 
         editForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const name = document.getElementById('name').value;
-            const description = document.getElementById('description').value;
+            const name = document.getElementById('group-name').value;
+            const description = document.getElementById('group-description').value;
 
             const response = await fetch(`/api/groups/${groupId}`, {
                 method: 'PUT',

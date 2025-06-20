@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exercise Details</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f9; margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h1 { color: #333; }
+        a { color: #007bff; text-decoration: none; }
+        form { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
+        input, textarea, select { padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 1rem; }
+        textarea { min-height: 150px; }
+        button { background-color: #007bff; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem; }
+        button:hover { background-color: #0056b3; }
+        .checkbox-group { display: flex; align-items: center; gap: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/dashboard">&larr; Back to Dashboard</a>
+        <h1 id="page-title">Create Exercise</h1>
+        <form id="exercise-form">
+            <input type="text" id="title" name="title" placeholder="Exercise Title" required>
+            <textarea id="description" name="description" placeholder="Exercise Description"></textarea>
+            <select id="exercise_type" name="exercise_type">
+                <option value="reading">Reading</option>
+                <option value="writing">Writing</option>
+                <option value="listening">Listening</option>
+                <option value="speaking">Speaking</option>
+                <option value="vocabulary">Vocabulary</option>
+            </select>
+            <select id="difficulty" name="difficulty">
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+            </select>
+            <textarea id="content" name="content" placeholder="Exercise Content (JSON format)"></textarea>
+            <div class="checkbox-group">
+                <input type="checkbox" id="is_published" name="is_published">
+                <label for="is_published">Publish this exercise?</label>
+            </div>
+            <button type="submit">Save Exercise</button>
+        </form>
+    </div>
+
+    <script>
+        const exerciseId = { exercise_id };
+        const isCreating = exerciseId === null;
+        
+        const form = document.getElementById('exercise-form');
+        const pageTitle = document.getElementById('page-title');
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (isCreating) {
+                pageTitle.textContent = 'Create New Exercise';
+            } else {
+                pageTitle.textContent = 'Edit Exercise';
+                const response = await fetch(`/api/exercises/${exerciseId}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    const ex = result.data;
+                    document.getElementById('title').value = ex.title;
+                    document.getElementById('description').value = ex.description;
+                    document.getElementById('exercise_type').value = ex.exercise_type;
+                    document.getElementById('difficulty').value = ex.difficulty;
+                    document.getElementById('content').value = JSON.stringify(ex.content, null, 2);
+                    document.getElementById('is_published').checked = ex.is_published;
+                } else {
+                    alert('Error fetching exercise details: ' + result.error);
+                }
+            }
+        });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            let contentValue;
+            try {
+                contentValue = JSON.parse(document.getElementById('content').value);
+            } catch (error) {
+                alert('Invalid JSON in content field.');
+                return;
+            }
+
+            const exerciseData = {
+                title: document.getElementById('title').value,
+                description: document.getElementById('description').value,
+                exercise_type: document.getElementById('exercise_type').value,
+                difficulty: document.getElementById('difficulty').value,
+                content: contentValue,
+                is_published: document.getElementById('is_published').checked
+            };
+
+            const url = isCreating ? '/api/exercises' : `/api/exercises/${exerciseId}`;
+            const method = isCreating ? 'POST' : 'PUT';
+
+            const response = await fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(exerciseData)
+            });
+
+            const result = await response.json();
+            if (response.ok) {
+                alert('Exercise saved successfully!');
+                if (isCreating && result.data.id) {
+                    window.location.href = `/exercises/${result.data.id}`;
+                }
+            } else {
+                alert('Error saving exercise: ' + result.error);
+            }
+        });
+    </script>
+</body>
+</html> 

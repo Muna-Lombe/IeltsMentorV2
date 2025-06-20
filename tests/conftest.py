@@ -18,51 +18,35 @@ from models import Teacher, TeacherExercise, Group
 from utils.translation_system import TranslationSystem
 from services.auth_service import AuthService
 
-# This engine will be used for the entire test session
-engine = create_engine("sqlite:///:memory:")
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='function')
 def app():
-    """Create and configure a new app instance for each test session."""
+    """Create and configure a new app instance for each test function."""
     app = create_app('testing')
-    app.config.update({"TESTING": True, "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:", 'SQLALCHEMY_TRACK_MODIFICATIONS': False, 'WTF_CSRF_ENABLED': False})
+    app.config.update({
+        "TESTING": True,
+        "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
+        'SQLALCHEMY_TRACK_MODIFICATIONS': False,
+        'WTF_CSRF_ENABLED': False
+    })
     
     with app.app_context():
-        # Bind the app's db metadata to the test engine
-        db.metadata.create_all(bind=engine)
+        db.create_all()
 
     yield app
 
     with app.app_context():
-        db.metadata.drop_all(bind=engine)
+        db.drop_all()
 
 
 @pytest.fixture(scope='function')
 def session(app):
     """
-    Creates a new database session for each test, managed by a transaction.
-    The transaction is rolled back after each test, ensuring test isolation.
+    Creates a new database session for each test.
+    The `app` fixture provides a clean database for each test.
     """
     with app.app_context():
-        # Create all tables for each test function
-        db.create_all()
-
-        connection = db.engine.connect()
-        transaction = connection.begin()
-        
-        # The session is bound to the connection, ensuring it participates in the transaction
-        db_session = TestingSessionLocal(bind=connection)
-
-        yield db_session
-
-        # Rollback the transaction and close the connection
-        db_session.close()
-        transaction.rollback()
-        connection.close()
-
-        # Drop all tables to ensure a clean state for the next test
-        db.drop_all()
+        yield db.session
+        db.session.remove()
 
 # --- Mock Fixtures ---
 
@@ -175,9 +159,14 @@ def approved_teacher_user(session):
     session.add(user)
     session.flush()
 
-    teacher = Teacher(user_id=user.id, is_approved=True)
+    teacher = Teacher(
+        user_id=user.id, 
+        is_approved=True,
+        #api_token=AuthService.generate_api_token(),
+        api_token="valid-test-token"
+    )
     session.add(teacher)
-    session.flush()
+    session.commit()
     return user
 
 @pytest.fixture(scope='function')
@@ -348,15 +337,16 @@ def another_teacher_user(session):
 
     teacher = Teacher(
         user_id=user.id,
-        api_token=AuthService.generate_api_token(),
+        #api_token=AuthService.generate_api_token(),
+        api_token="another-valid-token",
         is_approved=True
     )
     session.add(teacher)
     session.commit()
+    # yield user
     
-    yield user
-    
-    # Teardown: clean up the created objects
-    session.delete(teacher)
-    session.delete(user)
-    session.commit()
+    # # Teardown: clean up the created objects
+    # session.delete(teacher)
+    # session.delete(user)
+    # session.commit()
+    return user

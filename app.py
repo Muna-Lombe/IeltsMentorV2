@@ -123,6 +123,17 @@ def create_app(config_name='development'):
         def group_details_page(group_id):
             return render_template("group_details.html", group_id=group_id)
 
+        @app.route("/exercises/new")
+        @login_required
+        def new_exercise_page():
+            return render_template("exercise_details.html", exercise=None)
+
+        @app.route("/exercises/<int:exercise_id>")
+        @login_required
+        def exercise_details_page(exercise_id):
+            # The template will fetch the data, we just need to pass the ID
+            return render_template("exercise_details.html", exercise_id=exercise_id)
+
         # API Endpoints
         @app.route("/api/groups", methods=["GET"])
         @login_required
@@ -250,24 +261,69 @@ def create_app(config_name='development'):
         def create_exercise():
             teacher_user_id = session.get('user_id')
             data = request.json
+            
             title = data.get('title')
-            description = data.get('description')
-
             if not title:
                 return jsonify({"success": False, "error": "Exercise title is required"}), 400
 
             new_exercise = TeacherExercise(
                 title=title,
-                description=description,
+                description=data.get('description'),
                 creator_id=teacher_user_id,
-                exercise_type='vocabulary',
-                difficulty='medium',
-                content={'default': 'content'}
+                exercise_type=data.get('exercise_type', 'vocabulary'),
+                difficulty=data.get('difficulty', 'medium'),
+                content=data.get('content', {})
             )
             db.session.add(new_exercise)
             db.session.commit()
 
             return jsonify({"success": True, "data": {"id": new_exercise.id, "title": new_exercise.title, "description": new_exercise.description}}), 201
+
+        @app.route("/api/exercises/<int:exercise_id>", methods=["GET"])
+        @login_required
+        def get_exercise(exercise_id):
+            teacher_user_id = session.get('user_id')
+            exercise = db.session.query(TeacherExercise).filter_by(id=exercise_id).first()
+
+            if not exercise:
+                return jsonify({"success": False, "error": "Exercise not found"}), 404
+
+            if exercise.creator_id != teacher_user_id:
+                return jsonify({"success": False, "error": "Unauthorized"}), 403
+
+            return jsonify({
+                "success": True,
+                "data": {
+                    "id": exercise.id,
+                    "title": exercise.title,
+                    "description": exercise.description,
+                    "exercise_type": exercise.exercise_type,
+                    "difficulty": exercise.difficulty,
+                    "content": exercise.content,
+                    "is_published": exercise.is_published
+                }
+            })
+
+        @app.route("/api/exercises/<int:exercise_id>", methods=["PUT"])
+        @login_required
+        def update_exercise(exercise_id):
+            teacher_user_id = session.get('user_id')
+            exercise = db.session.query(TeacherExercise).filter_by(id=exercise_id, creator_id=teacher_user_id).first()
+
+            if not exercise:
+                return jsonify({"success": False, "error": "Exercise not found or you are not authorized"}), 404
+
+            data = request.json
+            exercise.title = data.get('title', exercise.title)
+            exercise.description = data.get('description', exercise.description)
+            exercise.exercise_type = data.get('exercise_type', exercise.exercise_type)
+            exercise.difficulty = data.get('difficulty', exercise.difficulty)
+            exercise.content = data.get('content', exercise.content)
+            exercise.is_published = data.get('is_published', exercise.is_published)
+            
+            db.session.commit()
+
+            return jsonify({"success": True, "message": "Exercise updated successfully"})
 
         @app.route("/webhook", methods=["POST"])
         async def webhook():

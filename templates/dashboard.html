@@ -31,20 +31,9 @@
 
         <hr>
 
-        <h2>My Exercises</h2>
-        <ul id="exercises-list">
-            <!-- Exercises will be loaded here by JavaScript -->
-        </ul>
-        <hr>
-        <h2>Create New Exercise</h2>
-        <form id="create-exercise-form">
-            <input type="text" id="exercise-title" placeholder="Exercise Title" required><br>
-            <textarea id="exercise-description" placeholder="Exercise Description" required></textarea><br>
-            <input type="text" id="exercise-type" placeholder="Type (e.g., vocabulary)" required><br>
-            <input type="text" id="exercise-difficulty" placeholder="Difficulty (e.g., medium)" required><br>
-            <textarea id="exercise-content" placeholder='Content (JSON format) e.g., {"questions": []}' required></textarea><br>
-            <button type="submit">Create Exercise</button>
-        </form>
+        <h2>Your Exercises</h2>
+        <a href="/exercises/new" class="button">Create New Exercise</a>
+        <ul id="exercise-list" style="margin-top: 10px;"></ul>
     </div>
 
     <script>
@@ -55,11 +44,6 @@
             document.getElementById('create-group-form').addEventListener('submit', function(event) {
                 event.preventDefault();
                 createGroup();
-            });
-
-            document.getElementById('create-exercise-form').addEventListener('submit', function(event) {
-                event.preventDefault();
-                createExercise();
             });
         });
 
@@ -102,52 +86,52 @@
         }
 
         async function fetchExercises() {
-            const response = await fetch('/api/exercises');
-            const result = await response.json();
-            const list = document.getElementById('exercises-list');
+            const list = document.getElementById('exercise-list');
             list.innerHTML = '';
-            if (result.success && result.data.length > 0) {
-                result.data.forEach(ex => {
-                    const item = document.createElement('li');
-                    item.textContent = `${ex.title} (${ex.exercise_type} - ${ex.difficulty})`;
-                    list.appendChild(item);
-                });
-            } else {
-                list.innerHTML = '<li>No exercises found. Create one below!</li>';
+            try {
+                const response = await fetch('/api/exercises');
+                const result = await response.json();
+                
+                if (result.success && result.data.length > 0) {
+                    result.data.forEach(exercise => {
+                        const item = document.createElement('li');
+                        const link = document.createElement('a');
+                        link.href = `/exercises/${exercise.id}`;
+                        link.textContent = `${exercise.title} (${exercise.exercise_type} - ${exercise.difficulty})`;
+                        item.appendChild(link);
+                        list.appendChild(item);
+                    });
+                } else {
+                    list.innerHTML = '<li>No exercises found. Create one!</li>';
+                }
+            } catch (error) {
+                list.innerHTML = '<li>Error loading exercises.</li>';
+                console.error('Error fetching exercises:', error);
             }
         }
 
-        async function createExercise() {
-            const contentValue = document.getElementById('exercise-content').value;
-            let content;
-            try {
-                content = JSON.parse(contentValue);
-            } catch (e) {
-                alert('Content must be valid JSON.');
-                return;
-            }
-
-            const exerciseData = {
-                title: document.getElementById('exercise-title').value,
-                description: document.getElementById('exercise-description').value,
-                exercise_type: document.getElementById('exercise-type').value,
-                difficulty: document.getElementById('exercise-difficulty').value,
-                content: content
-            };
-
-            const response = await fetch('/api/exercises', {
+        document.getElementById('create-group-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('group-name').value;
+            const description = document.getElementById('group-description').value;
+            
+            const response = await fetch('/api/groups', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(exerciseData)
+                body: JSON.stringify({ name, description })
             });
 
             if (response.ok) {
-                document.getElementById('create-exercise-form').reset();
-                fetchExercises();
+                fetchGroups(); // Refresh the list
+                document.getElementById('group-name').value = '';
+                document.getElementById('group-description').value = '';
             } else {
-                alert('Failed to create exercise.');
+                alert('Failed to create group.');
             }
-        }
+        });
+
+        fetchGroups();
+        fetchExercises();
     </script>
 </body>
 </html> 

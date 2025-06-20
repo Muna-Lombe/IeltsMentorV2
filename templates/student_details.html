@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Details</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f9; margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h1, h2 { color: #333; }
+        a { color: #007bff; text-decoration: none; }
+        .profile-card { border-bottom: 1px solid #ddd; padding-bottom: 15px; margin-bottom: 15px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; }
+        .stat-item { background-color: #e9ecef; padding: 10px; border-radius: 4px; }
+        .session-list { list-style-type: none; padding: 0; }
+        .session-item { border: 1px solid #eee; padding: 10px; margin-bottom: 10px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="javascript:history.back()">&larr; Back to Previous Page</a>
+        <div id="student-profile">
+            <h1>Student Profile</h1>
+            <div class="profile-card">
+                <p><strong>Name:</strong> <span id="student-name"></span></p>
+                <p><strong>Username:</strong> @<span id="student-username"></span></p>
+                <p><strong>Skill Level:</strong> <span id="skill-level"></span></p>
+            </div>
+        </div>
+
+        <h2>Overall Statistics</h2>
+        <div id="stats-grid" class="stats-grid"></div>
+
+        <h2>Practice History</h2>
+        <ul id="session-list" class="session-list"></ul>
+    </div>
+
+    <script>
+        const studentId = "{{ student_id }}";
+
+        async function fetchStudentData() {
+            // Fetch profile details
+            const profileResponse = await fetch(`/api/students/${studentId}`);
+            const profileResult = await profileResponse.json();
+
+            if (profileResult.success) {
+                const student = profileResult.data;
+                document.getElementById('student-name').textContent = `${student.first_name || ''} ${student.last_name || ''}`;
+                document.getElementById('student-username').textContent = student.username || 'N/A';
+                document.getElementById('skill-level').textContent = student.skill_level || 'Not assessed';
+            } else {
+                document.getElementById('student-profile').innerHTML = `<p>Error loading profile: ${profileResult.error}</p>`;
+            }
+
+            // Fetch progress details
+            const progressResponse = await fetch(`/api/students/${studentId}/progress`);
+            const progressResult = await progressResponse.json();
+
+            if (progressResult.success) {
+                const progress = progressResult.data;
+                
+                // Populate stats
+                const statsGrid = document.getElementById('stats-grid');
+                statsGrid.innerHTML = '';
+                for (const [section, data] of Object.entries(progress.stats)) {
+                    const item = document.createElement('div');
+                    item.classList.add('stat-item');
+                    let content = `<strong>${section.charAt(0).toUpperCase() + section.slice(1)}</strong><ul>`;
+                    for (const [key, value] of Object.entries(data)) {
+                        content += `<li>${key.replace(/_/g, ' ')}: ${value}</li>`;
+                    }
+                    content += '</ul>';
+                    item.innerHTML = content;
+                    statsGrid.appendChild(item);
+                }
+
+                // Populate practice sessions
+                const sessionList = document.getElementById('session-list');
+                sessionList.innerHTML = '';
+                if (progress.practice_sessions && progress.practice_sessions.length > 0) {
+                    progress.practice_sessions.forEach(session => {
+                        const li = document.createElement('li');
+                        li.classList.add('session-item');
+                        const started = new Date(session.started_at).toLocaleString();
+                        li.innerHTML = `
+                            <strong>Section:</strong> ${session.section} <br>
+                            <strong>Score:</strong> ${session.score || 'N/A'} <br>
+                            <strong>Date:</strong> ${started}
+                        `;
+                        sessionList.appendChild(li);
+                    });
+                } else {
+                    sessionList.innerHTML = '<li>No practice sessions found.</li>';
+                }
+            } else {
+                document.getElementById('stats-grid').innerHTML = `<p>Error loading stats: ${progressResult.error}</p>`;
+                document.getElementById('session-list').innerHTML = '';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchStudentData);
+    </script>
+</body>
+</html>

@@ -4,6 +4,7 @@ from functools import wraps
 from flask import Flask, request, jsonify, render_template, redirect, url_for, session, flash
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, CallbackQueryHandler
+from datetime import datetime
 
 from extensions import db, migrate
 from config import config
@@ -30,6 +31,7 @@ from models.teacher import Teacher
 from models.group import Group, GroupMembership
 from models.exercise import TeacherExercise
 from models.practice_session import PracticeSession
+from models.homework import Homework, HomeworkSubmission
 
 # Configure logging
 logging.basicConfig(
@@ -110,8 +112,14 @@ def create_app(config_name='development'):
         @app.route("/dashboard")
         @login_required
         def dashboard():
-            user_first_name = session.get('user_first_name', 'Teacher')
-            return render_template("dashboard.html", user={'first_name': user_first_name})
+            user_id = session.get('user_id')
+            user = db.session.get(User, user_id)
+            return render_template("dashboard.html", user=user)
+
+        @app.route("/homework")
+        @login_required
+        def homework_page():
+            return render_template("homework.html")
 
         @app.route("/logout")
         def logout():
@@ -133,6 +141,22 @@ def create_app(config_name='development'):
         def exercise_details_page(exercise_id):
             # The template will fetch the data, we just need to pass the ID
             return render_template("exercise_details.html", exercise_id=exercise_id)
+
+        @app.route("/students/<int:student_id>")
+        @login_required
+        def student_details_page(student_id):
+            return render_template("student_details.html", student_id=student_id)
+
+        @app.route("/analytics/groups/<int:group_id>")
+        @login_required
+        def group_analytics_page(group_id):
+            return render_template("analytics.html", group_id=group_id)
+
+        @app.route("/student/<int:student_id>")
+        @login_required
+        def student_details(student_id):
+            # No need to fetch student details here, it's done by an API call from the frontend
+            return render_template("student_details.html", student_id=student_id)
 
         # API Endpoints
         @app.route("/api/groups", methods=["GET"])
@@ -248,6 +272,46 @@ def create_app(config_name='development'):
 
             return jsonify({"success": True, "message": "Student removed from group successfully"})
 
+        @app.route("/api/students/<int:student_id>", methods=["GET"])
+        @login_required
+        def get_student_details(student_id):
+            teacher_user_id = session.get('user_id')
+            student = db.session.query(User).filter_by(id=student_id).first_or_404()
+
+            # Authorization check: Ensure student is in one of the teacher's groups
+            is_authorized = db.session.query(GroupMembership).join(Group).filter(
+                Group.teacher_id == teacher_user_id,
+                GroupMembership.student_id == student_id
+            ).first()
+
+            if not is_authorized:
+                return jsonify({"success": False, "error": "Unauthorized to view this student"}), 403
+
+            return jsonify({"success": True, "data": student.to_dict()})
+
+        @app.route("/api/students/<int:student_id>/progress", methods=["GET"])
+        @login_required
+        def get_student_progress(student_id):
+            teacher_user_id = session.get('user_id')
+            student = db.session.query(User).filter_by(id=student_id).first_or_404()
+
+            # Authorization check
+            is_authorized = db.session.query(GroupMembership).join(Group).filter(
+                Group.teacher_id == teacher_user_id,
+                GroupMembership.student_id == student_id
+            ).first()
+
+            if not is_authorized:
+                return jsonify({"success": False, "error": "Unauthorized to view this student"}), 403
+
+            sessions = student.get_practice_sessions()
+            progress_data = {
+                "stats": student.stats,
+                "skill_level": student.skill_level,
+                "practice_sessions": [s.to_dict() for s in sessions]
+            }
+            return jsonify({"success": True, "data": progress_data})
+
         @app.route("/api/exercises", methods=["GET"])
         @login_required
         def get_exercises():
@@ -323,13 +387,128 @@ def create_app(config_name='development'):
             
             db.session.commit()
 
-            return jsonify({"success": True, "message": "Exercise updated successfully"})
+            return jsonify({"success": True, "data": exercise.to_dict()})
+
+        @app.route("/api/homework", methods=["POST"])
+        @login_required
+        def assign_homework():
+            teacher_user_id = session.get('user_id')
+            data = request.json
+            exercise_id = data.get('exercise_id')
+            group_id = data.get('group_id')
+            due_date_str = data.get('due_date')
+            instructions = data.get('instructions')
+
+            # Basic validation
+            if not all([exercise_id, group_id]):
+                return jsonify({"success": False, "error": "Exercise ID and Group ID are required"}), 400
+
+            # Authorization: Check if teacher owns the group and the exercise
+            group = db.session.query(Group).filter_by(id=group_id, teacher_id=teacher_user_id).first()
+            exercise = db.session.query(TeacherExercise).filter_by(id=exercise_id, creator_id=teacher_user_id).first()
+
+            if not group or not exercise:
+                return jsonify({"success": False, "error": "Unauthorized or resource not found"}), 403
+
+            due_date = datetime.fromisoformat(due_date_str) if due_date_str else None
+            
+            new_homework = Homework(
+                exercise_id=exercise_id,
+                group_id=group_id,
+                assigned_by_id=teacher_user_id,
+                due_date=due_date,
+                instructions=instructions
+            )
+            db.session.add(new_homework)
+            db.session.commit()
+            
+            return jsonify({"success": True, "message": "Homework assigned successfully.", "data": {"id": new_homework.id}}), 201
+
+        @app.route("/api/homework", methods=["GET"])
+        @login_required
+        def get_homework_assignments():
+            teacher_user_id = session.get('user_id')
+            assignments = db.session.query(Homework).filter_by(assigned_by_id=teacher_user_id).all()
+            
+            data = [{
+                "id": hw.id,
+                "exercise_title": hw.exercise.title,
+                "group_name": hw.group.name,
+                "assigned_at": hw.assigned_at.isoformat(),
+                "due_date": hw.due_date.isoformat() if hw.due_date else None
+            } for hw in assignments]
+
+            return jsonify({"success": True, "data": data})
+
+        @app.route("/api/homework/<int:homework_id>/submissions", methods=["GET"])
+        @login_required
+        def get_homework_submissions(homework_id):
+            teacher_user_id = session.get('user_id')
+            
+            # Authorization check
+            homework = db.session.query(Homework).filter_by(id=homework_id, assigned_by_id=teacher_user_id).first()
+            if not homework:
+                return jsonify({"success": False, "error": "Homework not found or unauthorized"}), 404
+
+            submissions = homework.submissions
+            data = [{
+                "id": sub.id,
+                "student_name": sub.student.get_full_name(),
+                "submitted_at": sub.submitted_at.isoformat(),
+                "score": sub.score
+            } for sub in submissions]
+
+            return jsonify({"success": True, "data": data})
+
+        @app.route("/api/analytics/groups/<int:group_id>", methods=["GET"])
+        @login_required
+        def get_group_analytics(group_id):
+            teacher_user_id = session.get('user_id')
+            
+            # Authorization: ensure the teacher owns the group
+            group = db.session.query(Group).filter_by(id=group_id, teacher_id=teacher_user_id).first()
+            if not group:
+                return jsonify({"success": False, "error": "Group not found or unauthorized"}), 404
+
+            student_ids = [member.id for member in group.members]
+            if not student_ids:
+                return jsonify({"success": True, "data": {"message": "No students in this group."}})
+
+            # Calculate average scores from practice sessions
+            avg_scores = db.session.query(
+                PracticeSession.section,
+                db.func.avg(PracticeSession.score)
+            ).filter(
+                PracticeSession.user_id.in_(student_ids)
+            ).group_by(PracticeSession.section).all()
+
+            # Calculate homework stats
+            homework_stats = db.session.query(
+                db.func.count(Homework.id),
+                db.func.count(HomeworkSubmission.id),
+                db.func.avg(HomeworkSubmission.score)
+            ).select_from(Homework).outerjoin(
+                HomeworkSubmission, Homework.id == HomeworkSubmission.homework_id
+            ).filter(Homework.group_id == group_id).first()
+
+            analytics_data = {
+                "group_name": group.name,
+                "member_count": len(student_ids),
+                "average_scores_by_section": {section: score for section, score in avg_scores},
+                "homework_completion_rate": (homework_stats[1] / homework_stats[0] * 100) if homework_stats[0] > 0 else 0,
+                "average_homework_score": homework_stats[2]
+            }
+
+            return jsonify({"success": True, "data": analytics_data})
 
         @app.route("/webhook", methods=["POST"])
         async def webhook():
-            update = Update.de_json(request.get_json(force=True), application.bot)
-            await application.process_update(update)
-            return jsonify({"status": "ok"})
+            try:
+                update = Update.de_json(request.get_json(force=True), application.bot)
+                await application.process_update(update)
+                return jsonify({"status": "ok"})
+            except Exception as e:
+                return jsonify({"status": "error", "error": str(e)}), 500
 
         @app.route('/health', methods=['GET'])
         def health_check():

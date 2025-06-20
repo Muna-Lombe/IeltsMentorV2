@@ -350,3 +350,19 @@ def another_teacher_user(session):
     # session.delete(user)
     # session.commit()
     return user
+
+@pytest.fixture(scope='function')
+def another_teacher(session):
+    """Create another approved teacher for authorization tests."""
+    user = User(user_id=555, first_name="Another", last_name="Teacher", username="anotherteacher", is_admin=True)
+    session.add(user)
+    session.commit()
+
+    teacher = Teacher(
+        user_id=user.id,
+        is_approved=True,
+        api_token="another-valid-token"
+    )
+    session.add(teacher)
+    session.commit()
+    return teacher

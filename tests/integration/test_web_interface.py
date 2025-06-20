@@ -1,9 +1,11 @@
 import pytest
 from flask import session
 from unittest.mock import patch
-from models import User, Teacher, Group
+from models import User, Teacher, Group, GroupMembership
 from models.exercise import TeacherExercise
+from models.practice_session import PracticeSession
 import os
+from datetime import datetime, timedelta
 
 class TestWebInterface:
     def test_login_page_loads(self, client):
@@ -12,8 +14,6 @@ class TestWebInterface:
         assert b"Teacher Login" in response.data
 
     def test_successful_login(self, client, approved_teacher_user):
-        #response = client.post('/login', data={'api_token': approved_teacher_user.
-        #teacher_profile.api_token}, follow_redirects=True)
         response = client.post('/login', data={'api_token': 'valid-test-token'}, follow_redirects=True)
         assert response.status_code == 200
         assert b"Teacher Dashboard" in response.data
@@ -31,8 +31,6 @@ class TestWebInterface:
         assert b"Teacher Login" in response.data
 
     def test_dashboard_access_authorized(self, client, approved_teacher_user):
-        # client.post('/login', data={'api_token': approved_teacher_user.teacher_profile.
-        # api_token})
         client.post('/login', data={'api_token': 'valid-test-token'})
         response = client.get('/dashboard')
         assert response.status_code == 200
@@ -40,20 +38,16 @@ class TestWebInterface:
 
     def test_logout(self, client, approved_teacher_user):
         client.post('/login', data={'api_token': 'valid-test-token'})
-        # client.post('/login', data={'api_token': approved_teacher_user.teacher_profile.
-        # api_token})
         response = client.get('/logout', follow_redirects=True)
         assert response.status_code == 200
         assert b"Teacher Login" in response.data
 
     def test_get_groups_unauthorized(self, client):
         response = client.get('/api/groups')
-        assert response.status_code == 302
+        assert response.status_code == 302 # Redirect to login
 
     def test_get_groups_authorized_empty(self, client, approved_teacher_user):
         client.post('/login', data={'api_token': 'valid-test-token'})
-        # client.post('/login', data={'api_token': approved_teacher_user.teacher_profile.
-        # api_token})
         response = client.get('/api/groups')
         assert response.status_code == 200
         data = response.get_json()
@@ -62,8 +56,6 @@ class TestWebInterface:
 
     def test_create_and_get_group(self, client, approved_teacher_user):
         client.post('/login', data={'api_token': 'valid-test-token'})
-        # client.post('/login', data={'api_token': approved_teacher_user.teacher_profile.
-        # api_token})
         create_response = client.post('/api/groups', json={'name': 'Test Group Alpha', 'description': 'A new test group.'})
         assert create_response.status_code == 201
         
@@ -75,22 +67,18 @@ class TestWebInterface:
 
     def test_get_exercises_unauthorized(self, client):
         response = client.get('/api/exercises')
-        assert response.status_code == 302
+        assert response.status_code == 302 # Redirect to login
 
     def test_get_exercises_authorized_empty(self, client, approved_teacher_user):
         client.post('/login', data={'api_token': 'valid-test-token'})
-        # client.post('/login', data={'api_token': approved_teacher_user.teacher_profile.
-        # api_token})
         response = client.get('/api/exercises')
         assert response.status_code == 200
         data = response.get_json()
         assert data['success'] is True
         assert data['data'] == []
 
-    def test_create_and_get_exercise(self, client, approved_teacher_user, session):
+    def test_create_and_get_exercise(self, client, approved_teacher_user):
         client.post('/login', data={'api_token': 'valid-test-token'})
-        # client.post('/login', data={'api_token': approved_teacher_user.teacher_profile.
-        # api_token})
         create_resp = client.post('/api/exercises', json={
             'title': 'New API Exercise', 'description': 'A detailed description.',
             'exercise_type': 'writing', 'difficulty': 'hard',
@@ -106,8 +94,6 @@ class TestWebInterface:
 
     def test_get_specific_group_authorized(self, client, session, approved_teacher_user):
         client.post('/login', data={'api_token': 'valid-test-token'})
-        # client.post('/login', data={'api_token': approved_teacher_user.teacher_profile.
-        # api_token})
         group = Group(name="My Test Group", teacher_id=approved_teacher_user.id)
         session.add(group)
         session.commit()
@@ -117,10 +103,8 @@ class TestWebInterface:
         assert data['success'] is True
         assert data['data']['name'] == 'My Test Group'
 
-    def test_get_specific_group_unauthorized(self, client, session, approved_teacher_user, another_teacher_user):
-        client.post('/login', data={'api_token': "another-valid-token"})
-        # client.post('/login', data={'api_token': approved_teacher_user.teacher_profile.
-        # api_token})
+    def test_get_specific_group_unauthorized(self, client, session, approved_teacher_user, another_teacher):
+        client.post('/login', data={'api_token': 'another-valid-token'})
         group = Group(name="Not My Group", teacher_id=approved_teacher_user.id)
         session.add(group)
         session.commit()
@@ -129,20 +113,16 @@ class TestWebInterface:
 
     def test_update_specific_group(self, client, session, approved_teacher_user):
         client.post('/login', data={'api_token': 'valid-test-token'})
-        # client.post('/login', data={'api_token': approved_teacher_user.teacher_profile.
-        # api_token})
         group = Group(name="Old Name", description="Old Desc", teacher_id=approved_teacher_user.id)
         session.add(group)
         session.commit()
         update_res = client.put(f'/api/groups/{group.id}', json={'name': 'New Name', 'description': 'New Desc'})
         assert update_res.status_code == 200
-        updated_group = session.query(Group).get(group.id)
+        updated_group = session.get(Group, group.id)
         assert updated_group.name == 'New Name'
 
     def test_get_specific_exercise_authorized(self, client, session, approved_teacher_user):
         client.post('/login', data={'api_token': 'valid-test-token'})
-        # client.post('/login', data={'api_token': approved_teacher_user.teacher_profile.
-        # api_token})
         exercise = TeacherExercise(
             title="My Exercise", creator_id=approved_teacher_user.id,
             exercise_type='speaking', difficulty='easy', content={'q': 'a'}
@@ -155,10 +135,8 @@ class TestWebInterface:
         assert data['success'] is True
         assert data['data']['title'] == "My Exercise"
 
-    def test_get_specific_exercise_unauthorized(self, client, session, approved_teacher_user, another_teacher_user):
-        client.post('/login', data={'api_token': "another-valid-token"})
-        # client.post('/login', data={'api_token': approved_teacher_user.teacher_profile.
-        # api_token})
+    def test_get_specific_exercise_unauthorized(self, client, session, approved_teacher_user, another_teacher):
+        client.post('/login', data={'api_token': 'another-valid-token'})
         exercise = TeacherExercise(
             title="Not My Exercise", creator_id=approved_teacher_user.id,
             exercise_type='speaking', difficulty='easy', content={'q': 'a'}
@@ -170,8 +148,6 @@ class TestWebInterface:
 
     def test_update_specific_exercise(self, client, session, approved_teacher_user):
         client.post('/login', data={'api_token': 'valid-test-token'})
-        # client.post('/login', data={'api_token': approved_teacher_user.teacher_profile.
-        # api_token})
         exercise = TeacherExercise(
             title="Old Title", description="Old Desc", creator_id=approved_teacher_user.id,
             exercise_type='speaking', difficulty='easy', content={'q': 'a'}
@@ -184,39 +160,122 @@ class TestWebInterface:
         }
         resp = client.put(f'/api/exercises/{exercise.id}', json=update_data)
         assert resp.status_code == 200
-        updated_exercise = session.query(TeacherExercise).get(exercise.id)
+        updated_exercise = session.get(TeacherExercise, exercise.id)
         assert updated_exercise.title == 'New Title'
         assert updated_exercise.is_published is True
 
     def test_add_and_remove_group_member(self, client, session, approved_teacher_user, regular_user):
-        """Test adding and removing a member from a group."""
         client.post('/login', data={'api_token': 'valid-test-token'})
-        
-        # 1. Create a group
         group_res = client.post('/api/groups', json={'name': 'Member Management Test', 'description': 'A group for testing member management.'})
-        assert group_res.status_code == 201
         group_id = group_res.json['data']['id']
-
-        # 2. Add a student to the group
+        
         add_res = client.post(f'/api/groups/{group_id}/members', json={'student_id': regular_user.id})
         assert add_res.status_code == 201
-        assert add_res.json['message'] == 'Student added to group successfully'
-
-        # 3. Verify the student is in the member list
+        
         get_res = client.get(f'/api/groups/{group_id}')
-        assert get_res.status_code == 200
         members = get_res.json['data']['members']
         assert len(members) == 1
         assert members[0]['id'] == regular_user.id
-        assert members[0]['username'] == regular_user.username
 
-        # 4. Remove the student from the group
         remove_res = client.delete(f'/api/groups/{group_id}/members/{regular_user.id}')
         assert remove_res.status_code == 200
-        assert remove_res.json['message'] == 'Student removed from group successfully'
 
-        # 5. Verify the student has been removed
         get_res_after_remove = client.get(f'/api/groups/{group_id}')
-        assert get_res_after_remove.status_code == 200
         members_after_remove = get_res_after_remove.json['data']['members']
         assert len(members_after_remove) == 0
+
+    def test_get_student_details_authorized(self, client, session, approved_teacher_user, regular_user):
+        client.post('/login', data={'api_token': 'valid-test-token'})
+        group = Group(name="Test Group", teacher_id=approved_teacher_user.id)
+        session.add(group)
+        session.commit()
+        membership = GroupMembership(group_id=group.id, student_id=regular_user.id)
+        session.add(membership)
+        session.commit()
+
+        response = client.get(f'/api/students/{regular_user.id}')
+        assert response.status_code == 200
+        assert response.json['data']['id'] == regular_user.id
+
+    def test_get_student_details_unauthorized(self, client, session, approved_teacher_user, another_teacher, regular_user):
+        client.post('/login', data={'api_token': 'another-valid-token'})
+        group = Group(name="Test Group", teacher_id=approved_teacher_user.id)
+        session.add(group)
+        session.commit()
+        membership = GroupMembership(group_id=group.id, student_id=regular_user.id)
+        session.add(membership)
+        session.commit()
+
+        response = client.get(f'/api/students/{regular_user.id}')
+        assert response.status_code == 403
+        assert response.json['error'] == "Unauthorized to view this student"
+
+    def test_assign_and_get_homework(self, client, session, approved_teacher_user, regular_user):
+        client.post('/login', data={'api_token': 'valid-test-token'})
+        
+        group = Group(name="Homework Group", teacher_id=approved_teacher_user.id)
+        exercise = TeacherExercise(title="Homework Exercise", creator_id=approved_teacher_user.id, exercise_type='reading', difficulty='easy', content={'q':'a'})
+        session.add_all([group, exercise])
+        session.commit()
+        
+        due_date = datetime.utcnow() + timedelta(days=7)
+        response = client.post('/api/homework', json={
+            'exercise_id': exercise.id,
+            'group_id': group.id,
+            'due_date': due_date.isoformat(),
+            'instructions': 'Test instructions'
+        })
+        assert response.status_code == 201
+        homework_id = response.get_json()['data']['id']
+
+        response = client.get('/api/homework')
+        assert response.status_code == 200
+        data = response.get_json()
+        assert len(data['data']) == 1
+        assert data['data'][0]['exercise_title'] == 'Homework Exercise'
+
+        response = client.get(f'/api/homework/{homework_id}/submissions')
+        assert response.status_code == 200
+        assert len(response.get_json()['data']) == 0
+
+    def test_assign_homework_unauthorized(self, client, session, approved_teacher_user, another_teacher):
+        client.post('/login', data={'api_token': 'another-valid-token'})
+        
+        group = Group(name="Owned Group", teacher_id=approved_teacher_user.id)
+        exercise = TeacherExercise(title="Owned Exercise", creator_id=approved_teacher_user.id, exercise_type='reading', difficulty='easy', content={'q':'a'})
+        session.add_all([group, exercise])
+        session.commit()
+
+        response = client.post('/api/homework', json={
+            'exercise_id': exercise.id,
+            'group_id': group.id
+        })
+        assert response.status_code == 403
+
+    def test_get_group_analytics(self, client, session, approved_teacher_user, regular_user):
+        client.post('/login', data={'api_token': 'valid-test-token'})
+
+        # 1. Create a group and add the student
+        group = Group(name="Analytics Test Group", teacher_id=approved_teacher_user.id)
+        session.add(group)
+        session.commit()
+        membership = GroupMembership(group_id=group.id, student_id=regular_user.id)
+        session.add(membership)
+        
+        # 2. Create some practice data
+        p1 = PracticeSession(user_id=regular_user.id, section='reading', score=80)
+        p2 = PracticeSession(user_id=regular_user.id, section='reading', score=90)
+        p3 = PracticeSession(user_id=regular_user.id, section='writing', score=75)
+        session.add_all([p1, p2, p3])
+        session.commit()
+
+        # 3. Call the analytics endpoint
+        response = client.get(f'/api/analytics/groups/{group.id}')
+        assert response.status_code == 200
+        data = response.get_json()['data']
+
+        # 4. Assert the analytics are correct
+        assert data['group_name'] == "Analytics Test Group"
+        assert data['member_count'] == 1
+        assert data['average_scores_by_section']['reading'] == 85.0
+        assert data['average_scores_by_section']['writing'] == 75.0

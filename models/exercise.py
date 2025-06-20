@@ -20,4 +20,19 @@ class TeacherExercise(db.Model):
     creator = relationship("Teacher", back_populates="created_exercises")
 
     def __repr__(self):
-        return f"<TeacherExercise(id={self.id}, title='{self.title}', creator_id={self.creator_id})>" 
+        return f'<TeacherExercise {self.title}>'
+
+    def to_dict(self):
+        """Serializes the object to a dictionary."""
+        return {
+            'id': self.id,
+            'creator_id': self.creator_id,
+            'title': self.title,
+            'description': self.description,
+            'exercise_type': self.exercise_type,
+            'content': self.content,
+            'difficulty': self.difficulty,
+            'created_at': self.created_at.isoformat(),
+            'updated_at': self.updated_at.isoformat(),
+            'is_published': self.is_published
+        }

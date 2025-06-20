@@ -7,39 +7,50 @@
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f4f9; margin: 0; padding: 20px; }
         .container { max-width: 600px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        h1 { color: #333; }
+        h1, h2, h3 { color: #333; }
         a { color: #007bff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
         form { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
-        input, textarea { padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
-        button { padding: 10px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; }
-        button:hover { background-color: #218838; }
+        input, textarea, button { padding: 10px; border-radius: 4px; }
+        input, textarea { border: 1px solid #ddd; }
+        button { border: none; color: white; cursor: pointer; }
+        button[type="submit"] { background-color: #28a745; }
+        button[type="submit"]:hover { background-color: #218838; }
         .message { padding: 10px; border-radius: 4px; margin-top: 10px; }
         .success { background-color: #d4edda; color: #155724; }
+        #member-list { list-style: none; padding: 0; }
+        #member-list li { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #eee; }
+        .remove-btn { background-color: #dc3545; }
+        .remove-btn:hover { background-color: #c82333; }
     </style>
 </head>
 <body>
     <div class="container">
-        <a href="/dashboard"> &larr; Back to Dashboard</a>
-        <h1>Edit Group</h1>
-        <div id="message-area"></div>
-        <form id="edit-group-form">
-            <input type="text" id="group-name" required>
-            <textarea id="group-description" rows="4"></textarea>
-            <button type="submit">Save Changes</button>
-        </form>
-        <hr>
-        <h2>Members</h2>
-        <ul id="member-list">
-            <!-- Members will be dynamically inserted here -->
-        </ul>
+        <a href="/dashboard">&larr; Back to Dashboard</a>
+        <h1 id="group-name"></h1>
+        <p id="group-description"></p>
+        <a id="analytics-link" class="button">View Analytics</a>
 
-        <h3>Add Member</h3>
-        <form id="add-member-form">
-            <input type="number" id="student-id" name="student_id" placeholder="Enter Student User ID" required>
-            <button type="submit">Add Member</button>
-        </form>
-        
-        <p><a href="/dashboard">Back to Dashboard</a></p>
+        <div class="members-section">
+            <h2>Group Members (<span id="member-count">0</span>)</h2>
+            <div id="message-area"></div>
+            <form id="edit-group-form">
+                <input type="text" id="group-name" required>
+                <textarea id="group-description" rows="4"></textarea>
+                <button type="submit">Save Changes</button>
+            </form>
+            <hr>
+            <h2>Members</h2>
+            <ul id="member-list">
+                <!-- Members will be dynamically inserted here -->
+            </ul>
+
+            <h3>Add Member</h3>
+            <form id="add-member-form">
+                <input type="number" id="student-id" name="student_id" placeholder="Enter Student User ID" required>
+                <button type="submit">Add Member</button>
+            </form>
+        </div>
     </div>
 
     <script>
@@ -48,7 +59,9 @@
         const memberList = document.getElementById('member-list');
         const addMemberForm = document.getElementById('add-member-form');
 
-        async function fetchGroupDetails() {
+        document.addEventListener('DOMContentLoaded', async () => {
+            document.getElementById('analytics-link').href = `/analytics/groups/${groupId}`;
+
             const response = await fetch(`/api/groups/${groupId}`);
             const result = await response.json();
 
@@ -61,11 +74,18 @@
                 if (group.members && group.members.length > 0) {
                     group.members.forEach(member => {
                         const li = document.createElement('li');
-                        li.textContent = `${member.first_name || ''} ${member.last_name || ''} (@${member.username || member.id})`;
+                        li.innerHTML = `
+                            <a href="/students/${member.id}">
+                                ${member.first_name || ''} ${member.last_name || ''} (@${member.username || member.id})
+                            </a>
+                        `;
                         const removeButton = document.createElement('button');
                         removeButton.textContent = 'Remove';
                         removeButton.classList.add('remove-btn');
-                        removeButton.onclick = () => removeMember(member.id);
+                        removeButton.onclick = (e) => {
+                            e.stopPropagation(); // Prevent navigating to student page
+                            removeMember(member.id);
+                        };
                         li.appendChild(removeButton);
                         memberList.appendChild(li);
                     });
@@ -75,7 +95,7 @@
             } else {
                 alert('Error fetching group details: ' + result.error);
             }
-        }
+        });
 
         editForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -133,8 +153,6 @@
                 alert('Error removing member: ' + result.error);
             }
         }
-
-        document.addEventListener('DOMContentLoaded', fetchGroupDetails);
     </script>
 </body>
 </html> 

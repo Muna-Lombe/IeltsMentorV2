@@ -9,6 +9,27 @@
         .header { background-color: #007bff; color: white; padding: 20px; text-align: center; }
         .container { padding: 20px; }
         .logout { float: right; color: white; text-decoration: none; }
+        .card {
+            background-color: #fff;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .card h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+        .card p {
+            margin-bottom: 10px;
+        }
+        .card a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        .card a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -34,6 +55,24 @@
         <h2>Your Exercises</h2>
         <a href="/exercises/new" class="button">Create New Exercise</a>
         <ul id="exercise-list" style="margin-top: 10px;"></ul>
+
+        <div class="card">
+            <h3>Group Management</h3>
+            <p>View, create, and manage your student groups.</p>
+            <a href="#" id="manage-groups-link">Manage Groups</a>
+        </div>
+        <div class="card">
+            <h3>Homework</h3>
+            <p>Assign and track homework for your groups.</p>
+            <a href="/homework">Manage Homework</a>
+        </div>
+    </div>
+
+    <div id="groups-container" style="display:none;">
+        <h2>Groups</h2>
+        <ul id="groups-list">
+            <!-- Groups will be loaded here by JavaScript -->
+        </ul>
     </div>
 
     <script>

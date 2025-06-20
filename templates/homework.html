@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homework Management</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f9; margin: 0; padding: 20px; }
+        .container { max-width: 900px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h1, h2 { color: #333; }
+        a { color: #007bff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; border: 1px solid #ddd; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .form-section { padding: 20px; border: 1px solid #ddd; border-radius: 8px; margin-top: 20px; }
+        form { display: flex; flex-direction: column; gap: 10px; }
+        select, input, textarea, button { padding: 10px; border-radius: 4px; border: 1px solid #ccc; }
+        button { background-color: #28a745; color: white; cursor: pointer; border: none; }
+        button:hover { background-color: #218838; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/dashboard">&larr; Back to Dashboard</a>
+        <h1>Homework Management</h1>
+
+        <div class="form-section">
+            <h2>Assign New Homework</h2>
+            <form id="assign-homework-form">
+                <select id="exercise-select" required></select>
+                <select id="group-select" required></select>
+                <input type="datetime-local" id="due-date">
+                <textarea id="instructions" placeholder="Instructions (optional)"></textarea>
+                <button type="submit">Assign Homework</button>
+            </form>
+        </div>
+
+        <h2>Existing Assignments</h2>
+        <table id="homework-table">
+            <thead>
+                <tr>
+                    <th>Exercise</th>
+                    <th>Group</th>
+                    <th>Assigned On</th>
+                    <th>Due Date</th>
+                    <th>Submissions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Homework rows will be inserted here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            await Promise.all([
+                populateExercises(),
+                populateGroups(),
+                populateHomeworkTable()
+            ]);
+        });
+
+        async function populateExercises() {
+            const select = document.getElementById('exercise-select');
+            const response = await fetch('/api/exercises');
+            const result = await response.json();
+            if (result.success) {
+                select.innerHTML = '<option value="">Select an Exercise</option>';
+                result.data.forEach(ex => {
+                    select.innerHTML += `<option value="${ex.id}">${ex.title}</option>`;
+                });
+            }
+        }
+
+        async function populateGroups() {
+            const select = document.getElementById('group-select');
+            const response = await fetch('/api/groups');
+            const result = await response.json();
+            if (result.success) {
+                select.innerHTML = '<option value="">Select a Group</option>';
+                result.data.forEach(group => {
+                    select.innerHTML += `<option value="${group.id}">${group.name}</option>`;
+                });
+            }
+        }
+
+        async function populateHomeworkTable() {
+            const tbody = document.querySelector('#homework-table tbody');
+            const response = await fetch('/api/homework');
+            const result = await response.json();
+            if (result.success) {
+                tbody.innerHTML = '';
+                result.data.forEach(hw => {
+                    const dueDate = hw.due_date ? new Date(hw.due_date).toLocaleString() : 'N/A';
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${hw.exercise_title}</td>
+                            <td>${hw.group_name}</td>
+                            <td>${new Date(hw.assigned_at).toLocaleString()}</td>
+                            <td>${dueDate}</td>
+                            <td><a href="/homework/${hw.id}/submissions">View</a></td>
+                        </tr>
+                    `;
+                });
+            }
+        }
+
+        document.getElementById('assign-homework-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                exercise_id: document.getElementById('exercise-select').value,
+                group_id: document.getElementById('group-select').value,
+                due_date: document.getElementById('due-date').value,
+                instructions: document.getElementById('instructions').value
+            };
+
+            const response = await fetch('/api/homework', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+            if (response.ok) {
+                alert('Homework assigned successfully!');
+                populateHomeworkTable(); // Refresh the table
+                e.target.reset();
+            } else {
+                alert('Error: ' + result.error);
+            }
+        });
+    </script>
+</body>
+</html>

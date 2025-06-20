@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Group Analytics</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f9; margin: 20px; }
+        .container { max-width: 1000px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h1 { color: #333; }
+        a { color: #007bff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-top: 20px; }
+        .card { background: #f9f9f9; padding: 15px; border-radius: 5px; text-align: center; }
+        .card h3 { margin: 0 0 10px 0; }
+        .card p { font-size: 24px; margin: 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/group/{{ group_id }}">&larr; Back to Group</a>
+        <h1>Analytics for <span id="group-name"></span></h1>
+
+        <div class="grid">
+            <div class="card">
+                <h3>Members</h3>
+                <p id="member-count">0</p>
+            </div>
+            <div class="card">
+                <h3>Avg. Homework Score</h3>
+                <p id="avg-hw-score">N/A</p>
+            </div>
+            <div class="card">
+                <h3>Homework Completion</h3>
+                <p id="hw-completion">N/A</p>
+            </div>
+        </div>
+        
+        <div style="margin-top: 40px;">
+            <h2>Average Scores by Section</h2>
+            <canvas id="scores-chart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        const groupId = '{{ group_id }}';
+        
+        document.addEventListener('DOMContentLoaded', async () => {
+            const response = await fetch(`/api/analytics/groups/${groupId}`);
+            const result = await response.json();
+
+            if (result.success) {
+                const data = result.data;
+                document.getElementById('group-name').textContent = data.group_name;
+                document.getElementById('member-count').textContent = data.member_count;
+                document.getElementById('avg-hw-score').textContent = data.average_homework_score ? data.average_homework_score.toFixed(2) : 'N/A';
+                document.getElementById('hw-completion').textContent = data.homework_completion_rate.toFixed(2) + '%';
+                
+                renderScoresChart(data.average_scores_by_section);
+            } else {
+                alert('Error loading analytics: ' + result.error);
+            }
+        });
+
+        function renderScoresChart(scoresData) {
+            const ctx = document.getElementById('scores-chart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(scoresData),
+                    datasets: [{
+                        label: 'Average Score',
+                        data: Object.values(scoresData),
+                        backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

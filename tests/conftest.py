@@ -69,6 +69,7 @@ def mock_update():
     update.message.reply_text = AsyncMock()
     update.callback_query.answer = AsyncMock()
     update.callback_query.edit_message_text = AsyncMock()
+    update.callback_query.message.reply_text = AsyncMock()
     
     # Configure from_user on callback_query
     update.callback_query.from_user = update.effective_user

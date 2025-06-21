@@ -1,6 +1,7 @@
 import logging
 import json
 import os
+import random
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import (
     ContextTypes,
@@ -37,6 +38,13 @@ def load_reading_data():
     except (FileNotFoundError, json.JSONDecodeError) as e:
         logger.error(f"Error loading reading data: {e}")
         return []
+
+
+def _get_recommendation(current_section="reading"):
+    """Gets a recommendation for the next practice section."""
+    all_sections = ["speaking", "writing", "reading", "listening"]
+    available_sections = [s for s in all_sections if s != current_section]
+    return random.choice(available_sections)
 
 
 async def start_reading_practice(
@@ -169,6 +177,28 @@ async def handle_reading_answer(
     db.session.commit()
 
     await query.edit_message_text(text=feedback_message)
+
+    # Offer a new practice recommendation
+    recommendation = _get_recommendation()
+    recommendation_text = TranslationSystem.get_message(
+        "practice",
+        "recommendation_prompt",
+        lang_code,
+        next_section=recommendation.capitalize(),
+    )
+    recommendation_button = InlineKeyboardButton(
+        text=TranslationSystem.get_message(
+            "practice",
+            "start_next_section_button",
+            lang_code,
+            section=recommendation.capitalize(),
+        ),
+        callback_data=f"practice_{recommendation}",
+    )
+    await query.message.reply_text(
+        text=recommendation_text,
+        reply_markup=InlineKeyboardMarkup([[recommendation_button]]),
+    )
 
     # Clean up user_data for the reading session
     context.user_data.pop("reading_session_id", None)

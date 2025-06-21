@@ -136,8 +136,66 @@ async def test_handle_voice_message_part_1(
     assert practice_session.session_data[0]["transcript"] == "This is a test transcript."
     
     mock_remove.assert_called_once()
-    assert "summary" in mock_update.message.reply_text.call_args_list[1][0][0].lower()
-    assert "speaking practice complete" in mock_update.message.reply_text.call_args_list[2][0][0].lower()
+    assert mock_update.message.reply_text.call_count == 3
+    
+    # Check the content of the messages sent.
+    # The first two are positional args, the last one uses kwargs.
+    assert "processing" in mock_update.message.reply_text.call_args_list[0].args[0].lower()
+    assert "summary" in mock_update.message.reply_text.call_args_list[1].args[0].lower()
+
+@pytest.mark.asyncio
+@patch("handlers.speaking_practice_handler._get_recommendation", return_value="writing")
+@patch("os.remove")
+@patch("os.path.exists", return_value=True)
+@patch("builtins.open")
+@patch("services.openai_service.OpenAIService.speech_to_text", return_value="Test transcript.")
+@patch("services.openai_service.OpenAIService.generate_speaking_feedback")
+async def test_handle_voice_message_sends_recommendation(
+    mock_generate_feedback: MagicMock,
+    mock_speech_to_text: MagicMock,
+    mock_open: MagicMock,
+    mock_exists: MagicMock,
+    mock_remove: MagicMock,
+    mock_get_recommendation: MagicMock,
+    mock_update: Update,
+    mock_context: MagicMock,
+    sample_user: User,
+    session: Session,
+):
+    """
+    Tests that a recommendation is sent after the speaking practice session ends.
+    """
+    mock_update.message.voice.file_id = "test_file_id"
+    mock_update.message.reply_text = AsyncMock()
+
+    practice_session = PracticeSession(user_id=sample_user.id, section="speaking")
+    session.add(practice_session)
+    session.commit()
+
+    with patch('handlers.speaking_practice_handler.db.session', session):
+        mock_update.message.from_user.id = sample_user.user_id
+        mock_context.user_data = {
+            "practice_session_id": practice_session.id,
+            "speaking_part": 1,
+            "speaking_question": "Test question?",
+        }
+        mock_file = AsyncMock()
+        mock_context.bot.get_file.return_value = mock_file
+        mock_generate_feedback.return_value = {"estimated_band": 7.0}
+
+        result = await handle_voice_message(mock_update, mock_context)
+
+    assert result == ConversationHandler.END
+    mock_get_recommendation.assert_called_once()
+
+    # The last call to reply_text should be the recommendation
+    last_call = mock_update.message.reply_text.call_args_list[-1].kwargs
+    assert "challenge yourself with a Writing practice next" in last_call["text"]
+    reply_markup = last_call["reply_markup"]
+    assert len(reply_markup.inline_keyboard) == 1
+    assert reply_markup.inline_keyboard[0][0].text == "Start Writing Practice"
+    assert reply_markup.inline_keyboard[0][0].callback_data == "practice_writing"
+
 
 @pytest.mark.asyncio
 async def test_cancel_flow(

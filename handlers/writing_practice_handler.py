@@ -1,4 +1,5 @@
 import logging
+import random
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     ContextTypes,
@@ -23,6 +24,12 @@ logger = logging.getLogger(__name__)
 
 # Conversation states
 SELECTING_TASK, AWAITING_ESSAY = range(2)
+
+def _get_recommendation(current_section="writing"):
+    """Gets a recommendation for the next practice section."""
+    all_sections = ["speaking", "writing", "reading", "listening"]
+    available_sections = [s for s in all_sections if s != current_section]
+    return random.choice(available_sections)
 
 async def start_writing_practice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Starts the writing practice session by showing task selection."""
@@ -130,6 +137,28 @@ async def handle_essay(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
     # Format and send feedback
     feedback_text = format_writing_feedback(feedback, lang_code)
     await update.message.reply_text(feedback_text, parse_mode='Markdown')
+
+    # Offer a new practice recommendation
+    recommendation = _get_recommendation()
+    recommendation_text = TranslationSystem.get_message(
+        "practice",
+        "recommendation_prompt",
+        lang_code,
+        next_section=recommendation.capitalize(),
+    )
+    recommendation_button = InlineKeyboardButton(
+        text=TranslationSystem.get_message(
+            "practice",
+            "start_next_section_button",
+            lang_code,
+            section=recommendation.capitalize(),
+        ),
+        callback_data=f"practice_{recommendation}",
+    )
+    await update.message.reply_text(
+        text=recommendation_text,
+        reply_markup=InlineKeyboardMarkup([[recommendation_button]]),
+    )
 
     context.user_data.clear()
     return ConversationHandler.END

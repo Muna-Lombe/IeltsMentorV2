@@ -4,7 +4,7 @@ cachedir: .pytest_cache
 rootdir: /home/muna/code/Muna-Lombe/tutorials/PythOn/telegram/bots/IeltsMentorV2
 plugins: cov-6.2.1, mock-3.14.1, asyncio-1.0.0, anyio-4.9.0
 asyncio: mode=Mode.AUTO, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
-collecting ... collected 95 items
+collecting ... collected 99 items
 
 tests/integration/test_botmaster_feature.py::test_approve_teacher_start_as_botmaster PASSED [  1%]
 tests/integration/test_botmaster_feature.py::test_approve_teacher_start_as_non_botmaster PASSED [  2%]
@@ -24,46 +24,49 @@ tests/integration/test_group_membership.py::test_remove_member_unauthorized PASS
 tests/integration/test_handlers.py::test_start_new_user PASSED           [ 16%]
 tests/integration/test_handlers.py::test_start_existing_user PASSED      [ 17%]
 tests/integration/test_handlers.py::test_stats_command_with_stats PASSED [ 18%]
-tests/integration/test_handlers.py::test_stats_command_no_stats PASSED   [ 20%]
-tests/integration/test_handlers.py::test_practice_command PASSED         [ 21%]
-tests/integration/test_handlers.py::test_practice_section_callback PASSED [ 22%]
-tests/integration/test_handlers.py::test_explain_command PASSED          [ 23%]
-tests/integration/test_handlers.py::test_define_command PASSED           [ 24%]
-tests/integration/test_handlers.py::test_unknown_command PASSED          [ 25%]
-tests/integration/test_handlers.py::test_create_group_command_as_approved_teacher PASSED [ 26%]
-tests/integration/test_handlers.py::test_create_group_command_as_non_approved_teacher PASSED [ 27%]
-tests/integration/test_handlers.py::test_create_group_command_as_regular_user PASSED [ 28%]
-tests/integration/test_handlers.py::test_create_group_command_as_unknown_user PASSED [ 29%]
-tests/integration/test_handlers.py::test_get_group_name_handler PASSED   [ 30%]
-tests/integration/test_handlers.py::test_get_group_description_handler PASSED [ 31%]
-tests/integration/test_handlers.py::test_cancel_group_creation_handler PASSED [ 32%]
-tests/integration/test_handlers.py::test_my_exercises_command_with_exercises PASSED [ 33%]
-tests/integration/test_handlers.py::test_my_exercises_command_no_exercises PASSED [ 34%]
-tests/integration/test_handlers.py::test_create_exercise_start_command PASSED [ 35%]
-tests/integration/test_handlers.py::test_create_exercise_get_title PASSED [ 36%]
-tests/integration/test_handlers.py::test_create_exercise_get_description PASSED [ 37%]
-tests/integration/test_handlers.py::test_create_exercise_get_type PASSED [ 38%]
-tests/integration/test_handlers.py::test_create_exercise_get_difficulty PASSED [ 40%]
-tests/integration/test_handlers.py::test_create_exercise_get_content_and_create PASSED [ 41%]
-tests/integration/test_handlers.py::test_create_exercise_get_content_invalid PASSED [ 42%]
-tests/integration/test_handlers.py::test_create_exercise_cancel PASSED   [ 43%]
-tests/integration/test_homework_feature.py::test_assign_homework_start_with_groups PASSED [ 44%]
-tests/integration/test_homework_feature.py::test_assign_homework_start_no_groups PASSED [ 45%]
-tests/integration/test_homework_feature.py::test_select_group_for_homework_with_exercises PASSED [ 46%]
-tests/integration/test_homework_feature.py::test_select_exercise_and_create_homework PASSED [ 47%]
-tests/integration/test_homework_feature.py::test_cancel_homework_assignment PASSED [ 48%]
-tests/integration/test_listening_practice.py::test_start_listening_practice PASSED [ 49%]
-tests/integration/test_listening_practice.py::test_select_exercise_and_send_first_question PASSED [ 50%]
-tests/integration/test_listening_practice.py::test_handle_answer_correct_and_continue PASSED [ 51%]
-tests/integration/test_listening_practice.py::test_handle_answer_incorrect_and_finish PASSED [ 52%]
-tests/integration/test_models.py::test_user_creation PASSED              [ 53%]
-tests/integration/test_models.py::test_update_stats PASSED               [ 54%]
-tests/integration/test_reading_practice.py::test_reading_practice_starts_correctly PASSED [ 55%]
-tests/integration/test_reading_practice.py::test_handle_reading_answer_correct PASSED [ 56%]
-tests/integration/test_reading_practice.py::test_handle_reading_answer_incorrect PASSED [ 57%]
+tests/integration/test_handlers.py::test_stats_command_no_stats PASSED   [ 19%]
+tests/integration/test_handlers.py::test_practice_command PASSED         [ 20%]
+tests/integration/test_handlers.py::test_practice_section_callback PASSED [ 21%]
+tests/integration/test_handlers.py::test_explain_command PASSED          [ 22%]
+tests/integration/test_handlers.py::test_define_command PASSED           [ 23%]
+tests/integration/test_handlers.py::test_unknown_command PASSED          [ 24%]
+tests/integration/test_handlers.py::test_create_group_command_as_approved_teacher PASSED [ 25%]
+tests/integration/test_handlers.py::test_create_group_command_as_non_approved_teacher PASSED [ 26%]
+tests/integration/test_handlers.py::test_create_group_command_as_regular_user PASSED [ 27%]
+tests/integration/test_handlers.py::test_create_group_command_as_unknown_user PASSED [ 28%]
+tests/integration/test_handlers.py::test_get_group_name_handler PASSED   [ 29%]
+tests/integration/test_handlers.py::test_get_group_description_handler PASSED [ 30%]
+tests/integration/test_handlers.py::test_cancel_group_creation_handler PASSED [ 31%]
+tests/integration/test_handlers.py::test_my_exercises_command_with_exercises PASSED [ 32%]
+tests/integration/test_handlers.py::test_my_exercises_command_no_exercises PASSED [ 33%]
+tests/integration/test_handlers.py::test_create_exercise_start_command PASSED [ 34%]
+tests/integration/test_handlers.py::test_create_exercise_get_title PASSED [ 35%]
+tests/integration/test_handlers.py::test_create_exercise_get_description PASSED [ 36%]
+tests/integration/test_handlers.py::test_create_exercise_get_type PASSED [ 37%]
+tests/integration/test_handlers.py::test_create_exercise_get_difficulty PASSED [ 38%]
+tests/integration/test_handlers.py::test_create_exercise_get_content_and_create PASSED [ 39%]
+tests/integration/test_handlers.py::test_create_exercise_get_content_invalid PASSED [ 40%]
+tests/integration/test_handlers.py::test_create_exercise_cancel PASSED   [ 41%]
+tests/integration/test_homework_feature.py::test_assign_homework_start_with_groups PASSED [ 42%]
+tests/integration/test_homework_feature.py::test_assign_homework_start_no_groups PASSED [ 43%]
+tests/integration/test_homework_feature.py::test_select_group_for_homework_with_exercises PASSED [ 44%]
+tests/integration/test_homework_feature.py::test_select_exercise_and_create_homework PASSED [ 45%]
+tests/integration/test_homework_feature.py::test_cancel_homework_assignment PASSED [ 46%]
+tests/integration/test_listening_practice.py::test_start_listening_practice PASSED [ 47%]
+tests/integration/test_listening_practice.py::test_select_exercise_and_send_first_question PASSED [ 48%]
+tests/integration/test_listening_practice.py::test_handle_answer_correct_and_continue PASSED [ 49%]
+tests/integration/test_listening_practice.py::test_handle_answer_incorrect_and_finish PASSED [ 50%]
+tests/integration/test_listening_practice.py::test_handle_answer_finish_sends_recommendation PASSED [ 51%]
+tests/integration/test_models.py::test_user_creation PASSED              [ 52%]
+tests/integration/test_models.py::test_update_stats PASSED               [ 53%]
+tests/integration/test_reading_practice.py::test_reading_practice_starts_correctly PASSED [ 54%]
+tests/integration/test_reading_practice.py::test_handle_reading_answer_correct PASSED [ 55%]
+tests/integration/test_reading_practice.py::test_handle_reading_answer_incorrect PASSED [ 56%]
+tests/integration/test_reading_practice.py::test_handle_reading_answer_sends_recommendation PASSED [ 57%]
 tests/integration/test_speaking_practice.py::test_start_speaking_practice PASSED [ 58%]
-tests/integration/test_speaking_practice.py::test_handle_part_1 PASSED   [ 60%]
-tests/integration/test_speaking_practice.py::test_handle_voice_message_part_1 PASSED [ 61%]
+tests/integration/test_speaking_practice.py::test_handle_part_1 PASSED   [ 59%]
+tests/integration/test_speaking_practice.py::test_handle_voice_message_part_1 PASSED [ 60%]
+tests/integration/test_speaking_practice.py::test_handle_voice_message_sends_recommendation PASSED [ 61%]
 tests/integration/test_speaking_practice.py::test_cancel_flow PASSED     [ 62%]
 tests/integration/test_student_features.py::test_practice_command_shows_selection_menu PASSED [ 63%]
 tests/integration/test_student_features.py::test_stats_command_displays_user_stats PASSED [ 64%]
@@ -81,22 +84,23 @@ tests/integration/test_web_interface.py::TestWebInterface::test_get_groups_autho
 tests/integration/test_web_interface.py::TestWebInterface::test_create_and_get_group PASSED [ 76%]
 tests/integration/test_web_interface.py::TestWebInterface::test_get_exercises_unauthorized PASSED [ 77%]
 tests/integration/test_web_interface.py::TestWebInterface::test_get_exercises_authorized_empty PASSED [ 78%]
-tests/integration/test_web_interface.py::TestWebInterface::test_create_and_get_exercise PASSED [ 80%]
-tests/integration/test_web_interface.py::TestWebInterface::test_get_specific_group_authorized PASSED [ 81%]
-tests/integration/test_web_interface.py::TestWebInterface::test_get_specific_group_unauthorized PASSED [ 82%]
-tests/integration/test_web_interface.py::TestWebInterface::test_update_specific_group PASSED [ 83%]
-tests/integration/test_web_interface.py::TestWebInterface::test_get_specific_exercise_authorized PASSED [ 84%]
-tests/integration/test_web_interface.py::TestWebInterface::test_get_specific_exercise_unauthorized PASSED [ 85%]
-tests/integration/test_web_interface.py::TestWebInterface::test_update_specific_exercise PASSED [ 86%]
-tests/integration/test_web_interface.py::TestWebInterface::test_add_and_remove_group_member PASSED [ 87%]
-tests/integration/test_web_interface.py::TestWebInterface::test_get_student_details_authorized PASSED [ 88%]
-tests/integration/test_web_interface.py::TestWebInterface::test_get_student_details_unauthorized PASSED [ 89%]
-tests/integration/test_web_interface.py::TestWebInterface::test_assign_and_get_homework PASSED [ 90%]
-tests/integration/test_web_interface.py::TestWebInterface::test_assign_homework_unauthorized PASSED [ 91%]
-tests/integration/test_web_interface.py::TestWebInterface::test_get_group_analytics PASSED [ 92%]
-tests/integration/test_writing_practice.py::test_start_writing_practice PASSED [ 93%]
-tests/integration/test_writing_practice.py::test_handle_task_selection PASSED [ 94%]
-tests/integration/test_writing_practice.py::test_handle_essay PASSED     [ 95%]
+tests/integration/test_web_interface.py::TestWebInterface::test_create_and_get_exercise PASSED [ 79%]
+tests/integration/test_web_interface.py::TestWebInterface::test_get_specific_group_authorized PASSED [ 80%]
+tests/integration/test_web_interface.py::TestWebInterface::test_get_specific_group_unauthorized PASSED [ 81%]
+tests/integration/test_web_interface.py::TestWebInterface::test_update_specific_group PASSED [ 82%]
+tests/integration/test_web_interface.py::TestWebInterface::test_get_specific_exercise_authorized PASSED [ 83%]
+tests/integration/test_web_interface.py::TestWebInterface::test_get_specific_exercise_unauthorized PASSED [ 84%]
+tests/integration/test_web_interface.py::TestWebInterface::test_update_specific_exercise PASSED [ 85%]
+tests/integration/test_web_interface.py::TestWebInterface::test_add_and_remove_group_member PASSED [ 86%]
+tests/integration/test_web_interface.py::TestWebInterface::test_get_student_details_authorized PASSED [ 87%]
+tests/integration/test_web_interface.py::TestWebInterface::test_get_student_details_unauthorized PASSED [ 88%]
+tests/integration/test_web_interface.py::TestWebInterface::test_assign_and_get_homework PASSED [ 89%]
+tests/integration/test_web_interface.py::TestWebInterface::test_assign_homework_unauthorized PASSED [ 90%]
+tests/integration/test_web_interface.py::TestWebInterface::test_get_group_analytics PASSED [ 91%]
+tests/integration/test_writing_practice.py::test_start_writing_practice PASSED [ 92%]
+tests/integration/test_writing_practice.py::test_handle_task_selection PASSED [ 93%]
+tests/integration/test_writing_practice.py::test_handle_essay PASSED     [ 94%]
+tests/integration/test_writing_practice.py::test_handle_essay_sends_recommendation PASSED [ 95%]
 tests/unit/test_input_validator.py::test_validate_user_id_valid PASSED   [ 96%]
 tests/unit/test_input_validator.py::test_validate_user_id_zero PASSED    [ 97%]
 tests/unit/test_input_validator.py::test_validate_user_id_negative PASSED [ 98%]
@@ -115,21 +119,21 @@ handlers/exercise_management_handler.py:221
   /home/muna/code/Muna-Lombe/tutorials/PythOn/telegram/bots/IeltsMentorV2/handlers/exercise_management_handler.py:221: PTBUserWarning: If 'per_message=False', 'CallbackQueryHandler' will not be tracked for every message. Read this FAQ entry to learn more about the per_* settings: https://github.com/python-telegram-bot/python-telegram-bot/wiki/Frequently-Asked-Questions#what-do-the-per_-settings-in-conversationhandler-do.
     create_exercise_conv_handler = ConversationHandler(
 
-handlers/speaking_practice_handler.py:243
-  /home/muna/code/Muna-Lombe/tutorials/PythOn/telegram/bots/IeltsMentorV2/handlers/speaking_practice_handler.py:243: PTBUserWarning: If 'per_message=False', 'CallbackQueryHandler' will not be tracked for every message. Read this FAQ entry to learn more about the per_* settings: https://github.com/python-telegram-bot/python-telegram-bot/wiki/Frequently-Asked-Questions#what-do-the-per_-settings-in-conversationhandler-do.
+handlers/speaking_practice_handler.py:274
+  /home/muna/code/Muna-Lombe/tutorials/PythOn/telegram/bots/IeltsMentorV2/handlers/speaking_practice_handler.py:274: PTBUserWarning: If 'per_message=False', 'CallbackQueryHandler' will not be tracked for every message. Read this FAQ entry to learn more about the per_* settings: https://github.com/python-telegram-bot/python-telegram-bot/wiki/Frequently-Asked-Questions#what-do-the-per_-settings-in-conversationhandler-do.
     speaking_practice_conv_handler = ConversationHandler(
 
-handlers/writing_practice_handler.py:171
-  /home/muna/code/Muna-Lombe/tutorials/PythOn/telegram/bots/IeltsMentorV2/handlers/writing_practice_handler.py:171: PTBUserWarning: If 'per_message=False', 'CallbackQueryHandler' will not be tracked for every message. Read this FAQ entry to learn more about the per_* settings: https://github.com/python-telegram-bot/python-telegram-bot/wiki/Frequently-Asked-Questions#what-do-the-per_-settings-in-conversationhandler-do.
+handlers/writing_practice_handler.py:200
+  /home/muna/code/Muna-Lombe/tutorials/PythOn/telegram/bots/IeltsMentorV2/handlers/writing_practice_handler.py:200: PTBUserWarning: If 'per_message=False', 'CallbackQueryHandler' will not be tracked for every message. Read this FAQ entry to learn more about the per_* settings: https://github.com/python-telegram-bot/python-telegram-bot/wiki/Frequently-Asked-Questions#what-do-the-per_-settings-in-conversationhandler-do.
     writing_practice_conv_handler = ConversationHandler(
 
-handlers/listening_practice_handler.py:189
-  /home/muna/code/Muna-Lombe/tutorials/PythOn/telegram/bots/IeltsMentorV2/handlers/listening_practice_handler.py:189: PTBUserWarning: If 'per_message=False', 'CallbackQueryHandler' will not be tracked for every message. Read this FAQ entry to learn more about the per_* settings: https://github.com/python-telegram-bot/python-telegram-bot/wiki/Frequently-Asked-Questions#what-do-the-per_-settings-in-conversationhandler-do.
+handlers/listening_practice_handler.py:221
+  /home/muna/code/Muna-Lombe/tutorials/PythOn/telegram/bots/IeltsMentorV2/handlers/listening_practice_handler.py:221: PTBUserWarning: If 'per_message=False', 'CallbackQueryHandler' will not be tracked for every message. Read this FAQ entry to learn more about the per_* settings: https://github.com/python-telegram-bot/python-telegram-bot/wiki/Frequently-Asked-Questions#what-do-the-per_-settings-in-conversationhandler-do.
     listening_practice_conv_handler = ConversationHandler(
 
-handlers/reading_practice_handler.py:193
-  /home/muna/code/Muna-Lombe/tutorials/PythOn/telegram/bots/IeltsMentorV2/handlers/reading_practice_handler.py:193: PTBUserWarning: If 'per_message=False', 'CallbackQueryHandler' will not be tracked for every message. Read this FAQ entry to learn more about the per_* settings: https://github.com/python-telegram-bot/python-telegram-bot/wiki/Frequently-Asked-Questions#what-do-the-per_-settings-in-conversationhandler-do.
+handlers/reading_practice_handler.py:223
+  /home/muna/code/Muna-Lombe/tutorials/PythOn/telegram/bots/IeltsMentorV2/handlers/reading_practice_handler.py:223: PTBUserWarning: If 'per_message=False', 'CallbackQueryHandler' will not be tracked for every message. Read this FAQ entry to learn more about the per_* settings: https://github.com/python-telegram-bot/python-telegram-bot/wiki/Frequently-Asked-Questions#what-do-the-per_-settings-in-conversationhandler-do.
     reading_practice_conv_handler = ConversationHandler(
 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
-======================== 95 passed, 7 warnings in 2.70s ========================
+======================== 99 passed, 7 warnings in 2.77s ========================

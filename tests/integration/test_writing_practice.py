@@ -98,4 +98,55 @@ async def test_handle_essay(session, mock_update, mock_context):
         
         # Check that the mock session object was updated
         assert practice_session.score == 7.5
-        assert mock_context.user_data == {} 
+        assert mock_context.user_data == {}
+
+
+@pytest.mark.asyncio
+@patch("handlers.writing_practice_handler._get_recommendation", return_value="listening")
+async def test_handle_essay_sends_recommendation(
+    mock_get_recommendation, session, mock_update, mock_context
+):
+    """Tests that a recommendation is sent after the writing practice ends."""
+    user = User(user_id=mock_update.effective_user.id, preferred_language="en")
+    session.add(user)
+    session.commit()
+
+    practice_session = PracticeSession(
+        user_id=user.id, section="writing_task_2", total_questions=1
+    )
+    session.add(practice_session)
+    session.commit()
+
+    mock_context.user_data = {
+        "writing_session_id": practice_session.id,
+        "writing_question": "Test question",
+    }
+    mock_update.message.text = "This is my essay."
+
+    with patch("handlers.writing_practice_handler.db.session.query") as mock_query, patch(
+        "handlers.writing_practice_handler.OpenAIService"
+    ) as mock_openai_service, patch("sqlalchemy.orm.attributes.flag_modified"):
+        mock_query.return_value.filter_by.return_value.first.side_effect = [
+            practice_session,
+            user,
+        ]
+        mock_openai_service.return_value.provide_writing_feedback.return_value = {
+            "estimated_band": 7.0
+        }
+
+        result = await handle_essay(mock_update, mock_context)
+
+        assert result == ConversationHandler.END
+        mock_get_recommendation.assert_called_once()
+
+        # The last call should be the recommendation
+        last_call = mock_update.message.reply_text.call_args_list[-1].kwargs
+        assert (
+            "challenge yourself with a Listening practice next" in last_call["text"]
+        )
+        reply_markup = last_call["reply_markup"]
+        assert len(reply_markup.inline_keyboard) == 1
+        assert reply_markup.inline_keyboard[0][0].text == "Start Listening Practice"
+        assert (
+            reply_markup.inline_keyboard[0][0].callback_data == "practice_listening"
+        ) 

@@ -98,6 +98,7 @@ async def test_handle_reading_answer_correct(
     mock_context.user_data["reading_correct_option"] = 0
 
     mock_update.callback_query.data = "reading_answer:rs1_q1:0"
+    mock_update.callback_query.message.reply_text = AsyncMock()
 
     # Call the handler
     next_state = await handle_reading_answer(mock_update, mock_context)
@@ -144,6 +145,7 @@ async def test_handle_reading_answer_incorrect(
     mock_context.user_data["reading_correct_option"] = 0
 
     mock_update.callback_query.data = "reading_answer:rs1_q1:1"
+    mock_update.callback_query.message.reply_text = AsyncMock()
 
     # Call the handler
     next_state = await handle_reading_answer(mock_update, mock_context)
@@ -165,4 +167,43 @@ async def test_handle_reading_answer_incorrect(
     assert updated_user.stats["reading"]["total"] == 1
     assert updated_user.stats["reading"]["correct"] == 0
 
-    assert "reading_session_id" not in mock_context.user_data 
+    assert "reading_session_id" not in mock_context.user_data
+
+
+@pytest.mark.asyncio
+@patch("handlers.reading_practice_handler._get_recommendation", return_value="speaking")
+async def test_handle_reading_answer_sends_recommendation(
+    mock_get_recommendation,
+    sample_user,
+    mock_update,
+    mock_context,
+    mock_reading_data,
+    session,
+):
+    """
+    Tests that a recommendation is sent after the practice session ends.
+    """
+    practice_session = PracticeSession(user_id=sample_user.id, section="reading")
+    session.add(practice_session)
+    session.commit()
+
+    mock_context.user_data["reading_session_id"] = practice_session.id
+    mock_context.user_data["reading_question_id"] = "rs1_q1"
+    mock_context.user_data["reading_correct_option"] = 0
+    mock_update.callback_query.data = "reading_answer:rs1_q1:0"
+    mock_update.callback_query.message.reply_text = AsyncMock()
+
+    # Call the handler
+    await handle_reading_answer(mock_update, mock_context)
+
+    # Assert that the recommendation was called and the reply was sent
+    mock_get_recommendation.assert_called_once()
+    mock_update.callback_query.message.reply_text.assert_called_once()
+
+    # Check the content of the recommendation message
+    call_args = mock_update.callback_query.message.reply_text.call_args.kwargs
+    assert "challenge yourself with a Speaking practice next" in call_args["text"]
+    reply_markup = call_args["reply_markup"]
+    assert len(reply_markup.inline_keyboard) == 1
+    assert reply_markup.inline_keyboard[0][0].text == "Start Speaking Practice"
+    assert reply_markup.inline_keyboard[0][0].callback_data == "practice_speaking"

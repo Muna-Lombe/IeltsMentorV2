@@ -10,6 +10,7 @@ from handlers.listening_practice_handler import (
     AWAITING_ANSWER,
 )
 from models import User, PracticeSession
+from telegram import InlineKeyboardMarkup
 
 MOCK_LISTENING_DATA = [
     {
@@ -129,7 +130,9 @@ async def test_handle_answer_incorrect_and_finish(
     sample_user, mock_update, mock_context, mock_listening_data, session
 ):
     """Test an incorrect answer for the last question finishes the practice."""
-    practice_session = PracticeSession(user_id=sample_user.id, section="listening_test_ex_1")
+    practice_session = PracticeSession(
+        user_id=sample_user.id, section="listening_test_ex_1"
+    )
     session.add(practice_session)
     session.commit()
 
@@ -143,23 +146,82 @@ async def test_handle_answer_incorrect_and_finish(
     mock_context.bot.send_message = AsyncMock()
     mock_update.callback_query.message.delete = AsyncMock()
 
-    next_state = await handle_answer(mock_update, mock_context)
+    # We patch the recommendation to make the test deterministic
+    with patch(
+        "handlers.listening_practice_handler._get_recommendation",
+        return_value="reading",
+    ):
+        next_state = await handle_answer(mock_update, mock_context)
 
     assert next_state == ConversationHandler.END
     assert mock_context.user_data == {}  # Check that user_data is cleared
 
-    # Check feedback messages
-    assert mock_context.bot.send_message.call_count == 2
-    first_call_text = mock_context.bot.send_message.call_args_list[0].kwargs["text"]
-    second_call_text = mock_context.bot.send_message.call_args_list[1].kwargs["text"]
+    # We expect 3 messages: incorrect feedback, final score, and recommendation
+    assert mock_context.bot.send_message.call_count == 3
+    
+    # 1. Feedback for incorrect answer
+    feedback_call = mock_context.bot.send_message.call_args_list[0]
+    assert "Incorrect" in feedback_call.kwargs["text"]
 
-    assert "Incorrect" in first_call_text
-    assert "The correct answer was B" in first_call_text
-    assert "Listening practice complete!" in second_call_text
-    assert "Your score: 1/2" in second_call_text
+    # 2. Final score summary
+    summary_call = mock_context.bot.send_message.call_args_list[1]
+    assert "Listening practice complete!" in summary_call.kwargs["text"]
+    assert "Your score: 1/2" in summary_call.kwargs["text"]
+
+    # 3. Recommendation message
+    recommendation_call = mock_context.bot.send_message.call_args_list[2]
+    assert "challenge yourself with a Reading practice" in recommendation_call.kwargs["text"]
+    assert isinstance(
+        recommendation_call.kwargs["reply_markup"], InlineKeyboardMarkup
+    )
 
     session.expire_all()
-    updated_session = session.query(PracticeSession).filter_by(id=practice_session.id).one()
+    updated_session = (
+        session.query(PracticeSession).filter_by(id=practice_session.id).one()
+    )
     assert updated_session.score == 1
     assert updated_session.correct_answers == 1
-    assert updated_session.completed_at is not None 
+    assert updated_session.completed_at is not None
+
+
+@pytest.mark.asyncio
+@patch("handlers.listening_practice_handler._get_recommendation", return_value="writing")
+async def test_handle_answer_finish_sends_recommendation(
+    mock_get_recommendation,
+    sample_user,
+    mock_update,
+    mock_context,
+    mock_listening_data,
+    session,
+):
+    """
+    Tests that a recommendation is sent after the listening practice finishes.
+    """
+    practice_session = PracticeSession(user_id=sample_user.id, section="listening")
+    session.add(practice_session)
+    session.commit()
+
+    mock_context.user_data = {
+        "listening_session_id": practice_session.id,
+        "exercise_id": "test_ex_1",
+        "question_index": 1,  # Last question
+        "score": 1,
+    }
+    mock_update.callback_query.data = "lp_answer_B"  # Correct
+    mock_context.bot.send_message = AsyncMock()
+    mock_update.callback_query.message.delete = AsyncMock()
+
+    result = await handle_answer(mock_update, mock_context)
+
+    assert result == ConversationHandler.END
+    mock_get_recommendation.assert_called_once()
+
+    # The last call should be the recommendation
+    last_call = mock_context.bot.send_message.call_args_list[-1].kwargs
+    assert (
+        "challenge yourself with a Writing practice next" in last_call["text"]
+    )
+    reply_markup = last_call["reply_markup"]
+    assert len(reply_markup.inline_keyboard) == 1
+    assert reply_markup.inline_keyboard[0][0].text == "Start Writing Practice"
+    assert reply_markup.inline_keyboard[0][0].callback_data == "practice_writing"

@@ -1,6 +1,7 @@
 import logging
 import os
 import uuid
+import random
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     ContextTypes,
@@ -31,6 +32,13 @@ SELECTING_PART, AWAITING_VOICE = range(2)
 TEMP_AUDIO_DIR = "temp_audio"
 if not os.path.exists(TEMP_AUDIO_DIR):
     os.makedirs(TEMP_AUDIO_DIR)
+
+
+def _get_recommendation(current_section="speaking"):
+    """Gets a recommendation for the next practice section."""
+    all_sections = ["speaking", "writing", "reading", "listening"]
+    available_sections = [s for s in all_sections if s != current_section]
+    return random.choice(available_sections)
 
 
 async def start_speaking_practice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -189,9 +197,32 @@ async def handle_voice_message(update: Update, context: ContextTypes.DEFAULT_TYP
         db.session.rollback()
         return ConversationHandler.END
 
+    # If the practice session is over (not continuing to Part 3)
     session.completed_at = datetime.utcnow()
     db.session.commit()
-    await message.reply_text(TranslationSystem.get_message("speaking_practice", "speaking_practice_completed", lang_code))
+    
+    # Offer a new practice recommendation
+    recommendation = _get_recommendation()
+    recommendation_text = TranslationSystem.get_message(
+        "practice",
+        "recommendation_prompt",
+        lang_code,
+        next_section=recommendation.capitalize(),
+    )
+    recommendation_button = InlineKeyboardButton(
+        text=TranslationSystem.get_message(
+            "practice",
+            "start_next_section_button",
+            lang_code,
+            section=recommendation.capitalize(),
+        ),
+        callback_data=f"practice_{recommendation}",
+    )
+    await message.reply_text(
+        text=recommendation_text,
+        reply_markup=InlineKeyboardMarkup([[recommendation_button]]),
+    )
+
     return ConversationHandler.END
 
 

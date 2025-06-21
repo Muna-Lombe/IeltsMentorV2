@@ -5,6 +5,7 @@
     "welcome_returning_user": "Welcome back, {first_name}! Ready for more practice?"
   },
   "practice": {
+    "welcome": "Welcome to the practice section! Choose a skill to work on:",
     "loading_session": "Loading {section} practice session...",
     "select_section": "Please select a section to practice:",
     "button_speaking": "🗣️ Speaking",
@@ -16,16 +17,20 @@
     "correct_answer": "Correct! 🎉",
     "incorrect_answer": "Not quite. The correct answer was: {correct_answer}",
     "session_wip": "{section} practice is a work in progress. Please check back later!",
-    "welcome_reading": "Welcome to reading practice!"
+    "welcome_reading": "Welcome to reading practice!",
+    "recommendation_prompt": "Great work on that session! Why not challenge yourself with a {next_section} practice next?",
+    "start_next_section_button": "Start {section} Practice"
   },
   "errors": {
     "general": "Sorry, I encountered a problem. Please try again later.",
     "unknown_command": "Sorry, I didn't understand that command. Type /help to see the list of available commands.",
     "user_not_found": "Could not find your user profile. Please use /start to register.",
     "permission_denied_teacher": "This command is only available to approved teachers.",
-    "invalid_input": "Your input was invalid or contained disallowed characters. Please try again.",
     "permission_denied_botmaster": "Sorry, this command is restricted to Botmasters only.",
-    "ai_error": "There was an issue with the AI service. Please try again shortly."
+    "ai_error": "There was an issue with the AI service. Please try again shortly.",
+    "invalid_input": "Your input was invalid or contained disallowed characters. Please try again.",
+    "session_expired": "Your session has expired. Please start a new practice.",
+    "session_not_found": "Could not find your practice session. Please start over."
   },
   "speaking_practice": {
     "intro": "Welcome to Speaking Practice! Please choose which part you'd like to practice.",

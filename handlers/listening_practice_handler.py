@@ -1,5 +1,6 @@
 import logging
 import json
+import random
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     ContextTypes,
@@ -21,6 +22,12 @@ logger = logging.getLogger(__name__)
 
 # Conversation states
 SELECTING_EXERCISE, AWAITING_ANSWER = range(2)
+
+def _get_recommendation(current_section="listening"):
+    """Gets a recommendation for the next practice section."""
+    all_sections = ["speaking", "writing", "reading", "listening"]
+    available_sections = [s for s in all_sections if s != current_section]
+    return random.choice(available_sections)
 
 # Load listening exercises from JSON file
 def load_listening_exercises():
@@ -175,6 +182,31 @@ async def handle_answer(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
             chat_id=query.message.chat_id,
             text=f"Listening practice complete!\nYour score: {score}/{len(exercise['questions'])}"
         )
+
+        # Offer a new practice recommendation
+        lang_code = db.session.query(User).filter_by(user_id=query.from_user.id).first().preferred_language
+        recommendation = _get_recommendation()
+        recommendation_text = TranslationSystem.get_message(
+            "practice",
+            "recommendation_prompt",
+            lang_code,
+            next_section=recommendation.capitalize(),
+        )
+        recommendation_button = InlineKeyboardButton(
+            text=TranslationSystem.get_message(
+                "practice",
+                "start_next_section_button",
+                lang_code,
+                section=recommendation.capitalize(),
+            ),
+            callback_data=f"practice_{recommendation}",
+        )
+        await context.bot.send_message(
+            chat_id=query.message.chat_id,
+            text=recommendation_text,
+            reply_markup=InlineKeyboardMarkup([[recommendation_button]]),
+        )
+        
         context.user_data.clear()
         return ConversationHandler.END
 

@@ -29,6 +29,37 @@ DATA_FILE_PATH = os.path.join(
     os.path.dirname(__file__), "..", "data", "reading_mcq.json"
 )
 
+# Define skill levels and their score thresholds
+SKILL_LEVELS = {
+    "Advanced": 0.81,
+    "Upper-Intermediate": 0.61,
+    "Intermediate": 0.41,
+    "Elementary": 0.21,
+    "Beginner": 0.0,
+}
+
+def _update_skill_level(user: User, session: PracticeSession) -> str | None:
+    """
+    Updates a user's skill level based on their performance in a practice session.
+    Returns the new skill level if it was changed, otherwise None.
+    """
+    if not session.total_questions or session.total_questions == 0:
+        return None
+
+    score_percent = (session.correct_answers or 0) / session.total_questions
+
+    new_skill_level = "Beginner"
+    for level, threshold in SKILL_LEVELS.items():
+        if score_percent >= threshold:
+            new_skill_level = level
+            break
+
+    if user.skill_level != new_skill_level:
+        user.update_skill_level(new_skill_level)
+        return new_skill_level
+    
+    return None
+
 
 def load_reading_data():
     """Loads reading practice data from the JSON file."""
@@ -174,9 +205,22 @@ async def handle_reading_answer(
 
     user.stats = stats
     flag_modified(user, "stats")
+    
+    # Update skill level
+    new_level = _update_skill_level(user, session)
+    
     db.session.commit()
 
-    await query.edit_message_text(text=feedback_message)
+    feedback_message_parts = [feedback_message]
+    if new_level:
+        level_up_message = TranslationSystem.get_message(
+            "practice", "skill_level_up", lang_code, new_skill_level=new_level
+        )
+        feedback_message_parts.append(level_up_message)
+    
+    full_feedback = "\\n\\n".join(feedback_message_parts)
+
+    await query.edit_message_text(text=full_feedback)
 
     # Offer a new practice recommendation
     recommendation = _get_recommendation()

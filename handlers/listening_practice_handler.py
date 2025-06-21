@@ -23,6 +23,37 @@ logger = logging.getLogger(__name__)
 # Conversation states
 SELECTING_EXERCISE, AWAITING_ANSWER = range(2)
 
+# Define skill levels and their score thresholds
+SKILL_LEVELS = {
+    "Advanced": 0.81,
+    "Upper-Intermediate": 0.61,
+    "Intermediate": 0.41,
+    "Elementary": 0.21,
+    "Beginner": 0.0,
+}
+
+def _update_skill_level(user: User, session: PracticeSession) -> str | None:
+    """
+    Updates a user's skill level based on their performance in a practice session.
+    Returns the new skill level if it was changed, otherwise None.
+    """
+    if not session.total_questions or session.total_questions == 0:
+        return None
+
+    score_percent = (session.correct_answers or 0) / session.total_questions
+
+    new_skill_level = "Beginner"
+    for level, threshold in SKILL_LEVELS.items():
+        if score_percent >= threshold:
+            new_skill_level = level
+            break
+
+    if user.skill_level != new_skill_level:
+        user.update_skill_level(new_skill_level)
+        return new_skill_level
+    
+    return None
+
 def _get_recommendation(current_section="listening"):
     """Gets a recommendation for the next practice section."""
     all_sections = ["speaking", "writing", "reading", "listening"]
@@ -178,13 +209,25 @@ async def handle_answer(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
         flag_modified(session, "session_data")
         db.session.commit()
 
+        user = db.session.query(User).filter_by(user_id=query.from_user.id).first()
+        lang_code = user.preferred_language
+
+        # Update skill level
+        new_level = _update_skill_level(user, session)
+        final_message = f"Listening practice complete!\nYour score: {score}/{len(exercise['questions'])}"
+        if new_level:
+            level_up_message = TranslationSystem.get_message(
+                "practice", "skill_level_up", lang_code, new_skill_level=new_level
+            )
+            final_message += f"\\n\\n{level_up_message}"
+
         await context.bot.send_message(
             chat_id=query.message.chat_id,
-            text=f"Listening practice complete!\nYour score: {score}/{len(exercise['questions'])}"
+            text=final_message,
+            parse_mode="Markdown"
         )
 
         # Offer a new practice recommendation
-        lang_code = db.session.query(User).filter_by(user_id=query.from_user.id).first().preferred_language
         recommendation = _get_recommendation()
         recommendation_text = TranslationSystem.get_message(
             "practice",

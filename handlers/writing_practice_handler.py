@@ -15,6 +15,7 @@ from utils.translation_system import TranslationSystem
 from extensions import db
 from datetime import datetime
 from sqlalchemy.orm.attributes import flag_modified
+from sqlalchemy.orm import attributes
 
 # Enable logging
 logging.basicConfig(
@@ -25,11 +26,43 @@ logger = logging.getLogger(__name__)
 # Conversation states
 SELECTING_TASK, AWAITING_ESSAY = range(2)
 
+# Define skill levels and their score thresholds
+SKILL_LEVELS = {
+    "Advanced": 0.81,
+    "Upper-Intermediate": 0.61,
+    "Intermediate": 0.41,
+    "Elementary": 0.21,
+    "Beginner": 0.0,
+}
+
 def _get_recommendation(current_section="writing"):
     """Gets a recommendation for the next practice section."""
     all_sections = ["speaking", "writing", "reading", "listening"]
     available_sections = [s for s in all_sections if s != current_section]
     return random.choice(available_sections)
+
+def _update_skill_level(user: User, band_score: float) -> str | None:
+    """
+    Updates a user's skill level based on their performance in a writing session.
+    Returns the new skill level if it was changed, otherwise None.
+    """
+    if band_score is None:
+        return None
+
+    # Convert band score (1-9) to a percentage
+    score_percent = band_score / 9.0
+
+    new_skill_level = "Beginner"
+    for level, threshold in SKILL_LEVELS.items():
+        if score_percent >= threshold:
+            new_skill_level = level
+            break
+
+    if user.skill_level != new_skill_level:
+        user.update_skill_level(new_skill_level)
+        return new_skill_level
+    
+    return None
 
 async def start_writing_practice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Starts the writing practice session by showing task selection."""
@@ -128,6 +161,13 @@ async def handle_essay(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
         session.score = float(feedback.get("estimated_band", 0.0))
         if session.score > 0:
             session.correct_answers = 1
+        # Update skill level based on band score
+        new_level = _update_skill_level(user, session.score)
+        if new_level:
+            level_up_message = TranslationSystem.get_message(
+                "practice", "skill_level_up", lang_code, new_skill_level=new_level
+            )
+            formatted_feedback = format_writing_feedback(feedback, lang_code) + f"\\n\\n{level_up_message}"
     except (ValueError, TypeError):
         session.score = 0.0
 
@@ -135,8 +175,7 @@ async def handle_essay(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
     db.session.commit()
     
     # Format and send feedback
-    feedback_text = format_writing_feedback(feedback, lang_code)
-    await update.message.reply_text(feedback_text, parse_mode='Markdown')
+    await update.message.reply_text(formatted_feedback, parse_mode='Markdown')
 
     # Offer a new practice recommendation
     recommendation = _get_recommendation()

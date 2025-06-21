@@ -275,12 +275,12 @@ This checklist tracks the progress of the IELTS Preparation Bot based on the `de
         - *A basic version exists as a Web API endpoint, but not as a bot command.*
     - [ ] **PENDING:** Implement `/student_progress` bot command.
         - *A basic version exists as a Web API endpoint, but not as a bot command.*
-- [ ] **Personalized Recommendations (Basic):**
-    - [ ] **PENDING:** After a practice session, suggest another practice type or difficulty.
-        - *Not yet implemented in any of the practice handlers.*
+- [x] **Personalized Recommendations (Basic):**
+    - [x] After a practice session, suggest another practice type or difficulty based on weaknesses shown in `User.stats`.
+        - *Verified by implementing the feature in all four practice handlers and confirming with integration tests.*
 - [x] **Testing:**
-    - [x] Unit tests for ,  flows.
-        - *Verified via test logs.*
+    - [x] Unit tests for `/create_exercise`, `/assign_homework` flows.
+        - *Verified in `tests/integration/test_handlers.py` and `tests/integration/test_homework_feature.py`.*
     - [x] Unit tests for the `Homework` model.
         - *Verified via test logs.*
     - [ ] **PENDING:** Tests for analytics commands.

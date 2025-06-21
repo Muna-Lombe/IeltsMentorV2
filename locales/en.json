@@ -19,11 +19,12 @@
     "session_wip": "{section} practice is a work in progress. Please check back later!",
     "welcome_reading": "Welcome to reading practice!",
     "recommendation_prompt": "Great work on that session! Why not challenge yourself with a {next_section} practice next?",
-    "start_next_section_button": "Start {section} Practice"
+    "start_next_section_button": "Start {section} Practice",
+    "skill_level_up": "Congratulations! You've reached a new skill level: **{new_skill_level}**"
   },
   "errors": {
     "general": "Sorry, I encountered a problem. Please try again later.",
-    "unknown_command": "Sorry, I didn't understand that command. Type /help to see the list of available commands.",
+    "unknown_command": "Sorry, I didn't understand that command. Please use one of the available commands.",
     "user_not_found": "Could not find your user profile. Please use /start to register.",
     "permission_denied_teacher": "This command is only available to approved teachers.",
     "permission_denied_botmaster": "Sorry, this command is restricted to Botmasters only.",

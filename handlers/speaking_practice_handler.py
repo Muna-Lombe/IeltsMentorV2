@@ -33,6 +33,38 @@ TEMP_AUDIO_DIR = "temp_audio"
 if not os.path.exists(TEMP_AUDIO_DIR):
     os.makedirs(TEMP_AUDIO_DIR)
 
+# Define skill levels and their score thresholds
+SKILL_LEVELS = {
+    "Advanced": 0.81,
+    "Upper-Intermediate": 0.61,
+    "Intermediate": 0.41,
+    "Elementary": 0.21,
+    "Beginner": 0.0,
+}
+
+def _update_skill_level(user: User, band_score: float) -> str | None:
+    """
+    Updates a user's skill level based on their performance in a speaking session.
+    Returns the new skill level if it was changed, otherwise None.
+    """
+    if band_score is None:
+        return None
+
+    # Convert band score (1-9) to a percentage
+    score_percent = band_score / 9.0
+
+    new_skill_level = "Beginner"
+    for level, threshold in SKILL_LEVELS.items():
+        if score_percent >= threshold:
+            new_skill_level = level
+            break
+
+    if user.skill_level != new_skill_level:
+        user.update_skill_level(new_skill_level)
+        return new_skill_level
+    
+    return None
+
 
 def _get_recommendation(current_section="speaking"):
     """Gets a recommendation for the next practice section."""
@@ -183,8 +215,17 @@ async def handle_voice_message(update: Update, context: ContextTypes.DEFAULT_TYP
         flag_modified(session, "session_data")
         db.session.commit()
 
-        feedback_text = format_feedback(feedback, lang_code)
-        await message.reply_text(feedback_text)
+        summary_message = format_feedback(feedback, lang_code)
+        
+        # Update skill level based on band score
+        new_level = _update_skill_level(user, estimated_band)
+        if new_level:
+            level_up_message = TranslationSystem.get_message(
+                "practice", "skill_level_up", lang_code, new_skill_level=new_level
+            )
+            summary_message += f"\\n\\n{level_up_message}"
+
+        await message.reply_text(summary_message, parse_mode='Markdown')
         
         os.remove(file_path)
 

@@ -268,8 +268,8 @@ This checklist tracks the progress of the IELTS Preparation Bot based on the `de
 - [x] **Student Model & Skill Tracking:**
     - [x] Define `Student` model.
         - *Completed by extending the existing `User` model.*
-    - [ ] **PENDING:** Refine `User.skill_level` update logic based on practice performance.
-        - *The field exists, but logic to update it dynamically is not yet implemented.*
+    - [x] **DONE:** Refine `User.skill_level` update logic based on practice performance.
+        - *Verified by implementing skill assessment logic in all four practice handlers and confirming with new integration tests in `tests/integration/test_models.py`.*
 - [ ] **Basic Analytics for Teachers:**
     - [ ] **PENDING:** Implement `/group_analytics` bot command.
         - *A basic version exists as a Web API endpoint, but not as a bot command.*

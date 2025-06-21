@@ -17,7 +17,7 @@ class TeacherExercise(db.Model):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     is_published = Column(Boolean, default=False, nullable=False)
 
-    creator = relationship("Teacher", back_populates="created_exercises")
+    creator = relationship("Teacher", back_populates="exercises")
 
     def __repr__(self):
         return f'<TeacherExercise {self.title}>'

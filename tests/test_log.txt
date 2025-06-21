@@ -131,9 +131,5 @@ handlers/reading_practice_handler.py:193
   /home/muna/code/Muna-Lombe/tutorials/PythOn/telegram/bots/IeltsMentorV2/handlers/reading_practice_handler.py:193: PTBUserWarning: If 'per_message=False', 'CallbackQueryHandler' will not be tracked for every message. Read this FAQ entry to learn more about the per_* settings: https://github.com/python-telegram-bot/python-telegram-bot/wiki/Frequently-Asked-Questions#what-do-the-per_-settings-in-conversationhandler-do.
     reading_practice_conv_handler = ConversationHandler(
 
-tests/integration/test_botmaster_feature.py::test_approve_teacher_start_as_botmaster
-  /home/muna/code/Muna-Lombe/tutorials/PythOn/telegram/bots/IeltsMentorV2/tests/conftest.py:276: SAWarning: relationship 'Teacher.taught_groups' will copy column teachers.id to column groups.teacher_id, which conflicts with relationship(s): 'Teacher.groups' (copies teachers.id to groups.teacher_id). If this is not the intention, consider if these relationships should be linked with back_populates, or if viewonly=True should be applied to one or more if they are read-only. For the less common case that foreign key constraints are partially overlapping, the orm.foreign() annotation can be used to isolate the columns that should be written towards.   To silence this warning, add the parameter 'overlaps="groups"' to the 'Teacher.taught_groups' relationship. (Background on this warning at: https://sqlalche.me/e/20/qzyx) (This warning originated from the `configure_mappers()` process, which was invoked automatically in response to a user-initiated operation.)
-    user = User(
-
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
-======================== 95 passed, 8 warnings in 2.94s ========================
+======================== 95 passed, 7 warnings in 2.70s ========================

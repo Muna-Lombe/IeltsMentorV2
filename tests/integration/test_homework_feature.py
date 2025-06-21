@@ -53,7 +53,7 @@ async def test_select_group_for_homework_with_exercises(
     mock_update.callback_query.answer = AsyncMock()
     mock_update.callback_query.edit_message_text = AsyncMock()
     
-    group = sample_teacher_with_group_and_exercise.teacher_profile.groups[0]
+    group = sample_teacher_with_group_and_exercise.teacher_profile.taught_groups[0]
     mock_update.callback_query.data = f"hw_group_{group.id}"
     mock_update.callback_query.from_user.id = sample_teacher_with_group_and_exercise.user_id
 
@@ -73,8 +73,8 @@ async def test_select_exercise_and_create_homework(
     mock_update.callback_query.edit_message_text = AsyncMock()
     
     teacher = sample_teacher_with_group_and_exercise.teacher_profile
-    group = teacher.groups[0]
-    exercise = teacher.created_exercises[0]
+    group = teacher.taught_groups[0]
+    exercise = teacher.exercises[0]
 
     mock_update.callback_query.data = f"hw_ex_{exercise.id}"
     mock_update.callback_query.from_user.id = sample_teacher_with_group_and_exercise.user_id

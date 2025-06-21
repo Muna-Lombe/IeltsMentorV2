@@ -9,8 +9,8 @@ class GroupMembership(db.Model):
     student_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
     joined_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    student = db.relationship("User", back_populates="group_associations")
-    group = db.relationship("Group", back_populates="member_associations")
+    student = db.relationship("User", back_populates="memberships")
+    group = db.relationship("Group", back_populates="memberships")
 
 class Group(db.Model):
     __tablename__ = 'groups'
@@ -19,21 +19,21 @@ class Group(db.Model):
     name = Column(String(100), nullable=False)
     description = Column(Text, nullable=True)
     teacher_id = Column(Integer, ForeignKey('teachers.id'), nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    is_active = Column(Boolean, default=True, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, server_default=db.func.now())
+    is_active = Column(Boolean, default=True)
     last_updated = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relationship to the Teacher model
-    teacher = db.relationship('Teacher', back_populates='taught_groups')
+    teacher = relationship("Teacher", back_populates="taught_groups")
     homework_assignments = relationship("Homework", back_populates="group", cascade="all, delete-orphan")
     
-    # Many-to-many relationship with User (students)
-    member_associations = db.relationship('GroupMembership', back_populates='group', cascade="all, delete-orphan")
+    # Relationship to GroupMembership model
+    memberships = relationship("GroupMembership", back_populates="group", cascade="all, delete-orphan")
 
     # Helper to get members directly
     @property
     def members(self):
-        return [association.student for association in self.member_associations]
+        return [association.student for association in self.memberships]
 
     def __repr__(self):
         return f"<Group(id={self.id}, name='{self.name}', teacher_id={self.teacher_id})>" 

@@ -94,18 +94,18 @@ create_group_conv_handler = ConversationHandler(
 @error_handler
 @teacher_required
 async def assign_homework_start(update: Update, context: ContextTypes.DEFAULT_TYPE, user: User):
-    """Starts the homework assignment conversation by listing the teacher's groups."""
+    """Starts the homework assignment conversation by listing the teacher's taught_groups."""
     # print(f"user: {user}")
     teacher = user.teacher_profile
     # print(f"is teacher: {teacher}")
 
-    if not teacher or not teacher.groups:
+    if not teacher or not teacher.taught_groups:
         await update.message.reply_text(text=trans.get_message('teacher', 'no_groups_for_homework', user.preferred_language))
         return ConversationHandler.END
 
     keyboard = [
         [InlineKeyboardButton(group.name, callback_data=f"hw_group_{group.id}")]
-        for group in teacher.groups
+        for group in teacher.taught_groups
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -127,13 +127,13 @@ async def select_group_for_homework(update: Update, context: ContextTypes.DEFAUL
     user = db.session.query(User).filter_by(user_id=query.from_user.id).first()
     teacher = user.teacher_profile
 
-    if not teacher.created_exercises:
+    if not teacher.exercises:
         await query.edit_message_text(text=trans.get_message('teacher', 'no_exercises_to_assign', user.preferred_language))
         return ConversationHandler.END
 
     keyboard = [
         [InlineKeyboardButton(ex.title, callback_data=f"hw_ex_{ex.id}")]
-        for ex in teacher.created_exercises if ex.is_published
+        for ex in teacher.exercises if ex.is_published
     ]
     if not keyboard:
         await query.edit_message_text(text=trans.get_message('teacher', 'no_published_exercises_to_assign', user.preferred_language))

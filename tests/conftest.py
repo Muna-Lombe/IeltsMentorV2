@@ -243,7 +243,7 @@ def sample_teacher_with_group(session, approved_teacher_user):
     # Refresh the teacher object to load the new group relationship
     session.refresh(approved_teacher_user)
     print(f"approved_teacher_user: {approved_teacher_user.teacher_profile}")
-    print(f"approved_teacher_user.teacher_profile.groups: {approved_teacher_user.teacher_profile.groups}")
+    print(f"approved_teacher_user.teacher_profile.taught_groups: {approved_teacher_user.teacher_profile.taught_groups}")
     return approved_teacher_user
 
 @pytest.fixture

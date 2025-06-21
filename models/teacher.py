@@ -17,11 +17,10 @@ class Teacher(db.Model):
     user = relationship("User", back_populates="teacher_profile")
     
     # Relationship to the Group model
-    groups = relationship("Group", back_populates="teacher")
     taught_groups = relationship("Group", back_populates="teacher")
     
     # Relationship to the TeacherExercise model
-    created_exercises = relationship("TeacherExercise", back_populates="creator", cascade="all, delete-orphan")
+    exercises = relationship("TeacherExercise", back_populates="creator")
 
     def __repr__(self):
         return f"<Teacher(id={self.id}, user_id={self.user_id}, is_approved={self.is_approved})>" 

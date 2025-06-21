@@ -29,14 +29,16 @@ class User(db.Model):
 
     # Relationships
     practice_sessions = relationship("PracticeSession", back_populates="user", cascade="all, delete-orphan")
-    teacher_profile = relationship("Teacher", back_populates="user", uselist=False, cascade="all, delete-orphan")
     # taught_groups = relationship("Group", back_populates="teacher")
     
-    # Relationship to HomeworkSubmissions
-    homework_submissions = relationship("HomeworkSubmission", back_populates="student", cascade="all, delete-orphan")
+    # For students, their homework submissions
+    homework_submissions = relationship("HomeworkSubmission", back_populates="student")
 
-    # Association for group membership
-    group_associations = relationship("GroupMembership", back_populates="student", cascade="all, delete-orphan")
+    # For students, the groups they are members of
+    memberships = relationship("GroupMembership", back_populates="student")
+
+    # For teachers, the teacher profile
+    teacher_profile = relationship("Teacher", back_populates="user", uselist=False, cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<User(id={self.id}, user_id={self.user_id}, username='{self.username}')>" 
@@ -96,4 +98,4 @@ class User(db.Model):
 
     @property
     def groups(self):
-        return [association.group for association in self.group_associations] 
+        return [association.group for association in self.memberships] 

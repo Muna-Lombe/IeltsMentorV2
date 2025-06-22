@@ -1,5 +1,5 @@
 import logging
-from telegram import Update
+from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import (
     ContextTypes,
     ConversationHandler,
@@ -8,8 +8,8 @@ from telegram.ext import (
     filters,
 )
 
-from handlers.decorators import botmaster_required
-from models import User, Teacher, Group, TeacherExercise, Homework
+from handlers.decorators import botmaster_required, error_handler
+from models import User, Teacher, Group, TeacherExercise, Homework, PracticeSession
 from extensions import db
 from utils.translation_system import TranslationSystem
 from services.auth_service import AuthService
@@ -21,12 +21,12 @@ trans = TranslationSystem()
 # Conversation states
 SELECTING_USER, APPROVING_USER = range(2)
 
+@error_handler
 @botmaster_required
 async def approve_teacher_start(update: Update, context: ContextTypes.DEFAULT_TYPE, user: User):
-    """Starts the conversation to approve a teacher."""
-    language = user.preferred_language
+    """Starts the teacher approval process."""
     await update.message.reply_text(
-        text=trans.get_message('botmaster', 'approve_teacher_prompt', language)
+        text=trans.get_message('botmaster', 'approve_teacher_prompt', user.preferred_language)
     )
     return SELECTING_USER
 

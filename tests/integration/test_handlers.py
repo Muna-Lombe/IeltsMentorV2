@@ -2,6 +2,8 @@ import pytest
 from unittest.mock import MagicMock, patch, AsyncMock
 from telegram import InlineKeyboardMarkup
 from telegram.ext import ContextTypes, ConversationHandler
+from datetime import datetime
+from sqlalchemy.orm import joinedload
 
 # Handlers to test
 from handlers.core_handlers import start, stats_command, unknown_command
@@ -17,7 +19,14 @@ from handlers.teacher_handler import (
     get_group_description,
     cancel_group_creation,
     GET_GROUP_NAME,
-    GET_GROUP_DESCRIPTION
+    GET_GROUP_DESCRIPTION,
+    group_analytics_start,
+    show_group_analytics,
+    student_progress_start,
+    select_group_for_student_progress,
+    show_student_progress,
+    SELECT_GROUP_FOR_PROGRESS,
+    SELECT_STUDENT_FOR_PROGRESS,
 )
 from handlers.exercise_management_handler import (
     my_exercises_command,
@@ -37,8 +46,9 @@ from handlers.exercise_management_handler import (
 
 # Models and Services
 from models.user import User
+from models.teacher import Teacher
 from utils.translation_system import TranslationSystem
-from models import PracticeSession, Group, TeacherExercise
+from models import PracticeSession, Group, TeacherExercise, GroupMembership
 from extensions import db
 
 @pytest.mark.asyncio
@@ -406,3 +416,121 @@ async def test_create_exercise_cancel(mock_update, mock_context, approved_teache
     assert "Exercise creation has been cancelled" in mock_update.message.reply_text.call_args.kwargs['text']
     assert not mock_context.user_data
     assert result == ConversationHandler.END 
+
+@pytest.mark.asyncio
+async def test_group_analytics_command(mock_update, mock_context, approved_teacher_user, sample_student_with_group, session):
+    """Test the /group_analytics command workflow."""
+    teacher_profile = approved_teacher_user.teacher_profile
+    group = sample_student_with_group.groups[0]
+
+    print(f"[in test_group_analytics_command] teacher_profile: {teacher_profile}")
+
+    # Create a group and add the student
+    
+    # session.add(group)
+    # session.commit()
+
+    # Re-fetch the teacher user with the relationships loaded to ensure the session has 
+    # the latest data
+    # teacher_user = db.session.query(User).options(
+    #     joinedload(User.teacher_profile).joinedload(Teacher.taught_groups)
+    # ).filter(User.id == approved_teacher_user.id).one()
+
+    # Create a practice session for the student
+    practice_session = PracticeSession(
+        user_id=sample_student_with_group.id,
+        section="reading",
+        score=8,
+        total_questions=10,
+        correct_answers=8,
+        completed_at=datetime.utcnow()
+    )
+    session.add(practice_session)
+    session.commit()
+
+    # Set the correct user ID for the decorator to use
+    mock_update.effective_user.id = approved_teacher_user.user_id
+
+    # 1. Start the command by calling the handler.
+    # The decorator will fetch the user and pass it. We don't pass it from the test.
+    await group_analytics_start(mock_update, mock_context)
+    
+    assert mock_update.message.reply_text.call_count == 1
+    call_kwargs = mock_update.message.reply_text.call_args.kwargs
+    assert "Please select a group to view its analytics" in call_kwargs['text']
+    reply_markup = call_kwargs['reply_markup']
+    assert len(reply_markup.inline_keyboard) == 1
+    assert reply_markup.inline_keyboard[0][0].text == "Test Group"
+    assert reply_markup.inline_keyboard[0][0].callback_data == f"ga_group_{group.id}"
+
+    # 2. Simulate the user selecting the group
+    mock_update.callback_query.data = f"ga_group_{group.id}"
+    mock_update.callback_query.from_user.id = approved_teacher_user.user_id # Ensure the query comes from the teacher
+
+    await show_group_analytics(mock_update, mock_context)
+
+    assert mock_update.callback_query.edit_message_text.call_count == 1
+    analytics_text = mock_update.callback_query.edit_message_text.call_args.kwargs['text']
+    
+    assert "Analytics for **Test Group**" in analytics_text
+    assert "Members**: 1" in analytics_text
+    assert "Total Sessions**: 1" in analytics_text
+    assert "Avg. Reading Score**: 8.00" in analytics_text
+
+@pytest.mark.asyncio
+async def test_student_progress_command(mock_update, mock_context, approved_teacher_user, sample_student_with_group, session):
+    """Test the /student_progress command workflow."""
+    from handlers.teacher_handler import student_progress_start, select_group_for_student_progress, show_student_progress, SELECT_GROUP_FOR_PROGRESS, SELECT_STUDENT_FOR_PROGRESS
+
+    teacher = approved_teacher_user
+    student = sample_student_with_group
+    group = student.groups[0]
+
+    # Manually set the student's stats for this test
+    student.skill_level = "B2"
+    student.stats = {
+        "reading": {"correct": 5, "total": 10},
+        "writing": {"band": 6.5},
+        "speaking": {"band": 7.0},
+        "listening": {"correct": 25, "total": 40}
+    }
+    session.commit()
+
+    # Set the teacher's ID on the mock update
+    mock_update.effective_user.id = teacher.user_id
+
+    # 1. Start the command
+    result = await student_progress_start(mock_update, mock_context)
+    assert result == SELECT_GROUP_FOR_PROGRESS
+    mock_update.message.reply_text.assert_called_once()
+    call_kwargs = mock_update.message.reply_text.call_args.kwargs
+    assert "Please select a group to see its students" in call_kwargs['text']
+    reply_markup = call_kwargs['reply_markup']
+    assert reply_markup.inline_keyboard[0][0].text == group.name
+    assert reply_markup.inline_keyboard[0][0].callback_data == f"sp_group_{group.id}"
+
+    # 2. Simulate selecting the group
+    mock_update.callback_query.data = f"sp_group_{group.id}"
+    mock_update.callback_query.from_user.id = teacher.user_id
+    result = await select_group_for_student_progress(mock_update, mock_context)
+    assert result == SELECT_STUDENT_FOR_PROGRESS
+    mock_update.callback_query.edit_message_text.assert_called_once()
+    call_kwargs = mock_update.callback_query.edit_message_text.call_args.kwargs
+    assert f"Please select a student from **{group.name}**" in call_kwargs['text']
+    reply_markup = call_kwargs['reply_markup']
+    assert reply_markup.inline_keyboard[0][0].text == student.first_name
+    assert reply_markup.inline_keyboard[0][0].callback_data == f"sp_student_{student.id}"
+
+    # 3. Simulate selecting the student
+    mock_update.callback_query.data = f"sp_student_{student.id}"
+    result = await show_student_progress(mock_update, mock_context)
+    assert result == ConversationHandler.END
+    # Reset call count for the second edit_message_text
+    mock_update.callback_query.edit_message_text.call_count == 2
+    call_kwargs = mock_update.callback_query.edit_message_text.call_args.kwargs
+    assert f"Progress Report for: *{student.first_name}*" in call_kwargs['text']
+    assert "Overall Skill Level*: B2" in call_kwargs['text']
+    assert "Reading*: 5/10" in call_kwargs['text']
+    assert "Writing Band*: 6.5" in call_kwargs['text']
+    assert "Speaking Band*: 7.0" in call_kwargs['text']
+    assert "Listening*: 25/40" in call_kwargs['text']

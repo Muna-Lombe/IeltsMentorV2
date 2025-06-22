@@ -13,14 +13,15 @@
     "button_reading": "📖 Reading",
     "button_listening": "🎧 Listening",
     "no_reading_material": "Sorry, no reading materials are available right now. Please try again later.",
-    "reading_session_complete": "Reading practice complete!\\nYour score: {score} ({percentage}%).",
+    "reading_session_complete": "Reading practice complete!\nYour score: {score} ({percentage}%).",
     "correct_answer": "Correct! 🎉",
     "incorrect_answer": "Not quite. The correct answer was: {correct_answer}",
     "session_wip": "{section} practice is a work in progress. Please check back later!",
     "welcome_reading": "Welcome to reading practice!",
     "recommendation_prompt": "Great work on that session! Why not challenge yourself with a {next_section} practice next?",
     "start_next_section_button": "Start {section} Practice",
-    "skill_level_up": "Congratulations! You've reached a new skill level: **{new_skill_level}**"
+    "skill_level_up": "Congratulations! You've reached a new skill level: **{new_skill_level}**",
+    "start_practice": "Choose a section to practice:"
   },
   "errors": {
     "general": "Sorry, I encountered a problem. Please try again later.",
@@ -31,7 +32,8 @@
     "ai_error": "There was an issue with the AI service. Please try again shortly.",
     "invalid_input": "Your input was invalid or contained disallowed characters. Please try again.",
     "session_expired": "Your session has expired. Please start a new practice.",
-    "session_not_found": "Could not find your practice session. Please start over."
+    "session_not_found": "Could not find your practice session. Please start over.",
+    "general_error": "An unexpected error occurred. Please try again later."
   },
   "speaking_practice": {
     "intro": "Welcome to Speaking Practice! Please choose which part you'd like to practice.",
@@ -88,15 +90,23 @@
     "no_exercises_to_assign": "You have not created any exercises yet. Please create one first using /create_exercise.",
     "no_published_exercises_to_assign": "You have no published exercises to assign. Please create and publish an exercise first.",
     "assign_homework_select_exercise": "Please select an exercise to assign:",
-    "assign_homework_success": "✅ Homework assigned successfully!\\n\\nExercise '{exercise_title}' has been assigned to group '{group_name}'.",
-    "assign_homework_cancel": "Homework assignment has been cancelled."
+    "assign_homework_success": "✅ Homework assigned successfully!\n\nExercise '{exercise_title}' has been assigned to group '{group_name}'.",
+    "assign_homework_cancel": "Homework assignment has been cancelled.",
+    "no_groups_for_analytics": "You don't have any groups to view analytics for.",
+    "select_group_for_analytics": "Please select a group to view its analytics:",
+    "no_groups_for_student_progress": "You don't have any groups to check student progress. Create a group first with /create_group.",
+    "select_group_for_student_progress": "Please select a group to see its students.",
+    "no_students_in_group": "There are no students in this group.",
+    "select_student_for_progress": "Please select a student from **{group_name}** to see their progress report.",
+    "student_progress_report": "Progress Report for: *{student_name}*\n\n- *Overall Skill Level*: {skill_level}\n- *Reading*: {reading_score}\n- *Writing Band*: {writing_score}\n- *Speaking Band*: {speaking_score}\n- *Listening*: {listening_score}",
+    "group_analytics_summary": "Analytics for **{group_name}**:\\n\\n- **Members**: {members_count}\\n- **Total Sessions**: {total_sessions}\\n- **Avg. Reading Score**: {reading_avg:.2f}\\n- **Avg. Writing Score**: {writing_avg:.2f}\\n- **Avg. Speaking Score**: {speaking_avg:.2f}\\n- **Avg. Listening Score**: {listening_avg:.2f}"
   },
   "teacher_exercise": {
     "create_start": "Let's create a new exercise. First, what is the title of the exercise?",
     "ask_for_description": "Got it. Now, please provide a short description for this exercise.",
     "ask_for_type": "Excellent. Now, please select the exercise type.",
     "ask_for_difficulty": "Great choice. Now, what's the difficulty level for this exercise?",
-    "ask_for_content": "Perfect. Please provide the exercise content as a JSON object. For example:\\n\\n`{{\\\"questions\\\": [{{\\\"text\\\": \\\"Your question here...\\\"}}]}}`",
+    "ask_for_content": "Perfect. Please provide the exercise content as a JSON object. For example:\n\n`{\"questions\": [{\"text\": \"Your question here...\"}]}`",
     "create_success": "✅ Exercise created successfully! You can view it using /my_exercises.",
     "create_cancel": "Exercise creation has been cancelled.",
     "invalid_content": "The content format is invalid. Please provide a valid JSON object with a 'questions' list, like the example.",
@@ -104,7 +114,7 @@
     "create_exercise_description_prompt": "Great. Now, provide a brief description for the exercise.",
     "create_exercise_type_prompt": "Got it. What type of exercise is this? (e.g., Vocabulary, Grammar, Reading)",
     "create_exercise_difficulty_prompt": "Excellent. What is the difficulty level? (e.g., Beginner, Intermediate, Advanced)",
-    "create_exercise_content_prompt": "Almost done. Please provide the exercise content in JSON format. For example: `{\\\"questions\\\": [{\\\"text\\\": \\\"...\\\", \\\"answer\\\": \\\"...\\\"}]}`",
+    "create_exercise_content_prompt": "Almost done. Please provide the exercise content in JSON format. For example: `{\"questions\": [{\"text\": \"...\", \"answer\": \"...\"}]}`",
     "create_exercise_invalid_json": "The content provided is not valid JSON. Please check the format and try again.",
     "create_exercise_success": "Successfully created exercise: {title}"
   },

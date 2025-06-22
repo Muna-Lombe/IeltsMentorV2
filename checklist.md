@@ -270,14 +270,16 @@ This checklist tracks the progress of the IELTS Preparation Bot based on the `de
         - *Completed by extending the existing `User` model.*
     - [x] **DONE:** Refine `User.skill_level` update logic based on practice performance.
         - *Verified by implementing skill assessment logic in all four practice handlers and confirming with new integration tests in `tests/integration/test_models.py`.*
-- [ ] **Basic Analytics for Teachers:**
-    - [ ] **PENDING:** Implement `/group_analytics` bot command.
-        - *A basic version exists as a Web API endpoint, but not as a bot command.*
-    - [ ] **PENDING:** Implement `/student_progress` bot command.
-        - *A basic version exists as a Web API endpoint, but not as a bot command.*
+- [x] **Basic Analytics for Teachers:**
+    - [x] Implement `/group_analytics [group]` in `teacher_handler.py`:
+        - [x] Display basic stats for a group (e.g., average scores, completion rates for homework).
+            - *Functionality verified in `handlers/teacher_handler.py` and tested in `tests/integration/test_handlers.py`.*
+    - [x] Implement `/student_progress [student]` in `teacher_handler.py`:
+        - [x] Display individual student's progress based on `User.stats` and `PracticeSession` data.
+            - *Functionality verified in `handlers/teacher_handler.py` and tested in `tests/integration/test_handlers.py`.*
 - [x] **Personalized Recommendations (Basic):**
     - [x] After a practice session, suggest another practice type or difficulty based on weaknesses shown in `User.stats`.
-        - *Verified by implementing the feature in all four practice handlers and confirming with integration tests.*
+        - *Verified in all four practice handlers (`reading`, `writing`, `speaking`, `listening`).*
 - [x] **Testing:**
     - [x] Unit tests for `/create_exercise`, `/assign_homework` flows.
         - *Verified in `tests/integration/test_handlers.py` and `tests/integration/test_homework_feature.py`.*

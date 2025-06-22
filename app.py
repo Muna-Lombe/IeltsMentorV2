@@ -63,6 +63,8 @@ application.add_handler(writing_practice_conv_handler)
 application.add_handler(listening_practice_conv_handler)
 application.add_handler(botmaster_handler.approve_teacher_conv_handler)
 application.add_handler(CommandHandler("system_stats", botmaster_handler.system_stats))
+application.add_handler(teacher_handler.group_analytics_conv_handler)
+application.add_handler(teacher_handler.student_progress_conv_handler)
 
 # Register error handler
 application.add_error_handler(core_handlers.error_handler)

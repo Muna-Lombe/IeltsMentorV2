@@ -14,7 +14,7 @@ from app import create_app
 from extensions import db
 from models.user import User
 from models.practice_session import PracticeSession
-from models import Teacher, TeacherExercise, Group
+from models import Teacher, TeacherExercise, Group, GroupMembership
 from utils.translation_system import TranslationSystem
 from services.auth_service import AuthService
 
@@ -138,7 +138,38 @@ def sample_user(session):
     session.add(user)
     session.flush()
     return user
-    
+
+@pytest.fixture(scope='function')
+def sample_student_user(session):
+    """Create a sample student user for testing."""
+    user = User(
+        user_id=12346,
+        first_name="Student",
+        last_name="User",
+        username="studentuser"
+    )
+    session.add(user)
+    session.flush()
+    return user
+
+@pytest.fixture(scope='function')
+def sample_student_with_group(session, sample_student_user, sample_teacher_with_group):
+    """Create a sample student with a group for testing."""
+    # group = Group(
+    #     name="Test Group",
+    #     description="A group for testing",
+    #     teacher_id=sample_student_user.teacher_profile.id
+    # )
+    group = sample_teacher_with_group.teacher_profile.taught_groups[0]
+    membership = GroupMembership(group_id=group.id, student_id=sample_student_user.id)
+    session.add(membership)
+    session.flush()
+    session.commit()
+    session.refresh(sample_student_user)
+    print(f"[in sample_student_with_group] sample_student_user: {sample_student_user}")
+    print(f"[in sample_student_with_group] sample_student_user.groups: {sample_student_user.groups}")
+    return sample_student_user
+
 @pytest.fixture(scope='function')
 def regular_user(session):
     """Create a second sample user for testing interactions."""
@@ -223,49 +254,8 @@ def _translations():
     """Load translations once for the entire test session."""
     TranslationSystem.load_translations()
 
-# @pytest.fixture
-# def sample_teacher(session, approved_teacher_user):
-#     """Create a sample teacher for testing."""
-#     teacher = Teacher(user_id=approved_teacher_user.id, is_approved=True)
-#     session.add(teacher)
-#     session.flush()
-#     return teacher
-
 @pytest.fixture
-def sample_teacher_with_group(session, approved_teacher_user):
-    """Create a sample teacher with a group for testing."""
-    group = Group(
-        name="Test Group",
-        description="A group for testing",
-        teacher_id=approved_teacher_user.id
-    )
-    session.add(group)
-    session.commit()
-    # Refresh the teacher object to load the new group relationship
-    session.refresh(approved_teacher_user)
-    print(f"approved_teacher_user: {approved_teacher_user.teacher_profile}")
-    print(f"approved_teacher_user.teacher_profile.taught_groups: {approved_teacher_user.teacher_profile.taught_groups}")
-    return approved_teacher_user
-
-@pytest.fixture
-def sample_teacher_with_group_and_exercise(session, sample_teacher_with_group):
-    """Create a teacher with a group and a published exercise."""
-    exercise = TeacherExercise(
-        title="Test Exercise",
-        description="An exercise for testing homework.",
-        exercise_type="reading",
-        content={"question": "What is the main idea?"},
-        difficulty="medium",
-        creator_id=sample_teacher_with_group.teacher_profile.id,
-        is_published=True
-    )
-    session.add(exercise)
-    session.commit()
-    session.refresh(sample_teacher_with_group)
-    return sample_teacher_with_group
-
-@pytest.fixture
-def sample_exercise(db_session, sample_teacher):
+def sample_exercise(session, sample_teacher):
     """Create a sample published exercise for testing."""
     # Implementation of this fixture is not provided in the original file or the new code block
     # This fixture is assumed to exist as it's called in the new code block
@@ -306,18 +296,36 @@ def pending_teacher_user(session):
     return user
 
 @pytest.fixture
-def sample_teacher(db_session):
-    """Create a sample teacher for testing."""
-    user = User(
-        user_id=777,
-        first_name="Approved",
-        last_name="Teacher",
-        username="approvedteacher",
-        is_admin=True
+def sample_teacher_with_group(session, approved_teacher_user):
+    """Create a sample teacher with a group for testing."""
+    group = Group(
+        name="Test Group",
+        description="A group for testing",
+        teacher_id=approved_teacher_user.id
     )
-    db.session.add(user)
-    db.session.commit()
-    return user
+    session.add(group)
+    session.commit()
+    session.refresh(approved_teacher_user)
+    print(f"approved_teacher_user: {approved_teacher_user.teacher_profile}")
+    print(f"approved_teacher_user.teacher_profile.taught_groups: {approved_teacher_user.teacher_profile.taught_groups}")
+    return approved_teacher_user
+
+@pytest.fixture
+def sample_teacher_with_group_and_exercise(session, sample_teacher_with_group):
+    """Create a teacher with a group and a published exercise."""
+    exercise = TeacherExercise(
+        title="Test Exercise",
+        description="An exercise for testing homework.",
+        exercise_type="reading",
+        content={"question": "What is the main idea?"},
+        difficulty="medium",
+        creator_id=sample_teacher_with_group.teacher_profile.id,
+        is_published=True
+    )
+    session.add(exercise)
+    session.commit()
+    session.refresh(sample_teacher_with_group)
+    return sample_teacher_with_group
 
 @pytest.fixture
 def client(app):

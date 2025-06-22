@@ -305,8 +305,8 @@ This checklist tracks the progress of the IELTS Preparation Bot based on the `de
         - *Verified in \`handlers/botmaster_handler.py\`.*
     - [x] Implement `/system_stats` command.
         - *Verified in \`handlers/botmaster_handler.py\`.*
-    - [ ] **PENDING:** Implement `/manage_content` command.
-        - *Not yet implemented.*
+    - [x] **PENDING:** Implement `/manage_content` command.
+        - *Verified in \`handlers/botmaster_handler.py\`.*
 - [ ] **User Management (Botmaster):**
     - [ ] **PENDING:** Implement `/lookup_user` command.
         - *Not yet implemented.*

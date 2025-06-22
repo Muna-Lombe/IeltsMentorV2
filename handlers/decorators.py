@@ -50,8 +50,8 @@ def teacher_required(func):
                     await update.message.reply_text(text=trans.get_message('errors', 'user_not_found', language))
                 return ConversationHandler.END
 
-            print(f"user: {user}")
-            print(f"user.teacher_profile: {user.teacher_profile}")
+            print(f"[in decorators.teacher_required] user: {user}")
+            print(f"[in decorators.teacher_required] user.teacher_profile: {user.teacher_profile}")
             
             is_teacher = user.is_admin
             # Correctly check for teacher_profile relationship and its is_approved status

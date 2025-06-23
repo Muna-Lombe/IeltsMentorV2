@@ -1,7 +1,7 @@
 import pytest
 from flask import session
 from unittest.mock import patch
-from models import User, Teacher, Group, GroupMembership
+from models import User, Teacher, Group, GroupMembership, Homework, HomeworkSubmission
 from models.exercise import TeacherExercise
 from models.practice_session import PracticeSession
 import os
@@ -248,9 +248,32 @@ class TestWebInterface:
 
         response = client.post('/api/homework', json={
             'exercise_id': exercise.id,
-            'group_id': group.id
+            'group_id': group.id,
+            'due_date': (datetime.utcnow() + timedelta(days=7)).isoformat(),
+            'instructions': 'Test instructions'
         })
         assert response.status_code == 403
+    
+    def test_publish_exercise(self, client, session, approved_teacher_user):
+        """Test publishing an exercise."""
+        client.post('/login', data={'api_token': 'valid-test-token'})
+        exercise = TeacherExercise(
+            title="Publish Test", creator_id=approved_teacher_user.id,
+            exercise_type='reading', difficulty='medium', content={'q':'1'},
+            is_published=False
+        )
+        session.add(exercise)
+        session.commit()
+
+        response = client.post(f'/api/exercises/{exercise.id}/publish')
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data['success'] is True
+        assert data['data']['is_published'] is True
+
+        # Verify in DB
+        updated_exercise = session.get(TeacherExercise, exercise.id)
+        assert updated_exercise.is_published is True
 
     def test_get_group_analytics(self, client, session, approved_teacher_user, regular_user):
         client.post('/login', data={'api_token': 'valid-test-token'})
@@ -279,3 +302,67 @@ class TestWebInterface:
         assert data['member_count'] == 1
         assert data['average_scores_by_section']['reading'] == 85.0
         assert data['average_scores_by_section']['writing'] == 75.0
+
+    def test_get_student_progress_authorized(self, client, session, approved_teacher_user, regular_user):
+        """Test getting a student's progress data as an authorized teacher."""
+        client.post('/login', data={'api_token': 'valid-test-token'})
+        
+        # Setup group and membership
+        group = Group(name="Progress Test Group", teacher_id=approved_teacher_user.id)
+        session.add(group)
+        session.commit()
+        membership = GroupMembership(group_id=group.id, student_id=regular_user.id)
+        session.add(membership)
+
+        # Setup practice session data for the student
+        ps1 = PracticeSession(user_id=regular_user.id, section='reading', score=80, total_questions=10, correct_answers=8, completed_at=datetime.utcnow())
+        ps2 = PracticeSession(user_id=regular_user.id, section='writing', score=75, total_questions=2, correct_answers=1, completed_at=datetime.utcnow())
+        session.add_all([ps1, ps2])
+        session.commit()
+
+        response = client.get(f'/api/students/{regular_user.id}/progress')
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data['success'] is True
+        assert len(data['data']['practice_sessions']) == 2
+        assert data['data']['skill_level'] == regular_user.skill_level
+
+    def test_get_student_progress_unauthorized(self, client, session, another_teacher, regular_user):
+        """Test getting a student's progress as an unauthorized teacher."""
+        client.post('/login', data={'api_token': 'another-valid-token'})
+        
+        # Student exists but is not in any of this teacher's groups
+        response = client.get(f'/api/students/{regular_user.id}/progress')
+        assert response.status_code == 403
+
+    def test_get_exercise_analytics_authorized(self, client, session, approved_teacher_user, regular_user):
+        """Test getting analytics for a specific exercise."""
+        client.post('/login', data={'api_token': 'valid-test-token'})
+
+        # Setup exercise, group, and homework
+        exercise = TeacherExercise(title="Analytics Exercise", creator_id=approved_teacher_user.id, exercise_type='reading', difficulty='easy', content={'q':'a'})
+        group = Group(name="Analytics Group", teacher_id=approved_teacher_user.id)
+        session.add_all([exercise, group])
+        session.commit()
+        
+        homework = Homework(exercise_id=exercise.id, group_id=group.id, assigned_by_id=approved_teacher_user.id)
+        session.add(homework)
+        session.commit()
+
+        # Setup submissions
+        sub1 = HomeworkSubmission(homework_id=homework.id, student_id=regular_user.id, score=80, content={"answer": "Student 1's answer"})
+        # Create another user for more data
+        student2 = User(user_id=998, first_name="Student", last_name="Two", username="studenttwo")
+        session.add(student2)
+        session.commit()
+        sub2 = HomeworkSubmission(homework_id=homework.id, student_id=student2.id, score=90, content={"answer": "Student 2's answer"})
+        session.add_all([sub1, sub2])
+        session.commit()
+
+        response = client.get(f'/api/analytics/exercises/{exercise.id}')
+        assert response.status_code == 200
+        data = response.get_json()['data']
+
+        assert data['exercise_title'] == "Analytics Exercise"
+        assert data['submission_count'] == 2
+        assert data['average_score'] == 85.0

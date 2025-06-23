@@ -25,6 +25,20 @@ class PracticeSession(db.Model):
     # Relationship to User model (optional, but good for ORM features)
     user = relationship("User", back_populates="practice_sessions") # Define back_populates on User model later
 
+    def to_dict(self):
+        """Converts the practice session to a dictionary."""
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "section": self.section,
+            "score": self.score,
+            "total_questions": self.total_questions,
+            "correct_answers": self.correct_answers,
+            "started_at": self.started_at.isoformat() if self.started_at else None,
+            "completed_at": self.completed_at.isoformat() if self.completed_at else None,
+            "session_data": self.session_data
+        }
+
     def __repr__(self):
         return f"<PracticeSession(id={self.id}, user_id={self.user_id}, section='{self.section}', score={self.score})>"
 

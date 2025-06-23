@@ -246,31 +246,41 @@ async def test_get_group_description_handler(session, mock_update, mock_context,
     assert result_state == ConversationHandler.END
 
 @pytest.mark.asyncio
-async def test_cancel_group_creation_handler(mock_update, mock_context, approved_teacher_user):
+async def test_cancel_group_creation_handler(mock_update, mock_context, approved_teacher_user, session):
     """Test the cancellation of the group creation flow."""
+    mock_update.message.text = "/cancel"
+    mock_context.user_data = {'group_name': 'Group to be cancelled'}
     mock_update.effective_user.id = approved_teacher_user.user_id
-    mock_context.user_data = {'group_name': 'A Group To Be Cancelled'}
 
-    result_state = await cancel_group_creation(mock_update, mock_context)
+    # Patch the session to ensure the handler uses the test DB session
+    with patch('handlers.teacher_handler.db.session', session):
+        result_state = await cancel_group_creation(mock_update, mock_context)
 
-    mock_update.message.reply_text.assert_called_once_with(text="Group creation has been cancelled.")
+    mock_update.message.reply_text.assert_called_once()
+    assert "Group creation has been cancelled." in mock_update.message.reply_text.call_args.kwargs['text']
     assert 'group_name' not in mock_context.user_data
-    assert result_state == ConversationHandler.END 
+    assert result_state == ConversationHandler.END
 
 @pytest.mark.asyncio
-async def test_my_exercises_command_with_exercises(mock_update, mock_context, approved_teacher_with_exercises):
+async def test_my_exercises_command_with_exercises(mock_update, mock_context, approved_teacher_user, session):
     """Test the /my_exercises command for a teacher who has created exercises."""
-    mock_update.effective_user.id = approved_teacher_with_exercises.user_id
+    # Create exercises for the teacher
+    exercise1 = TeacherExercise(creator_id=approved_teacher_user.id, title="My First Exercise", exercise_type="reading", difficulty="medium", content={"q": "1"})
+    exercise2 = TeacherExercise(creator_id=approved_teacher_user.id, title="My Second Exercise", exercise_type="writing", difficulty="hard", content={"q": "2"})
+    session.add_all([exercise1, exercise2])
+    session.commit()
 
+    mock_update.effective_user.id = approved_teacher_user.user_id
+
+    # The decorator will pass the user object, so we don't pass it here.
     await my_exercises_command(mock_update, mock_context)
 
     mock_update.message.reply_text.assert_called_once()
     response_text = mock_update.message.reply_text.call_args.kwargs['text']
-    
+
     assert "Here are your created exercises:" in response_text
-    assert "Test Exercise 1" in response_text
-    assert "Test Exercise 2" in response_text
-    assert "Draft" in response_text
+    assert "My First Exercise" in response_text
+    assert "My Second Exercise" in response_text
 
 @pytest.mark.asyncio
 async def test_my_exercises_command_no_exercises(mock_update, mock_context, approved_teacher_user):

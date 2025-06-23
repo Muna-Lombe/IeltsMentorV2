@@ -220,7 +220,9 @@ def approved_teacher_with_exercises(session, approved_teacher_user):
     exercise2 = TeacherExercise(creator_id=approved_teacher_user.id, title="Test Exercise 2", exercise_type="writing", difficulty="hard", content={"q": "2"})
     session.add_all([exercise1, exercise2])
     session.flush()
-    return approved_teacher_user
+    session.commit()
+    
+    return approved_teacher_user.teacher_profile
 
 @pytest.fixture
 def mock_openai_service():

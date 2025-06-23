@@ -1,11 +1,12 @@
 import logging
-from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
+from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     ContextTypes,
     ConversationHandler,
     CommandHandler,
     MessageHandler,
     filters,
+    CallbackQueryHandler,
 )
 
 from handlers.decorators import botmaster_required, error_handler
@@ -20,6 +21,10 @@ trans = TranslationSystem()
 
 # Conversation states
 SELECTING_USER, APPROVING_USER = range(2)
+
+# Constants for content management
+MANAGE_CONTENT_PAGE_SIZE = 5
+SELECTING_CONTENT_ACTION = range(2, 3)
 
 @error_handler
 @botmaster_required
@@ -119,4 +124,63 @@ approve_teacher_conv_handler = ConversationHandler(
     fallbacks=[CommandHandler("cancel", cancel)],
     per_message=False,
     per_user=True
+)
+
+@error_handler
+@botmaster_required
+async def manage_content_start(update: Update, context: ContextTypes.DEFAULT_TYPE, user: User):
+    """Displays the first page of teacher-created exercises for management."""
+    context.user_data['content_page'] = 0
+    
+    exercises = db.session.query(TeacherExercise).order_by(TeacherExercise.created_at.desc()).limit(MANAGE_CONTENT_PAGE_SIZE).all()
+    
+    if not exercises:
+        await update.message.reply_text(trans.get_message('botmaster', 'no_content_to_manage', user.preferred_language))
+        return ConversationHandler.END
+
+    message_text = trans.get_message('botmaster', 'manage_content_header', user.preferred_language)
+    keyboard = []
+    for ex in exercises:
+        status = "Published" if ex.is_published else "Draft"
+        keyboard.append([InlineKeyboardButton(f"{ex.title} ({status})", callback_data=f"content_{ex.id}")])
+    
+    # Add navigation buttons if needed
+    # For simplicity, we'll start without pagination
+    
+    await update.message.reply_text(text=message_text, reply_markup=InlineKeyboardMarkup(keyboard))
+    return SELECTING_CONTENT_ACTION
+
+@error_handler
+@botmaster_required
+async def manage_content_action(update: Update, context: ContextTypes.DEFAULT_TYPE, user: User):
+    """Handles actions on a selected piece of content."""
+    query = update.callback_query
+    await query.answer()
+    
+    exercise_id = int(query.data.split('_')[1])
+    exercise = db.session.query(TeacherExercise).filter_by(id=exercise_id).first()
+    
+    if not exercise:
+        await query.edit_message_text(trans.get_message('botmaster', 'content_not_found', user.preferred_language))
+        return ConversationHandler.END
+        
+    # Toggle publish status
+    exercise.is_published = not exercise.is_published
+    db.session.commit()
+    
+    status = "Published" if exercise.is_published else "Draft"
+    await query.edit_message_text(
+        text=trans.get_message('botmaster', 'content_status_changed', user.preferred_language, title=exercise.title, status=status)
+    )
+    
+    # We can end the conversation here or allow more actions. Ending is simpler.
+    return ConversationHandler.END
+
+
+manage_content_conv_handler = ConversationHandler(
+    entry_points=[CommandHandler("manage_content", manage_content_start)],
+    states={
+        SELECTING_CONTENT_ACTION: [CallbackQueryHandler(manage_content_action, pattern="^content_")],
+    },
+    fallbacks=[CommandHandler("cancel", cancel)], # Can reuse the same cancel
 ) 

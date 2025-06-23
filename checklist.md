@@ -391,7 +391,8 @@ This checklist tracks the progress of the IELTS Preparation Bot based on the `de
         - *Verified in `app.py`.*
     - [x] Implement `PUT /api/exercises/{exercise_id}`.
         - *Verified in `app.py`.*
-    - [ ] **PENDING:** Implement `POST /api/exercises/{exercise_id}/publish`.
+    - [x] **DONE:** Implement `POST /api/exercises/{exercise_id}/publish`.
+        - *Verified in `app.py` and `tests/integration/test_web_interface.py`.*
 - [x] **Homework Management API & UI:**
     - [x] Implement `GET /api/homework`.
         - *Verified in `app.py`.*
@@ -402,7 +403,8 @@ This checklist tracks the progress of the IELTS Preparation Bot based on the `de
 - [x] **Analytics API & UI:**
     - [x] Implement `GET /api/analytics/groups/{group_id}`.
         - *Verified in `app.py`.*
-    - [ ] **PENDING:** Implement `GET /api/analytics/exercises/{exercise_id}`.
+    - [x] **DONE:** Implement `GET /api/analytics/exercises/{exercise_id}`.
+        - *Verified in `app.py` and `tests/integration/test_web_interface.py`.*
 - [ ] **General API & UI Enhancements:**
     - [ ] **PENDING:** Implement pagination for list endpoints.
     - [x] API responses follow the success/error formats in `API_REFERENCE.md`.

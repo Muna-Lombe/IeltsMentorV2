@@ -152,6 +152,10 @@
     "already_approved": "This teacher has already been approved.",
     "approve_teacher_success": "✅ Success! Teacher {teacher_name} has been approved.",
     "action_cancelled": "Action cancelled.",
-    "system_stats_message": "📊 *System Statistics*\n\n- Total Users: {total_users}\n- Approved Teachers: {total_teachers}\n- Total Groups: {total_groups}\n- Custom Exercises: {total_exercises}\n- Homeworks Assigned: {total_homeworks}"
+    "system_stats_message": "📊 *System Statistics*\\n\\n- Total Users: {total_users}\\n- Approved Teachers: {total_teachers}\\n- Total Groups: {total_groups}\\n- Custom Exercises: {total_exercises}\\n- Homeworks Assigned: {total_homeworks}",
+    "no_content_to_manage": "There are no teacher-created exercises to manage at the moment.",
+    "manage_content_header": "Select an exercise to manage its publication status:",
+    "content_not_found": "Sorry, I could not find the selected exercise.",
+    "content_status_changed": "✅ Status for '{title}' has been updated to: **{status}**."
   }
 } 

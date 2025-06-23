@@ -9,8 +9,11 @@ from handlers.botmaster_handler import (
     cancel,
     SELECTING_USER,
     system_stats,
+    manage_content_start,
+    manage_content_action,
+    SELECTING_CONTENT_ACTION,
 )
-from models import User, Teacher
+from models import User, Teacher, TeacherExercise
 
 @pytest.mark.asyncio
 async def test_approve_teacher_start_as_botmaster(
@@ -160,4 +163,52 @@ async def test_system_stats_as_non_botmaster(
 
     mock_update.message.reply_text.assert_called_once_with(
         text="Sorry, this command is restricted to Botmasters only."
-    ) 
+    )
+
+@pytest.mark.asyncio
+async def test_manage_content_start_with_exercises(
+    mock_update: MagicMock, mock_context: MagicMock, botmaster_user: User, approved_teacher_user: User, session
+):
+    """Test starting the content management flow when exercises exist."""
+    # Create exercises for the teacher
+    exercise1 = TeacherExercise(creator_id=approved_teacher_user.id, title="Test Exercise 1", exercise_type="reading", difficulty="medium", content={"q": "1"})
+    exercise2 = TeacherExercise(creator_id=approved_teacher_user.id, title="Test Exercise 2", exercise_type="writing", difficulty="hard", content={"q": "2"})
+    session.add_all([exercise1, exercise2])
+    session.commit()
+
+    mock_update.message.reply_text = AsyncMock()
+    mock_update.effective_user.id = botmaster_user.user_id
+
+    result = await manage_content_start(mock_update, mock_context)
+    
+    assert result == SELECTING_CONTENT_ACTION
+    mock_update.message.reply_text.assert_called_once()
+    call_kwargs = mock_update.message.reply_text.call_args.kwargs
+    assert "Select an exercise to manage" in call_kwargs['text']
+    assert len(call_kwargs['reply_markup'].inline_keyboard) == 2
+
+@pytest.mark.asyncio
+async def test_manage_content_toggle_status(
+    mock_update: MagicMock, mock_context: MagicMock, botmaster_user: User, approved_teacher_user: User, session
+):
+    """Test toggling the publication status of an exercise."""
+    from models import TeacherExercise
+    exercise = TeacherExercise(creator_id=approved_teacher_user.id, title="Toggle Test", is_published=False, exercise_type="reading", difficulty="medium", content={"q": "1"})
+    session.add(exercise)
+    session.commit()
+    
+    assert exercise.is_published is False
+    
+    mock_update.callback_query.answer = AsyncMock()
+    mock_update.callback_query.edit_message_text = AsyncMock()
+    mock_update.callback_query.data = f"content_{exercise.id}"
+    mock_update.effective_user.id = botmaster_user.user_id
+
+    result = await manage_content_action(mock_update, mock_context)
+    
+    assert result == ConversationHandler.END
+    session.refresh(exercise)
+    assert exercise.is_published is True
+    
+    mock_update.callback_query.edit_message_text.assert_called_once()
+    assert "Status for 'Toggle Test' has been updated to: **Published**" in mock_update.callback_query.edit_message_text.call_args.kwargs['text'] 

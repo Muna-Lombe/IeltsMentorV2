@@ -65,6 +65,7 @@ application.add_handler(botmaster_handler.approve_teacher_conv_handler)
 application.add_handler(CommandHandler("system_stats", botmaster_handler.system_stats))
 application.add_handler(teacher_handler.group_analytics_conv_handler)
 application.add_handler(teacher_handler.student_progress_conv_handler)
+application.add_handler(botmaster_handler.manage_content_conv_handler)
 
 # Register error handler
 application.add_error_handler(core_handlers.error_handler)
@@ -278,9 +279,8 @@ def create_app(config_name='development'):
         @login_required
         def get_student_details(student_id):
             teacher_user_id = session.get('user_id')
-            student = db.session.query(User).filter_by(id=student_id).first_or_404()
-
-            # Authorization check: Ensure student is in one of the teacher's groups
+            
+            # Authorization check: is the student in any of the teacher's groups?
             is_authorized = db.session.query(GroupMembership).join(Group).filter(
                 Group.teacher_id == teacher_user_id,
                 GroupMembership.student_id == student_id
@@ -289,13 +289,16 @@ def create_app(config_name='development'):
             if not is_authorized:
                 return jsonify({"success": False, "error": "Unauthorized to view this student"}), 403
 
+            student = db.session.query(User).filter_by(id=student_id).first()
+            if not student:
+                return jsonify({"success": False, "error": "Student not found"}), 404
+            
             return jsonify({"success": True, "data": student.to_dict()})
 
         @app.route("/api/students/<int:student_id>/progress", methods=["GET"])
         @login_required
         def get_student_progress(student_id):
             teacher_user_id = session.get('user_id')
-            student = db.session.query(User).filter_by(id=student_id).first_or_404()
 
             # Authorization check
             is_authorized = db.session.query(GroupMembership).join(Group).filter(
@@ -304,14 +307,21 @@ def create_app(config_name='development'):
             ).first()
 
             if not is_authorized:
-                return jsonify({"success": False, "error": "Unauthorized to view this student"}), 403
+                return jsonify({"success": False, "error": "Unauthorized"}), 403
 
-            sessions = student.get_practice_sessions()
+            student = db.session.get(User, student_id)
+            if not student:
+                return jsonify({"success": False, "error": "Student not found"}), 404
+
+            practice_sessions = db.session.query(PracticeSession).filter_by(user_id=student.id).order_by(PracticeSession.completed_at.desc()).all()
+            
             progress_data = {
-                "stats": student.stats,
+                "student_id": student.id,
+                "full_name": student.get_full_name(),
                 "skill_level": student.skill_level,
-                "practice_sessions": [s.to_dict() for s in sessions]
+                "practice_sessions": [ps.to_dict() for ps in practice_sessions]
             }
+            
             return jsonify({"success": True, "data": progress_data})
 
         @app.route("/api/exercises", methods=["GET"])
@@ -377,7 +387,7 @@ def create_app(config_name='development'):
             exercise = db.session.query(TeacherExercise).filter_by(id=exercise_id, creator_id=teacher_user_id).first()
 
             if not exercise:
-                return jsonify({"success": False, "error": "Exercise not found or you are not authorized"}), 404
+                return jsonify({"success": False, "error": "Exercise not found or not authorized"}), 404
 
             data = request.json
             exercise.title = data.get('title', exercise.title)
@@ -388,7 +398,20 @@ def create_app(config_name='development'):
             exercise.is_published = data.get('is_published', exercise.is_published)
             
             db.session.commit()
+            return jsonify({"success": True, "data": exercise.to_dict()})
 
+        @app.route("/api/exercises/<int:exercise_id>/publish", methods=["POST"])
+        @login_required
+        def publish_exercise(exercise_id):
+            teacher_user_id = session.get('user_id')
+            exercise = db.session.query(TeacherExercise).filter_by(id=exercise_id, creator_id=teacher_user_id).first()
+
+            if not exercise:
+                return jsonify({"success": False, "error": "Exercise not found or not authorized"}), 404
+
+            exercise.is_published = True
+            db.session.commit()
+            
             return jsonify({"success": True, "data": exercise.to_dict()})
 
         @app.route("/api/homework", methods=["POST"])
@@ -503,6 +526,40 @@ def create_app(config_name='development'):
 
             return jsonify({"success": True, "data": analytics_data})
 
+        @app.route("/api/analytics/exercises/<int:exercise_id>", methods=["GET"])
+        @login_required
+        def get_exercise_analytics(exercise_id):
+            teacher_user_id = session.get('user_id')
+
+            # Authorization: ensure the teacher owns the exercise
+            exercise = db.session.query(TeacherExercise).filter_by(id=exercise_id, creator_id=teacher_user_id).first()
+            if not exercise:
+                return jsonify({"success": False, "error": "Exercise not found or unauthorized"}), 404
+
+            # Get all homework assignments for this exercise
+            homework_assignments = db.session.query(Homework).filter_by(exercise_id=exercise.id).all()
+            if not homework_assignments:
+                return jsonify({"success": True, "data": {
+                    "exercise_title": exercise.title,
+                    "submission_count": 0,
+                    "average_score": 0
+                }})
+
+            # Get all submission scores
+            homework_ids = [hw.id for hw in homework_assignments]
+            scores = db.session.query(HomeworkSubmission.score).filter(HomeworkSubmission.homework_id.in_(homework_ids)).all()
+            
+            total_submissions = len(scores)
+            average_score = sum(s[0] for s in scores) / total_submissions if total_submissions > 0 else 0
+
+            analytics_data = {
+                "exercise_title": exercise.title,
+                "submission_count": total_submissions,
+                "average_score": average_score
+            }
+
+            return jsonify({"success": True, "data": analytics_data})
+
         @app.route("/webhook", methods=["POST"])
         async def webhook():
             try:
@@ -527,8 +584,8 @@ def create_app(config_name='development'):
 
     return app
 
+app = create_app(os.getenv('FLASK_CONFIG') or 'default')
 if __name__ == '__main__':
-    app = create_app(os.getenv('FLASK_CONFIG') or 'default')
     # The bot polling and Flask app running are mutually exclusive in this script.
     # For production, you'd run the Flask app with a WSGI server (like Gunicorn)
     # and set up the Telegram webhook to point to your server's /webhook endpoint.

@@ -1,3 +1,4 @@
+import asyncio
 import os
 import logging
 from functools import wraps
@@ -33,12 +34,87 @@ from models.exercise import TeacherExercise
 from models.practice_session import PracticeSession
 from models.homework import Homework, HomeworkSubmission
 
+# New Imports for Bot Initialization
+import time
+import json
+import requests
+from flask_wtf.csrf import CSRFProtect
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+# Define a class for bot status to support attribute access
+class BotStatus:
+
+    def __init__(self):
+        # Default attributes
+        self._attrs = {
+            'running': False,
+            'start_time': None,
+            'error': None,
+            'telegram_bot_username': None,
+            'bot_instance': None,
+            'instance_id': None,
+            'webhook_url': None
+        }
+
+    def __getattr__(self, name):
+        # Allow dynamic attribute access
+        if name in self._attrs:
+            return self._attrs[name]
+        raise AttributeError(f"'BotStatus' has no attribute '{name}'")
+
+    def __setattr__(self, name, value):
+        # For setting attributes dynamically
+        if name == '_attrs':
+            super().__setattr__(name, value)
+        else:
+            self._attrs[name] = value
+
+    def get(self, key, default=None):
+        return self._attrs.get(key, default)
+
+    # For compatibility with jsonify
+    def __iter__(self):
+        # Skip the bot instance object for serialization
+        for key, value in self._attrs.items():
+            if key != 'bot_instance':
+                yield key, value
+
+# Global variable to track bot status
+bot_status = BotStatus()
+
+# Helper function to get bot info
+async def get_bot_info():
+    telegram_bot_token = os.getenv('TELEGRAM_BOT_TOKEN')
+    if not telegram_bot_token:
+        return None
+
+    bot = application.bot  # Use the existing application.bot instance
+    
+    try:
+        # Fetch bot info using the bot instance
+        bot_user = await bot.get_me()
+        return {
+            "username": bot_user.username,
+            "id": bot_user.id,
+            "bot": bot  # Store the bot instance
+        }
+    except Exception as e:
+        logger.error(f"Error fetching bot info: {e}")
+        return None
+
+# Helper function to process updates
+async def process_update(update_data):
+    try:
+        update = Update.de_json(update_data, application.bot)
+        await application.process_update(update)
+    except Exception as e:
+        logger.error(f"Error processing update: {e}")
 
 # Initialize the Telegram Bot Application
 telegram_bot_token = os.getenv('TELEGRAM_BOT_TOKEN')
@@ -92,11 +168,15 @@ def create_app(config_name='development'):
     db.init_app(app)
     migrate.init_app(app, db)
 
+
+    # Initialize CSRF protection (if Flask-WTF is installed and configured)
+    CSRFProtect(app)
+
     # Import models and register routes within the app context
     with app.app_context():
         @app.route("/")
         def index():
-            return "Hello, IELTS Prep Bot is alive! Flask is running."
+            return render_template("landing.html")
         
         @app.route("/login", methods=["GET", "POST"])
         def login():
@@ -560,18 +640,100 @@ def create_app(config_name='development'):
 
             return jsonify({"success": True, "data": analytics_data})
 
-        @app.route("/webhook", methods=["POST"])
-        async def webhook():
-            try:
-                update = Update.de_json(request.get_json(force=True), application.bot)
-                await application.process_update(update)
-                return jsonify({"status": "ok"})
-            except Exception as e:
-                return jsonify({"status": "error", "error": str(e)}), 500
+        # @app.route("/webhook", methods=["POST"])
+        # async def webhook():
+        #     try:
+        #         update = Update.de_json(request.get_json(force=True), application.bot)
+        #         await application.process_update(update)
+        #         return jsonify({"status": "ok"})
+        #     except Exception as e:
+        #         return jsonify({"status": "error", "error": str(e)}), 500
+        # bot create webhook
+        def create_flask_webhook_route(app, route='/webhook'):
+            """Create a webhook route for the Flask app"""
+
+            @app.route(route, methods=['POST'])
+            async def webhook(): # Changed to async def for app.process_update
+                if request.method == "POST":
+                    try:
+                        logger.info(f"Webhook request received: {request.data}")
+                        update_data = request.get_json(force=True)
+                        logger.info(f"Parsed JSON update: {update_data}")
+                        if update_data:
+                            # Use the global application object to process the update
+                            update = Update.de_json(update_data, application.bot)
+                            await application.process_update(update)
+                        return "OK"
+                    except Exception as e:
+                        logger.error(f"Error in webhook: {e}")
+                        import traceback
+                        logger.error(traceback.format_exc())
+                        return "Error", 500
+                return "Hello, this is the webhook endpoint for the IELTS Preparation Bot."
+
+            # Create a route to manually set webhook URL
+            @app.route('/set_webhook', methods=['GET'])
+            def set_webhook_route(): # Renamed to avoid conflict with the function name
+                token = os.environ.get("TELEGRAM_BOT_TOKEN")
+                if not token:
+                    return jsonify({
+                        "success": False,
+                        "error": "No bot token available"
+                    }), 400
+
+                # Use DOMAIN_URL env as requested
+                domain_url = os.environ.get("DOMAIN_URL")
+                if not domain_url:
+                    return jsonify({
+                        "success": False,
+                        "error": "DOMAIN_URL environment variable not set. Cannot set webhook."
+                    }), 400
+                
+                webhook_url = f"https://{domain_url}/webhook"
+
+                try:
+                    # First delete any existing webhook
+                    delete_response = requests.get(
+                        f"https://api.telegram.org/bot{token}/deleteWebhook")
+                    logger.info(f"Deleted existing webhook: {delete_response.json()}")
+
+                    # Define allowed updates including message_reaction and message_reaction_count
+                    allowed_updates = [
+                        "message", "edited_message", "channel_post",
+                        "edited_channel_post", "inline_query", "chosen_inline_result",
+                        "callback_query", "shipping_query", "pre_checkout_query",
+                        "poll", "poll_answer", "my_chat_member", "chat_member",
+                        "message_reaction", "message_reaction_count"
+                    ]
+                    allowed_updates_json = json.dumps(allowed_updates)
+
+                    # Then set the new webhook with allowed_updates parameter
+                    response = requests.get(
+                        f"https://api.telegram.org/bot{token}/setWebhook?url={webhook_url}&allowed_updates={allowed_updates_json}"
+                    )
+                    result = response.json()
+                    logger.info(f"Set webhook response: {result}")
+
+                    if result.get("ok"):
+                        return jsonify({
+                            "success": True,
+                            "webhook_url": webhook_url,
+                            "result": result
+                        })
+                    else:
+                        return jsonify({
+                            "success": False,
+                            "error": result,
+                            "webhook_url": webhook_url
+                        }), 400
+                except Exception as e:
+                    logger.error(f"Error setting webhook: {e}")
+                    return jsonify({"success": False, "error": str(e)}), 500
 
         @app.route('/health', methods=['GET'])
         def health_check():
-            return jsonify({"status": "ok"}), 200
+            status = "ok" if bot_status.running else "error"
+            return jsonify({"status": status, "bot_status": bot_status._attrs}), 200
 
         # Error Handlers
         @app.errorhandler(404)
@@ -580,20 +742,121 @@ def create_app(config_name='development'):
 
         @app.errorhandler(500)
         def internal_error(error):
+            import traceback
+            logger.error(f"Internal Server Error: {error}\n{traceback.format_exc()}")
             return jsonify({"success": False, "error": "Internal Server Error"}), 500
+        
+        def initialize_webhook_bot():
+            """Initialize the webhook-based Telegram bot"""
+            global bot_status
 
+            try:
+                # Check for API keys
+                telegram_token = os.environ.get("TELEGRAM_BOT_TOKEN")
+                if not telegram_token:
+                    bot_status.error = "TELEGRAM_BOT_TOKEN environment variable not set!"
+                    logging.error(bot_status.error)
+                    return False
+
+                openai_api_key = os.environ.get("OPENAI_API_KEY")
+                if not openai_api_key:
+                    bot_status.error = "OPENAI_API_KEY environment variable not set!"
+                    logging.error(bot_status.error)
+                    return False
+
+                # Import and setup the simple webhook bot (already done globally earlier)
+                from telegram import Bot
+
+                # Update status
+                bot_status.running = True
+                bot_status.start_time = time.time()
+                bot_status.error = None
+
+                # Get the bot username and instance
+                # Using the existing `application.bot` from global scope
+                bot_user = asyncio.run(application.bot.get_me())
+                if bot_user:
+                    bot_status.telegram_bot_username = f"https://t.me/{bot_user.username}"
+                    bot_status.instance_id = bot_user.id
+                    bot_status.bot_instance = application.bot
+                else:
+                    bot_status.telegram_bot_username = "https://t.me/bot_username"
+
+                # Set up the webhook automatically (if DOMAIN_URL is available)
+                try:
+                    domain_url = os.environ.get("DOMAIN_URL")
+                    if domain_url:
+                        webhook_url = f"https://{domain_url}/webhook"
+
+                        # Delete any existing webhook (optional, but good for cleanup)
+                        requests.get(f"https://api.telegram.org/bot{telegram_token}/deleteWebhook")
+
+                        # Define allowed updates (as per API_REFERENCE.md)
+                        allowed_updates = [
+                            "message", "edited_message", "channel_post",
+                            "edited_channel_post", "inline_query", "chosen_inline_result",
+                            "callback_query", "shipping_query", "pre_checkout_query",
+                            "poll", "poll_answer", "my_chat_member", "chat_member",
+                            "message_reaction", "message_reaction_count"
+                        ]
+                        allowed_updates_json = json.dumps(allowed_updates)
+
+                        set_response = requests.get(
+                            f"https://api.telegram.org/bot{telegram_token}/setWebhook?url={webhook_url}&allowed_updates={allowed_updates_json}"
+                        )
+                        result = set_response.json()
+
+                        if result.get("ok"):
+                            logging.info(f"Webhook set successfully: {webhook_url}")
+                            bot_status.webhook_url = webhook_url
+                        else:
+                            logging.error(f"Failed to set webhook: {result}")
+                            bot_status.error = f"Failed to set webhook: {result}"
+                    else:
+                        logging.warning("DOMAIN_URL not found. Webhook will not be set automatically.")
+                except Exception as e:
+                    logging.error(f"Error setting up webhook: {e}")
+                    # Don\'t fail the bot initialization if webhook setup fails
+                    # It can be set up manually later via /set_webhook endpoint
+
+                return True
+            except Exception as e:
+                bot_status.running = False
+                bot_status.error = str(e)
+                logging.error(f"Bot initialization error: {e}")
+                return False
+
+    def remove_webhook():
+        """Remove the webhook"""
+        token = os.environ.get("TELEGRAM_BOT_TOKEN")
+        if not token:
+            return False
+
+        try:
+            import requests
+            response = requests.get(
+                f"https://api.telegram.org/bot{token}/deleteWebhook")
+            if not response.ok:
+                logging.error(f"Failed to delete webhook: {response.text}")
+                return False
+            return True
+        except Exception as e:
+            logging.error(f"Error deleting webhook: {e}")
+            return False
+
+    initialize_webhook_bot()
     return app
 
 app = create_app(os.getenv('FLASK_CONFIG') or 'default')
-if __name__ == '__main__':
-    # The bot polling and Flask app running are mutually exclusive in this script.
-    # For production, you'd run the Flask app with a WSGI server (like Gunicorn)
-    # and set up the Telegram webhook to point to your server's /webhook endpoint.
-    # You would not run application.run_polling().
+# if __name__ == '__main__':
+#     # The bot polling and Flask app running are mutually exclusive in this script.
+#     # For production, you'd run the Flask app with a WSGI server (like Gunicorn)
+#     # and set up the Telegram webhook to point to your server's /webhook endpoint.
+#     # You would not run application.run_polling().
     
-    # To run the bot with polling for development (without web interface):
-    # import asyncio
-    # asyncio.run(application.run_polling())
+#     # To run the bot with polling for development (without web interface):
+#     # import asyncio
+#     # asyncio.run(application.run_polling())
     
-    # To run the Flask app for development (for web interface):
-    app.run(port=5000) 
+#     # To run the Flask app for development (for web interface):
+#     app.run(port=5000) 

@@ -37,7 +37,7 @@ from models.homework import Homework, HomeworkSubmission
 # New Imports for Bot Initialization
 import time
 import json
-import requests
+import httpx
 from flask_wtf.csrf import CSRFProtect
 
 # Configure logging
@@ -87,6 +87,33 @@ class BotStatus:
 
 # Global variable to track bot status
 bot_status = BotStatus()
+
+
+def run_async_task(coro):
+    """Run an asynchronous coroutine reusing an existing loop when possible."""
+    created_loop = False
+    try:
+        loop = asyncio.get_event_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        created_loop = True
+
+    if loop.is_running():
+        future = asyncio.run_coroutine_threadsafe(coro, loop)
+        return future.result()
+
+    try:
+        return loop.run_until_complete(coro)
+    finally:
+        if created_loop:
+            loop.close()
+
+
+async def _telegram_api_get(token, method, params=None):
+    url = f"https://api.telegram.org/bot{token}/{method}"
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        return await client.get(url, params=params)
 
 # Helper function to get bot info
 async def get_bot_info():
@@ -693,9 +720,13 @@ def create_app(config_name='development'):
 
                 try:
                     # First delete any existing webhook
-                    delete_response = requests.get(
-                        f"https://api.telegram.org/bot{token}/deleteWebhook")
-                    logger.info(f"Deleted existing webhook: {delete_response.json()}")
+                    try:
+                        delete_response = run_async_task(
+                            _telegram_api_get(token, "deleteWebhook")
+                        )
+                        logger.info(f"Deleted existing webhook: {delete_response.json()}")
+                    except httpx.HTTPError as exc:
+                        logger.warning(f"Failed to delete existing webhook: {exc}")
 
                     # Define allowed updates including message_reaction and message_reaction_count
                     allowed_updates = [
@@ -708,13 +739,20 @@ def create_app(config_name='development'):
                     allowed_updates_json = json.dumps(allowed_updates)
 
                     # Then set the new webhook with allowed_updates parameter
-                    response = requests.get(
-                        f"https://api.telegram.org/bot{token}/setWebhook?url={webhook_url}&allowed_updates={allowed_updates_json}"
+                    response = run_async_task(
+                        _telegram_api_get(
+                            token,
+                            "setWebhook",
+                            params={
+                                "url": webhook_url,
+                                "allowed_updates": allowed_updates_json,
+                            },
+                        )
                     )
                     result = response.json()
                     logger.info(f"Set webhook response: {result}")
 
-                    if result.get("ok"):
+                    if response.is_success and result.get("ok"):
                         return jsonify({
                             "success": True,
                             "webhook_url": webhook_url,
@@ -726,6 +764,9 @@ def create_app(config_name='development'):
                             "error": result,
                             "webhook_url": webhook_url
                         }), 400
+                except httpx.HTTPError as exc:
+                    logger.error(f"Error setting webhook due to network error: {exc}")
+                    return jsonify({"success": False, "error": str(exc)}), 502
                 except Exception as e:
                     logger.error(f"Error setting webhook: {e}")
                     return jsonify({"success": False, "error": str(e)}), 500
@@ -774,7 +815,7 @@ def create_app(config_name='development'):
 
                 # Get the bot username and instance
                 # Using the existing `application.bot` from global scope
-                bot_user = asyncio.run(application.bot.get_me())
+                bot_user = run_async_task(application.bot.get_me())
                 if bot_user:
                     bot_status.telegram_bot_username = f"https://t.me/{bot_user.username}"
                     bot_status.instance_id = bot_user.id
@@ -789,7 +830,10 @@ def create_app(config_name='development'):
                         webhook_url = f"https://{domain_url}/webhook"
 
                         # Delete any existing webhook (optional, but good for cleanup)
-                        requests.get(f"https://api.telegram.org/bot{telegram_token}/deleteWebhook")
+                        try:
+                            run_async_task(_telegram_api_get(telegram_token, "deleteWebhook"))
+                        except httpx.HTTPError as exc:
+                            logging.warning(f"Failed to delete existing webhook: {exc}")
 
                         # Define allowed updates (as per API_REFERENCE.md)
                         allowed_updates = [
@@ -801,17 +845,32 @@ def create_app(config_name='development'):
                         ]
                         allowed_updates_json = json.dumps(allowed_updates)
 
-                        set_response = requests.get(
-                            f"https://api.telegram.org/bot{telegram_token}/setWebhook?url={webhook_url}&allowed_updates={allowed_updates_json}"
-                        )
-                        result = set_response.json()
-
-                        if result.get("ok"):
-                            logging.info(f"Webhook set successfully: {webhook_url}")
-                            bot_status.webhook_url = webhook_url
+                        try:
+                            response = run_async_task(
+                                _telegram_api_get(
+                                    telegram_token,
+                                    "setWebhook",
+                                    params={
+                                        "url": webhook_url,
+                                        "allowed_updates": allowed_updates_json,
+                                    },
+                                )
+                            )
+                            result = response.json()
+                        except httpx.HTTPError as exc:
+                            logging.error(f"Failed to set webhook due to network error: {exc}")
+                            bot_status.error = f"Failed to set webhook: {exc}"
+                        except Exception as exc:
+                            logging.error(f"Unexpected error decoding webhook response: {exc}")
+                            bot_status.error = f"Failed to set webhook: {exc}"
                         else:
-                            logging.error(f"Failed to set webhook: {result}")
-                            bot_status.error = f"Failed to set webhook: {result}"
+                            if response.is_success and result.get("ok"):
+                                logging.info(f"Webhook set successfully: {webhook_url}")
+                                bot_status.webhook_url = webhook_url
+                            else:
+                                logging.error(f"Failed to set webhook: {result}")
+                                bot_status.error = f"Failed to set webhook: {result}"
+
                     else:
                         logging.warning("DOMAIN_URL not found. Webhook will not be set automatically.")
                 except Exception as e:
@@ -833,15 +892,17 @@ def create_app(config_name='development'):
             return False
 
         try:
-            import requests
-            response = requests.get(
-                f"https://api.telegram.org/bot{token}/deleteWebhook")
-            if not response.ok:
+            response = run_async_task(_telegram_api_get(token, "deleteWebhook"))
+            if not response.is_success:
                 logging.error(f"Failed to delete webhook: {response.text}")
                 return False
+            result = response.json()
+            if not result.get("ok", False):
+                logging.error(f"Failed to delete webhook: {result}")
+                return False
             return True
-        except Exception as e:
-            logging.error(f"Error deleting webhook: {e}")
+        except httpx.HTTPError as exc:
+            logging.error(f"Error deleting webhook: {exc}")
             return False
 
     initialize_webhook_bot()

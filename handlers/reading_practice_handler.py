@@ -276,5 +276,5 @@ reading_practice_conv_handler = ConversationHandler(
     fallbacks=[CallbackQueryHandler(cancel_reading, pattern="^cancel_reading$")],
     per_user=True,
     per_chat=True,
-    per_message=False,
+    per_message=True,
 )

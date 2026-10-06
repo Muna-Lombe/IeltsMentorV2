@@ -183,4 +183,5 @@ manage_content_conv_handler = ConversationHandler(
         SELECTING_CONTENT_ACTION: [CallbackQueryHandler(manage_content_action, pattern="^content_")],
     },
     fallbacks=[CommandHandler("cancel", cancel)], # Can reuse the same cancel
+    per_message=True,
 ) 

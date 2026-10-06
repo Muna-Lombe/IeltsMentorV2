@@ -327,5 +327,5 @@ speaking_practice_conv_handler = ConversationHandler(
     fallbacks=[CommandHandler("cancel", cancel)],
     per_user=True,
     per_chat=True,
-    per_message=False,
+    per_message=True,
 ) 

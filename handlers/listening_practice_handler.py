@@ -274,6 +274,6 @@ listening_practice_conv_handler = ConversationHandler(
     fallbacks=[CallbackQueryHandler(cancel, pattern="^lp_cancel$")],
     per_user=True,
     per_chat=True,
-    per_message=False,
+    per_message=True,
 )
  

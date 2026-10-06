@@ -307,6 +307,7 @@ group_analytics_conv_handler = ConversationHandler(
         SELECTING_GROUP_ANALYTICS: [CallbackQueryHandler(show_group_analytics, pattern='^ga_group_')],
     },
     fallbacks=[CommandHandler('cancel', cancel_group_creation)], # Can reuse cancel logic
+    per_message=True,
 )
 
 @error_handler
@@ -402,4 +403,5 @@ student_progress_conv_handler = ConversationHandler(
         SELECT_STUDENT_FOR_PROGRESS: [CallbackQueryHandler(show_student_progress, pattern='^sp_student_')],
     },
     fallbacks=[CommandHandler('cancel', cancel_group_creation)],
+    per_message=True,
 ) 
